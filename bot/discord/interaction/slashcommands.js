@@ -14,7 +14,7 @@ module.exports = async (edge, interaction) => {
         return interaction.editReply({ content: "Nemáš potřebná oprávnění!", ephemeral: true });
     }
 
-    console.discord(`${cmd.name} was requested by <@${interaction.user.id}>`)
+    console.discord(`${cmd.name} command was requested by <@${interaction.user.id}>`)
 
     cmd.run(edge, interaction).catch(async (e) => {
         if (interaction.deferred === false && interaction.replied === false) interaction.reply({ embeds: [await console.error(e)], ephemeral: true })

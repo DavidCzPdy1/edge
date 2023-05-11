@@ -2,7 +2,7 @@
 module.exports = {
     name: 'dm',
     description: 'Message group of users!',
-    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}],
     options: [
       {
         name: 'role',
@@ -42,7 +42,7 @@ module.exports = {
       }
   
       await interaction.editReply({ content: `Messages sent: \`${sent}/${members.size}\`` })
-      //dc_client.channels.cache.get('1027491511857840168')?.send({ content: msg, embeds: [{ title: `\`${sent}/${members.size}\` messages sent to ${role} members`, description: errors.length ? errors.join(', ') : undefined, color: errors.length ? 15548997: 2067276 }] })
+      dc_client.channels.cache.get('1106243507527635005')?.send({ content: msg, embeds: [{ title: 'Bulk message', description: `\`${sent}/${members.size}\` messages sent to ${role} members\n\n`+ (errors.length ? errors.join(', ') : ''), color: errors.length ? 15548997: 2067276 }] })
 
 
     }

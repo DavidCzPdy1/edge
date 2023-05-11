@@ -21,11 +21,9 @@ class MessageHandler {
     let cmd = commands.get(args[0].toLowerCase()) || commands.get(this.edge.aliases.get(args[0].toLowerCase()))
     if (!cmd) return
 
-    let data = {} // verify & premium data
     let reply;
 
-    let perms = this.edge.handlePerms(cmd.permissions, message) // ADD user stats (for premium), maybe add reason? (who has access)
-
+    let perms = this.edge.handlePerms(cmd.permissions, message)
     if (!perms) reply = `${message.member.nickname || message.author.username} nemá oprávnění na \`${cmd.name}\` příkaz!`
     else if (cmd.platform === 'dc') reply = await cmd?.run(this.edge, message, message.content.replace(this.config.prefix, '').replace(args[0], '').trim()).catch(async (e) => message.reply({ embeds: [await console.error(e)], failIfNotExists: false }));
     
