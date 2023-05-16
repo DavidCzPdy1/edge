@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('node:path');
-const { ActionRowBuilder, ButtonBuilder, SelectMenuBuilder } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder } = require('discord.js')
 
 const DATA = {
     name: 'time',
@@ -31,7 +31,7 @@ const DATA = {
       })
 
       let embed = { title: '**Time Events GUI**', color: 5592575, footer: { text: `${Object.values(config.time).filter(n => n).length}/${edge.time.events.size} Time Events` }, description: desc.join('\n') }
-      const menu = new ActionRowBuilder().addComponents(new SelectMenuBuilder().setCustomId('time_cmd_gui').setPlaceholder('Choose one for more info').addOptions(options));
+      const menu = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('time_cmd_gui').setPlaceholder('Choose one for more info').addOptions(options));
       await interaction.editReply({ embeds: [embed], components: [menu] })
     },
     gui: async (edge, interaction) => {
@@ -76,7 +76,7 @@ const DATA = {
       }
 
       let options = edge.time.events.map(ev => { return {label: ev.emoji + ' ' + ev.name + (config.time[ev.name] ? ' ✅':''), description: ev.description, value: ev.name}})
-      const menu = new ActionRowBuilder().addComponents(new SelectMenuBuilder().setCustomId('time_cmd_gui').setPlaceholder(`${type} Time Event GUI`).addOptions(...options));
+      const menu = new ActionRowBuilder().addComponents(new StringSelectMenuBuilder().setCustomId('time_cmd_gui').setPlaceholder(`${type} Time Event GUI`).addOptions(...options));
       const buttons = new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId(`time_cmd_toggle_${type}`).setStyle(!toggle ? 4:3).setLabel(!toggle ? 'DISABLE':'ENABLE'))
         .addComponents(new ButtonBuilder().setCustomId(`time_cmd_action_${type}`).setStyle(3).setLabel('RUN'))

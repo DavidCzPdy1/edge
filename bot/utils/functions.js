@@ -61,6 +61,9 @@ console.error = async (message, type = '') => {
         (String(message.stack).match(reg) ? String(message.stack).match(reg)[0].replace(global.path, ''):'unknown path')
   
     let embed = { author: { name: String(message).trim() }, description: type || null, color: 15548997, footer: {text: path !== 'unknown path' ? path : null}}
+
+    //console.log(message)
+
     console.log(chalk.bgRedBright.black(`[${getCurrentTime()}] Error >`) + ' ' + chalk.redBright(message) + chalk.blueBright(`${path !== 'unknown path' ? ` at ${global.path + path}` : ''}`))
     if (global.config?.log_channel === true) {
       await global.channels?.log?.send({
