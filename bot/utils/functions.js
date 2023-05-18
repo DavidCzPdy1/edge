@@ -27,6 +27,20 @@ console.discord = (message, args = {}) => {
   return embed
 }
 
+/* 
+MONGO log
+@param {message, footer}
+@returns {embed}
+@usage console.mongo("text")
+*/
+console.mongo = (message, args = {}) => {
+  console.log(chalk.bgBlue.black(`[${getCurrentTime()}] Mongo >`) + ' ' + chalk.blue(message))
+
+  let embed = { title: 'Mongo', description: `**${message}**`, color: 2067276, footer: { text: args.startup ? 'settings display soon' : null } }
+  if (global.config?.discord.log_channel === true) global.channels?.log?.send({ embeds: [embed] })
+  return embed
+}
+
 
 /* 
 TIME log
@@ -90,7 +104,11 @@ global.defaultConfig = () => {
       log_channel: true,
       clientID: '1105929725186150411',
       serverID: '1105413744902811688',
-      loggingChannel: '1106243507527635005'
+      loggingChannel: '1106243507527635005',
+      clubRoles: ['1108825493739929620', '1108825718776926208', '1108825861190340720', '1108825076083720263', '1108825185932542102', '1108825318069903443', '1108825782001860730', '1108833486321758291'],
+      positionRoles: ['1105555145456107581', '1105544649080320110', '1105544581405229129'],
+      mentionRoles: ['1108829451309027328', '1108826232700805250', '1108826423839424595'],
+      splitRoles: ['1108827093514596544', '1108826950950211745', '1108826744573661204']
     },
     time: {}
   }

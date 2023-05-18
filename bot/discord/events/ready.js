@@ -12,4 +12,10 @@ module.exports = async (edge, client) => {
 
     let botSlashCmds = edge.commands.filter(n => n.type == 'slash' || n.type == 'modal').map(cmd => { return { name: cmd.name, description: cmd.description||"", options: cmd.options || [], default_permission: Array.isArray(cmd.permissions) ? (cmd.permissions.length ? false : true) : true } });
     let cmds = await client.application.commands.set(botSlashCmds)
+
+
+    await edge.discord.roles.init()
+    edge.discord.roles.updateRoles()
+    
+    
 }

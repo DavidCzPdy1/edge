@@ -16,6 +16,7 @@ class UHGDevs extends CommandsHandler {
   }
 
   async appConnect() {
+    await this.createMongo()
     this.config.discord.enabled ? this.discord?.init() : null
 
     this.time?.init()

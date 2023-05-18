@@ -4,9 +4,9 @@ const fs = require('fs');
 
 const { Collection } = require('discord.js');
 
-const Config = require('../utils/Config')
+const Mongo = require('../utils/Mongo')
 
-class CommandsHandler extends Config {
+class CommandsHandler extends Mongo {
   constructor() {
     super()
     this.createCommands()

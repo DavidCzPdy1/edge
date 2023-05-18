@@ -4,6 +4,7 @@ const path = require('node:path');
 const fs = require('fs');
 
 const MessageHandler = require('./handlers/MessageHandler');
+const RoleHandler = require('./handlers/RoleHandler');
 
 class DiscordHandler {
   constructor(edge) {
@@ -11,6 +12,7 @@ class DiscordHandler {
     this.edge = edge
 
     this.messageHandler = new MessageHandler(this)
+    this.roles = new RoleHandler(this)
   }
 
   async init() {

@@ -19,3 +19,8 @@ delay(100).then(async () => {
 
     await edge.appConnect()
 })
+
+process.on('SIGINT', async () => {
+    if (global.shuting === true) return
+    edge.stopBot('Discord BOT byl násilně ukončen')
+})
