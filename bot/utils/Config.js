@@ -5,13 +5,22 @@ const path = require('path');
 class Config {
   constructor() {
 
+    this.config_start = true
     this.readConfig()
     fs.watchFile(path.resolve(__dirname, '../../config.json'), () => this.readConfig());
 
   }
 
   readConfig() {
-    let config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../config.json'), 'utf8'))
+    let config;
+    if (this.config_start) {
+      delete this.config_start
+
+      config = this.mergeSettings(global.defaultConfig(), JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../config.json'), 'utf8')));
+      fs.writeFile(path.resolve(__dirname, '../../config.json'), JSON.stringify(config, null, 4), 'utf8', data =>{})
+
+    } else config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../config.json'), 'utf8'))
+
     if (config.dev === true) {
       for (let key in config.discord) {
         if (String(key).endsWith('_DEV')) continue
@@ -49,6 +58,15 @@ class Config {
     let allowed = perms?.find(n => n.type == 'USER' && id === n.id || n.type === 'ROLE' && n.guild && global.dc_client?.guilds?.cache.get(n.guild)?.members.cache.get(id)?._roles?.includes(n.id) || n.type === 'ROLE' && api.member?._roles.includes(n.id)) || false
     if (allowed) return true
     else return false
+  }
+
+  mergeSettings(def, given) {
+    if (!given) return def;
+    for (const key in def) {
+      if (!Object.hasOwn(given, key) || given[key] === undefined) given[key] = def[key];
+      else if (given[key] === Object(given[key])) given[key] = this.mergeSettings(def[key], given[key]);
+    }
+    return given;
   }
 
   async stopBot(message = 'Discord BOT was stopped') {
