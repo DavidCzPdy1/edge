@@ -1,6 +1,7 @@
 const { ActionRowBuilder, ButtonBuilder } = require("discord.js");
 
 module.exports = async (edge, interaction) => {
+    await interaction.deferReply({ ephemeral: true })
     let action = interaction.customId.split('_')[1]
     let guild = interaction.guild
 
@@ -9,15 +10,14 @@ module.exports = async (edge, interaction) => {
 
         let roleId = interaction.customId.split('_')[2]
 
-        if (!guild) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Wierd, nejsi na serveru`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+        if (!guild) return interaction.editReply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Wierd, nejsi na serveru`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
 
         let member = guild.members.cache.get(interaction.user.id)
-        if (!member) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyl nalezen member!`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+        if (!member) return interaction.editReply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyl nalezen member!`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
 
         let role = guild.roles.cache.get(roleId)
-        if (!role) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyla nalezena role!`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
-        
-        await interaction.deferReply({ ephemeral: true })
+        if (!role) return interaction.editReply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyla nalezena role!`, color: 15548997, footer: { text: 'Edge Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+
         let result = await edge.discord.roles.roleToggle(member, role)
 
         await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `Úspěště ti byla ${result ? 'přidána':'odebrána'} role ${role}`, color: result ? 2067276 : 15548997, footer: { text: 'Edge Dicord ROLE', icon_url: guild?.iconURL() || '' } }]})
@@ -31,7 +31,7 @@ module.exports = async (edge, interaction) => {
 
 
     if (action == 'select') {
-
+        await interaction.deferReply({ ephemeral: true })
         let cat = interaction.customId.split('_')[2]
 
         let dot = '<:dot:1109460785723351110>'
@@ -52,7 +52,7 @@ module.exports = async (edge, interaction) => {
             components = [buttons]
         }
 
-        interaction.reply({ embeds: [embed], ephemeral: true, components: components })
+        interaction.editReply({ embeds: [embed], components: components })
 
     }
     
