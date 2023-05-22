@@ -8,9 +8,9 @@ class VoiceHandler {
 
   async init() {
 
-    const player = await createAudioPlayer();
+    const player = await createAudioPlayer({ behaviors: { noSubscriber: 'pause', maxMissedFrames: 200}});
     let voiceChannel = dc_client.channels.cache.get('1109943572825907243') 
-    const connection = await joinVoiceChannel({channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator })
+    const connection = await joinVoiceChannel({channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
     const resource = createAudioResource('https://icecast8.play.cz/radio7-128.mp3', { inputType: StreamType.Arbitrary, });
     connection.subscribe(player)
     player.play(resource)
