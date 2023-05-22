@@ -31,7 +31,6 @@ module.exports = async (edge, interaction) => {
 
 
     if (action == 'select') {
-        await interaction.deferReply({ ephemeral: true })
         let cat = interaction.customId.split('_')[2]
 
         let dot = '<:dot:1109460785723351110>'
