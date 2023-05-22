@@ -1,4 +1,6 @@
 
+const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder } = require('discord.js')
+
 module.exports = {
     name: 'trener',
     description: 'Manage EDGE trainers!',
@@ -13,7 +15,6 @@ module.exports = {
           { value: 'list', name: 'Zobrazit list trenérů' },
           { value: 'add', name: 'Přidat trenéra' },
           { value: 'remove', name: 'Odstranit trenéra' },
-          { value: 'ban', name: 'Skrytý agent' },
         ]
       },
       {
@@ -28,20 +29,41 @@ module.exports = {
     run: async (edge, interaction) => {
       await interaction.deferReply({ ephemeral: true })
 
+      let ikona = interaction.guild.iconURL()
+
       let action = interaction.options.getString('action')
 
-      let trainer = await edge.get('general', 'clubs', {_id: 'list'}).then(n => n[0])
+      let data = await edge.get('general', 'clubs', {})
+
+      let trainer = data.find(n => n._id == 'list')
+
+      data = data.filter(n => n._id !== 'list')
 
       if (action == 'list') {
-        console.log(trainer)
-        await interaction.editReply({ content: `SOON`})
+
+        let desc = trainer.list.map(n => {
+          let tym = data.find(a => a.users.includes(n))
+          let leader = trainer.leaders.includes(n) ? ' 👑' : ''
+          tym = tym ? ` - ${tym.name}` : ''
+
+          let res = {send: `<@${n}>` + leader + tym, sort: tym.length ? tym.slice(3).toLowerCase() : 'zzz' }
+          return res
+        }).sort((a, b) => {
+          if (a.sort < b.sort) return -1;
+          if (a.sort > b.sort) return 1;
+          return 0;
+        }).map(n => n.send).join('\n')
+
+
+        let embed = { title: 'Seznam trenérů', description: desc, color: 2067276, footer: { text: 'Seznam trenérů', icon_url: ikona} }
+        await interaction.editReply({ embeds: [embed]})
         return
       }
       
       let user = interaction.options.getUser('user')
       if (!user) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nezadal jsi žádného uživalete!`, color: 15548997 }]})
 
-      let ikona = interaction.guild.iconURL()
+  
 
       if (action == 'add') {
         if (trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v ADD cmd', description: `<@${user.id}> už na listině trenérů je!`, color: 15548997, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
@@ -61,15 +83,9 @@ module.exports = {
 
         await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl odebrán z listiny trenérů!`, color: 2067276, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
         return edge.discord.roles.updateRoles()
-      } else if (action == 'ban') {
-
       }
 
-
-
-      //let member = await interaction.guild.members.fetch(user.id)
-
-      await interaction.editReply({ content: `SOON`})
+      await interaction.editReply({ content: `WIERD ERROR, kontaktuj prosím developera! [trener cmd - missing choice]`})
     
 
     }

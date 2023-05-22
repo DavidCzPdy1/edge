@@ -73,7 +73,7 @@ console.error = async (message, type = '') => {
     let path = windows ? 
         (String(message.stack).match(reg) ? String(message.stack).match(reg)[0].replace(global.path.replace('/', '\\'), ''):'unknown path') :
         (String(message.stack).match(reg) ? String(message.stack).match(reg)[0].replace(global.path, ''):'unknown path')
-  
+
     let embed = { author: { name: String(message).trim() }, description: type || null, color: 15548997, footer: {text: path !== 'unknown path' ? path : null}}
 
     //console.log(message)
@@ -106,9 +106,29 @@ global.defaultConfig = () => {
       serverID: '1105413744902811688',
       loggingChannel: '1106243507527635005',
       clubRoles: ['1108825493739929620', '1108825718776926208', '1108825861190340720', '1108825076083720263', '1108825185932542102', '1108825318069903443', '1108825782001860730', '1108833486321758291'],
+
+      roles: {
+        position_edge: '1105555145456107581',
+        position_trener: '1105544649080320110',
+        position_member: '1105544581405229129',
+        mention_oznameni:'1108829451309027328', 
+        mention_lfman:'1108826232700805250', 
+        mention_lfwoman:'1108826423839424595',
+        split_position: '1108827093514596544',
+        split_club: '1108826950950211745',
+        split_mention: '1108826744573661204',
+        club_majak: '1108825493739929620',
+        club_arrows: '1108833486321758291',
+        club_hammers: '1108825718776926208',
+        club_micro: '1108825861190340720',
+        club_sky: '1108825076083720263',
+        club_poletime: '1108825185932542102',
+        club_rakety: '1108825318069903443',
+        club_fox: '1108825782001860730'
+      },
       positionRoles: ['1105555145456107581', '1105544649080320110', '1105544581405229129'],
       mentionRoles: ['1108829451309027328', '1108826232700805250', '1108826423839424595'],
-      splitRoles: ['1108827093514596544', '1108826950950211745', '1108826744573661204']
+      splitRoles: ['1108827093514596544', '1108826950950211745', '1108826744573661204'],
     },
     time: {}
   }

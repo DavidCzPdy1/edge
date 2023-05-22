@@ -1,10 +1,11 @@
 
-const { Client, Collection, GatewayIntentBits, Partials, Message } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, Partials, Message, VoiceChannel } = require('discord.js');
 const path = require('node:path');
 const fs = require('fs');
 
 const MessageHandler = require('./handlers/MessageHandler');
 const RoleHandler = require('./handlers/RoleHandler');
+const VoiceHandler = require('./handlers/VoiceHandler');
 
 class DiscordHandler {
   constructor(edge) {
@@ -13,13 +14,15 @@ class DiscordHandler {
 
     this.messageHandler = new MessageHandler(this)
     this.roles = new RoleHandler(this)
+    this.voice = new VoiceHandler(this)
   }
 
   async init() {
     
     global.dc_client = new Client({
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages],
-      partials: [Partials.Channel, Partials.GuildMember]
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildVoiceStates],
+      partials: [Partials.Channel, Partials.GuildMember],
+      allowedMentions: { parse: [] }
     });
 
     this.client = dc_client

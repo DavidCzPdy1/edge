@@ -73,6 +73,7 @@ class Config {
     if (global.shuting === true) return
     global.shuting = true
 
+    await edge?.discord?.voice?.connection?.disconnect()
     await console.error(message).catch(e => { console.warn(e); process.exit() })
     global.shuting = false
     process.exit()

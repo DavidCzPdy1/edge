@@ -6,7 +6,7 @@ let respawn;
 module.exports = {
     name: "bot",
     aliases: [],
-    permissions: [{ id: '312861502073995265', type: 'USER', permission: true }, { id: '378928808989949964', type: 'USER', permission: true }],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true }],
     platform: "dc",
     type: "message",
     run: async (edge, message, content) => {
