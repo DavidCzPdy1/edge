@@ -4,6 +4,9 @@
 .vscode/
 yarn.lock
 
+.replit
+replit.nix
+
 node_modules/
 
 .env
