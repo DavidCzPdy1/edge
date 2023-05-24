@@ -12,7 +12,11 @@ module.exports = {
   run: async (edge, options) => {
     let database = await edge.get('general', 'events', {}).then(n => n.filter(a => !a.finished))
     for (let data of database) {
-      if (!data.time || data.time > new Date().getTime()) continue;
+      if (!data.time) continue;
+      else if (data.time > new Date().getTime()) {
+        
+        continue
+      }
 
       let channel = await dc_client.channels.cache.get(data.channel)
       if (!channel) { console.error('Time management nenašel channel eventu ' + data._id); continue}

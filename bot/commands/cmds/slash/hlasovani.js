@@ -42,6 +42,12 @@ module.exports = {
           { value: 'user', name: 'Za sebe' },
         ]
       },
+      {
+        name: 'pings',
+        description: 'Jak často mám upomínat členy týmů? (number - hours)',
+        type: 3,
+        required: false
+      },
     ],
     type: 'slash',
     platform: 'discord',
@@ -57,7 +63,8 @@ module.exports = {
         mode: interaction.options.getString('mode') || 'team',
         type: 'poll',
         channel: '1105918656203980870',
-        perms: 'trener'
+        perms: 'trener',
+        pings: Number(interaction.options.getString('pings')) || 0
       }
 
       let events = await edge.get('general', 'events', {_id: data.question})
