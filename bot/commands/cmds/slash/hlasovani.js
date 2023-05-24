@@ -56,7 +56,8 @@ module.exports = {
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
         type: 'poll',
-        channel: '1105918656203980870'
+        channel: '1105918656203980870',
+        perms: 'trener'
       }
 
       let events = await edge.get('general', 'events', {_id: data.question})
@@ -67,7 +68,7 @@ module.exports = {
       let embed = {
         title: data.question,
         description: data.description,
-        fields: answers.map(n => { return {name: `${n.trim()} (0)`, value: `\u200B`, inline: true} }),
+        fields: answers.map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }),
         color: 1613
       }
 
@@ -82,10 +83,11 @@ module.exports = {
         embed.footer = { text: 'Konec hlasování'}
 
         embed.description = embed.description + `\n**Time:** <t:${c/1000}:R>`
+        if (data.mode == 'team') embed.description = embed.description + `\n*Hlasuje se za tým*`
 
         if (c < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)]})
         else if (c - 1000*60*60*20 < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
-      }
+      } else data.finished = -1;
 
       let odpovedi = new ActionRowBuilder();
 
@@ -102,14 +104,59 @@ module.exports = {
       delete data.question
 
       await edge.post('general', 'events', data)
-      await interaction.editReply({ embeds: [embed], components: [odpovedi, accept]})
-    
+      let souhrn = Object.keys(data).map(n => { return {name: n, value: data[n], inline: true}}).filter(n => typeof n.value === 'string' || typeof n.value === 'number')
+      await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: true})
+      await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: true})
 
     },
     select: async (edge, interaction) => {
       await interaction.update({ type:6 })
       let question = interaction.customId.split('_')[3]
-      let asnwer = interaction.customId.split('_')[4]
+      let answer = interaction.customId.split('_')[4]
+
+      let data = await edge.get('general', 'events', {_id: question})
+      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      data = data[0]
+
+      let access = interaction.member._roles.includes(edge.config.discord.roles[`position_${data.perms || 'trener'}`])
+      if (!access) return interaction.followUp({ embeds: [{ title: 'Nemáš potřebné oprávnění na reakci!', description: `Potřebuješ <@&${edge.config.discord.roles[`position_${data.perms}`]}>`, color: 15548997 }], ephemeral: true })
+
+      let id = data.mode == 'team' ? interaction.member._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n)) : interaction.user.id
+      if (!id) return interaction.followUp({ embeds: [{ title: 'Nemáš žádnou týmovou roli!', description: `Pokud nějakou chceš, použij /verify!`, color: 15548997 }], ephemeral: true })
+      
+      let ids = data.answers.split('|').map(n => {return { ids: data[n], name: n}})
+      let answered = ids.find(n => n.ids.includes(id));
+
+
+      if (data[answer].includes(id)) {
+        data[answer] = data[answer].filter(n => n !== id)
+        let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
+        interaction.followUp({ embeds: [embed], ephemeral: true })
+        console.discord(`Přidání hlasu v \`${question}\`\n${embed.description}`)
+      } else if (!answered) {
+        data[answer].push(id)
+        let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
+        interaction.followUp({ embeds: [embed], ephemeral: true })
+        console.discord(`Přidání hlasu v \`${question}\`\n${embed.description}`)
+      } else {
+        data[answered.name] = data[answered.name].filter(n => n !== id)
+        data[answer].push(id)
+        let embed = { title: 'Změna hlasu!', description: `Z: \`${answered.name}\`\nNa: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
+        interaction.followUp({ embeds: [embed], ephemeral: true })
+        console.discord(`Změna hlasu v \`${question}\`\n${embed.description}`)
+      }
+
+      await edge.post('general', 'events', data)
+
+      let embed = interaction.message.embeds[0].data
+
+      embed.fields = embed.fields.map(n => {
+        let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
+        let value = data[n.name.split(' - ')[0]].map(n => { return  (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)}).join('\n')
+        if (!value.length) value = '\u200B'
+        return {name: name, value: value, inline: true}
+      })
+      await interaction.message.edit({ embeds: [embed]})
 
       
     },

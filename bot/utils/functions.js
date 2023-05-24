@@ -141,3 +141,13 @@ function getCurrentTime() {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 console.date = getCurrentTime
+
+
+/* 
+Format
+@param {number, dec}
+@returns {string}
+@usage f(0,1111111, 1)
+ - returns 0,1
+*/
+global.f = (number, max=2) => { return Number(number) ? Number(number).toLocaleString('en', {minimumFractionDigits: 0, maximumFractionDigits: max}) : number }
