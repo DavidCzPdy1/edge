@@ -105,6 +105,11 @@ global.defaultConfig = () => {
       clientID: '1105929725186150411',
       serverID: '1105413744902811688',
       loggingChannel: '1106243507527635005',
+      voice: {
+        enabled: true,
+        channel: '1109943572825907243',
+        stream: 'https://icecast8.play.cz/radio7-128.mp3'
+      },
       roles: {
         position_edge: '1105555145456107581',
         position_trener: '1105544649080320110',

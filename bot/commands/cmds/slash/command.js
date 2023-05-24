@@ -39,7 +39,7 @@ module.exports = {
 
         let prikaz = commands.find(n => n.name == command)
 
-        let id = prikaz.id
+        let id = prikaz?.id
 
         embed.fields.push({name: 'ID', value: `</${cmd.name}:${id}> | \`</${cmd.name}:${id}>\``, inline: false})
       } else if (cmd.type == 'user') {
@@ -47,7 +47,7 @@ module.exports = {
 
         let prikaz = commands.find(n => n.name == command)
 
-        let id = prikaz.id
+        let id = prikaz?.id
 
         embed.fields.push({name: 'ID', value: `\`${id}>\``, inline: false})
         

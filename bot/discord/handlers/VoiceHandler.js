@@ -1,4 +1,4 @@
-const { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, AudioPlayerStatus, createAudioResource, StreamType } = require('@discordjs/voice')
+const { joinVoiceChannel, createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType } = require('@discordjs/voice')
 
 class VoiceHandler {
   constructor(discord) {
@@ -8,27 +8,30 @@ class VoiceHandler {
 
   async init() {
 
-    const player = createAudioPlayer({ behaviors: { noSubscriber: 'pause', maxMissedFrames: 200 } });
-    let voiceChannel = dc_client.channels.cache.get('1109943572825907243')
-    const connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
-    const resource = createAudioResource('https://icecast8.play.cz/radio7-128.mp3', { inputType: StreamType.Arbitrary, });
-    connection.subscribe(player)
-    player.play(resource)
+    this.player = createAudioPlayer({ behaviors: { noSubscriber: 'pause', maxMissedFrames: 200 } });
+    this.voiceChannel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
+    this.resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, });
 
-
-
-    player.on('stateChange', (oldState, newState) => {
+    this.play()
+    this.player.on('stateChange', (oldState, newState) => {
       if (oldState.status === AudioPlayerStatus.Idle && newState.status === AudioPlayerStatus.Playing) {
         console.discord('Playing audio output on audio player');
-      } else if (newState.status === AudioPlayerStatus.Idle) {
+      } else if (newState.status === AudioPlayerStatus.Idle || newState.status == 'autopaused') {
         console.discord('Playback has stopped. Attempting to restart.');
-        player.play(resource)
+        this.play()
       }
-    });
+    })
+  }
+  play(perms = false) {
+    if (!(this.edge.config.discord.voice.enabled || perms)) return;
+    if (!this.voiceChannel?.members.get(edge.config.discord.clientID)) this.joinChannel()
+    if (this.connection._state.status !== 'ready') this.connection.subscribe(this.player)
+    if (this.player._state.status !== 'playing') this.player.play(this.resource)
+  }
 
-    this.connection = connection
-    this.player = player
-
+  joinChannel () {
+    let voiceChannel = this.voiceChannel
+    this.connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
   }
 
 }
