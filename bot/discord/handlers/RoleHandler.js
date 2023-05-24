@@ -12,32 +12,32 @@ class RoleHandler {
     this.guild = guild
 
     let members = await guild.members.fetch();
-  
+
     for (let id of Object.keys(this.config.roles).filter(n => n.startsWith('club_')).map(n => this.config.roles[n])) {
-        let role = guild.roles.cache.get(id)
-        if (!role) { console.error('Nebyla nalezena club role s ID ' + id ); continue; }
+      let role = guild.roles.cache.get(id)
+      if (!role) { console.error('Nebyla nalezena club role s ID ' + id); continue; }
 
-        let data = {
-            _id: id,
-            name: role.name,
-            color: role.color,
-            users: role.members.map(n => n.id),
-            trainers: role.members.filter(n => n._roles.includes(this.config.roles.position_trener)).map(n => n.id)
-        }
+      let data = {
+        _id: id,
+        name: role.name,
+        color: role.color,
+        users: role.members.map(n => n.id),
+        trainers: role.members.filter(n => n._roles.includes(this.config.roles.position_trener)).map(n => n.id)
+      }
 
-        await edge.post('general', 'clubs', data)    
+      await edge.post('general', 'clubs', data)
     }
   }
 
-  async updateRoles (ids = []) {
+  async updateRoles(ids = []) {
     let guild = dc_client.guilds.cache.get('1105413744902811688')
     this.guild = guild
 
     let members = await guild.members.fetch();
 
     if (ids.length) members = members.filter(n => ids.includes(n.user.id))
-    
-    let trainer = await this.edge.get('general', 'clubs', {_id: 'list'}).then(n => n[0])
+
+    let trainer = await this.edge.get('general', 'clubs', { _id: 'list' }).then(n => n[0])
     let users = await this.edge.get('general', 'users', {})
 
     for (let member of members) {
@@ -68,13 +68,13 @@ class RoleHandler {
 
       if (user) {
         let nickname = user.name
-        if (member.nickname !== nickname) try { await member.setNickname(nickname)} catch (e) {console.error('Nemám práva na změnu jména -> '+nickname)}
+        if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "DavidCzPdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
 
       }
 
       /* Splits */
       let splits = Object.keys(this.config.roles).filter(n => n.startsWith('split_')).map(n => n.split('_')[1])
-      
+
       for (let key of splits) {
         let cat = Object.keys(this.config.roles).filter(n => n.startsWith(`${key}_`)).map(n => this.config.roles[n])
 

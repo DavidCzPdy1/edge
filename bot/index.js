@@ -20,13 +20,6 @@ delay(100).then(async () => {
     await edge.appConnect()
 })
 
-const express = require('express');
-const server = express();
-
-server.all(`/`, (req, res) => {
-    res.send(`Result: [OK].`);
-});
-server.listen(3000, () => { console.log(`Server is now ready! | ` + Date.now()); });
 
 process.on('SIGINT', async () => {
     if (global.shuting === true) return
