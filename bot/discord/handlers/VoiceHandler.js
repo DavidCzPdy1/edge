@@ -8,7 +8,7 @@ class VoiceHandler {
 
   async init() {
 
-    this.player = createAudioPlayer({ behaviors: { noSubscriber: 'pause', maxMissedFrames: 200 } });
+    this.player = createAudioPlayer({ behaviors: { noSubscriber: 'play', maxMissedFrames: 200 } });
     this.voiceChannel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
     this.resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, });
 
@@ -24,12 +24,12 @@ class VoiceHandler {
   }
   play(perms = false) {
     if (!(this.edge.config.discord.voice.enabled || perms)) return;
-    if (!this.voiceChannel?.members.get(edge.config.discord.clientID)) this.joinChannel()
-    if (this.connection._state.status !== 'ready') this.connection.subscribe(this.player)
-    if (this.player._state.status !== 'playing') this.player.play(this.resource)
+    if (!this.connection?._state || !this.voiceChannel?.members.get(edge.config.discord.clientID)) this.joinChannel()
+    if (this.connection?._state?.status !== 'ready') this.connection.subscribe(this.player)
+    if (this.player?._state?.status !== 'playing') this.player.play(this.resource)
   }
 
-  joinChannel () {
+  joinChannel() {
     let voiceChannel = this.voiceChannel
     this.connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
   }

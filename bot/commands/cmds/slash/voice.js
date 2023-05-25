@@ -14,11 +14,20 @@ module.exports = {
 
       let row = await axios.get(`https://m.radio7.cz/vysilame_row.php`).then(n => n.data)
       if (row) {
+/*
         let porad = row.match(/(<strong>)(.*?)(<\/strong>: )/)
         if (porad.length) porad = porad[2]?.trim()
         let text = row.replace(/(<strong>)(.*?)(<\/strong>: )/i, '')?.trim()
 
         content = porad + ': ' + text
+*/
+      let text = row.replace('<strong>', '').replace('</strong>', '').trim()
+      let reg = / [A-Z][a-ž]*: /g
+      let info = text.match(reg) ? text.match(reg).map((n, i) => n + text.split(cRegex)[i]) : [text]
+      console.log(text)
+      console.log(info)
+
+      content = info.join('\n')
       }
 
       let voice = edge.discord.voice
