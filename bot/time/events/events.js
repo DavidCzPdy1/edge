@@ -14,7 +14,37 @@ module.exports = {
     for (let data of database) {
       if (!data.time) continue;
       else if (data.time > new Date().getTime()) {
-        
+        if (!data.pings || data.mode !== 'team') continue;
+        let lastPing = data.lastPing || data.created
+        if (lastPing + data.pings * 60 * 60 * 1000 > new Date().getTime()) continue;
+
+        let answered = []
+        data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})
+
+        let guild = dc_client.guilds.cache.get('1105413744902811688')
+        if (!guild) {console.time('TIME event - EVENTS - Nenašel jsem guildu');continue;}
+
+        let notify = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => edge.config.discord.roles[n]).filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
+        let errors = []
+        let success = []
+        for (let role of notify) {
+          let members = role.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener))
+
+          
+          for (let member of members) {
+            member = member[1]
+            try {
+              await member.user.send(`Ahoj, tvůj tým ještě nezareagoval na zprávu v <#${data.channel}>`) 
+              success.push(member.user)
+            } catch (e) {errors.push(member.user)}
+          }
+        }
+        let embed = {title: `Notify ${data._id} eventu!`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+        if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
+        global.channels?.log?.send({ embeds: [embed] })
+        data.lastPing = new Date().getTime() - 50000
+
+        await edge.post('general', 'events', data)
         continue
       }
 

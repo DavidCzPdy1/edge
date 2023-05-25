@@ -64,8 +64,12 @@ module.exports = {
         type: 'poll',
         channel: '1105918656203980870',
         perms: 'trener',
-        pings: Number(interaction.options.getString('pings')) || 0
+        pings: Number(interaction.options.getString('pings')) || 0,
+        created: new Date().getTime(),
+        format: 'text' || 'mention'
       }
+
+      data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')
 
       let events = await edge.get('general', 'events', {_id: data.question})
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo event s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
@@ -125,6 +129,8 @@ module.exports = {
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
+      if (interaction.guild?.id !== '1105413744902811688') return interaction.followUp({ embeds: [{ title: 'Nenašel jsem edge discord server!', description: `Wierd error :D`, color: 15548997 }], ephemeral: true })
+
       let access = interaction.member._roles.includes(edge.config.discord.roles[`position_${data.perms || 'trener'}`])
       if (!access) return interaction.followUp({ embeds: [{ title: 'Nemáš potřebné oprávnění na reakci!', description: `Potřebuješ <@&${edge.config.discord.roles[`position_${data.perms}`]}>`, color: 15548997 }], ephemeral: true })
 
@@ -159,7 +165,11 @@ module.exports = {
 
       embed.fields = embed.fields.map(n => {
         let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
-        let value = data[n.name.split(' - ')[0]].map(n => { return  (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)}).join('\n')
+        let value = data[n.name.split(' - ')[0]].map(n => {
+          if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)
+          let mention = data.mode == 'team' ? interaction.guild.roles.cache.get(n) : interaction.guild.members.cache.get(n)
+          return mention?.name || mention?.nickname || mention?.user?.username
+        }).join('\n')
         if (!value.length) value = '\u200B'
         return {name: name, value: value, inline: true}
       })
