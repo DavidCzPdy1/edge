@@ -2,6 +2,39 @@
 const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder, PermissionsBitField } = require('discord.js')
 
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
+const getEmbed = (data, options = {}) => {
+  let embed =  {
+      title: data.question,
+      description: data.description,
+      fields: data.answers.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }),
+      color: 1613,
+  }
+
+  if (data.time) {
+    embed.timestamp = new Date(data.time)
+    embed.footer = { text: 'Konec hlasování'}
+    embed.description = embed.description + `\n**Time:** <t:${data.time/1000}:R>`
+
+  }
+
+  if (data.mode == 'team' && !options.tym ) embed.description = embed.description + `\n*Hlasuje se za tým*`
+
+  if (options.guild) {
+    embed.fields = embed.fields.map(n => {
+      let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
+      let value = data[n.name.split(' - ')[0]].map(n => {
+        if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)
+        let mention = data.mode == 'team' ? options.guild.roles.cache.get(n) : options.guild.members.cache.get(n)
+        return mention?.name || mention?.nickname || mention?.user?.username
+      }).join('\n')
+      if (!value.length) value = '\u200B'
+      return {name: name, value: value, inline: true}
+    })
+  }
+
+
+  return embed
+}
 
 module.exports = {
     name: 'hlasovani',
@@ -54,7 +87,6 @@ module.exports = {
     run: async (edge, interaction) => {
       await interaction.deferReply({ ephemeral: true })
 
-      let action = interaction.options.getString('action')
       let data = {
         question: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
@@ -74,35 +106,23 @@ module.exports = {
       let events = await edge.get('general', 'events', {_id: data.question})
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo event s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
       if (events.length) return interaction.editReply({ embeds: [errorEmbed]})
-
-      let answers = data.answers.split('|')
-      let embed = {
-        title: data.question,
-        description: data.description,
-        fields: answers.map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }),
-        color: 1613
-      }
-
-      if (embed.fields.length > 5) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Je zadáno moc odpovědí! (${embed.fields.length})`)]})
+      
 
       if (data.time) {
         let time = data.time.split('.').map(n => n.trim())
         let cas = [time[2], time[1].length == 1 ? `0${time[1]}` : time[1], time[0].length == 1 ? `0${time[0]}`: time[0] ]
-        let c = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
-        data.time = c
-        embed.timestamp = new Date(c),
-        embed.footer = { text: 'Konec hlasování'}
+        data.time = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
 
-        embed.description = embed.description + `\n**Time:** <t:${c/1000}:R>`
-        if (data.mode == 'team') embed.description = embed.description + `\n*Hlasuje se za tým*`
-
-        if (c < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)]})
-        else if (c - 1000*60*60*20 < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
+        if (data.time < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)]})
+        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
       } else data.finished = -1;
+
+      let embed = getEmbed(data)
+      if (embed.fields.length > 5) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Je zadáno moc odpovědí! (${embed.fields.length})`)]})
 
       let odpovedi = new ActionRowBuilder();
 
-      for (let answer of answers) {
+      for (let answer of data.answers.split('|')) {
         odpovedi.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_select_${data.question}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
         data[answer] = []
       }
@@ -115,6 +135,7 @@ module.exports = {
       delete data.question
 
       await edge.post('general', 'events', data)
+
       let souhrn = Object.keys(data).map(n => { return {name: n, value: data[n], inline: true}}).filter(n => typeof n.value === 'string' || typeof n.value === 'number')
       await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: true})
       await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: true})
@@ -161,18 +182,7 @@ module.exports = {
 
       await edge.post('general', 'events', data)
 
-      let embed = interaction.message.embeds[0].data
-
-      embed.fields = embed.fields.map(n => {
-        let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
-        let value = data[n.name.split(' - ')[0]].map(n => {
-          if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)
-          let mention = data.mode == 'team' ? interaction.guild.roles.cache.get(n) : interaction.guild.members.cache.get(n)
-          return mention?.name || mention?.nickname || mention?.user?.username
-        }).join('\n')
-        if (!value.length) value = '\u200B'
-        return {name: name, value: value, inline: true}
-      })
+      let embed = getEmbed(data, { guild: interaction.guild })
       await interaction.message.edit({ embeds: [embed]})
 
       
@@ -191,7 +201,7 @@ module.exports = {
       
 
       let event = await edge.get('general', 'events', {_id: question})
-      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova!`, color: 15548997 }], ephemeral: true })
+      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
       event = event[0]
 
       let channel = dc_client.channels.cache.get(event.channel)
@@ -206,7 +216,8 @@ module.exports = {
 
       event.message = message.id
 
-      interaction.editReply({ components: []})
+      if (interaction.customId.split('_').length == 4) interaction.editReply({ components: []})
       await edge.post('general', 'events', event)
-    }
+    },
+    getEmbed: getEmbed
 }

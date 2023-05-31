@@ -26,7 +26,10 @@ class VoiceHandler {
     if (!(this.edge.config.discord.voice.enabled || perms)) return;
     if (!this.connection?._state || !this.voiceChannel?.members.get(edge.config.discord.clientID)) this.joinChannel()
     if (this.connection?._state?.status !== 'ready') this.connection.subscribe(this.player)
-    if (this.player?._state?.status !== 'playing') this.player.play(this.resource)
+    if (this.player?._state?.status !== 'playing') {
+      this.resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, });
+      this.player.play(this.resource)
+    } 
   }
 
   joinChannel() {
