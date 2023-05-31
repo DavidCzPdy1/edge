@@ -1,23 +1,22 @@
 
-const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder, PermissionsBitField } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require('discord.js')
 
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
 const getEmbed = (data, options = {}) => {
   let embed =  {
-      title: data.question,
+      title: data.question || data._id,
       description: data.description,
-      fields: data.answers.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }),
+      fields: data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }) || [],
       color: 1613,
   }
 
   if (data.time) {
     embed.timestamp = new Date(data.time)
-    embed.footer = { text: 'Konec hlasování'}
+    embed.footer = { text: 'Konec reakcí'}
     embed.description = embed.description + `\n**Time:** <t:${data.time/1000}:R>`
-
   }
 
-  if (data.mode == 'team' && !options.tym ) embed.description = embed.description + `\n*Hlasuje se za tým*`
+  if (data.mode == 'team' && !options.tym ) embed.description = embed.description + `\n*Reaguje se za tým*`
 
   if (options.guild) {
     embed.fields = embed.fields.map(n => {
@@ -31,8 +30,6 @@ const getEmbed = (data, options = {}) => {
       return {name: name, value: value, inline: true}
     })
   }
-
-
   return embed
 }
 
@@ -93,7 +90,7 @@ module.exports = {
         answers: interaction.options.getString('answers'),
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
-        type: 'poll',
+        type: 'hlasovani',
         channel: '1105918656203980870',
         perms: 'trener',
         pings: Number(interaction.options.getString('pings')) || 0,
@@ -198,8 +195,6 @@ module.exports = {
       await interaction.update({ type:6 })
       let question = interaction.customId.split('_')[3]
 
-      
-
       let event = await edge.get('general', 'events', {_id: question})
       if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
       event = event[0]
@@ -209,14 +204,16 @@ module.exports = {
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
       if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
 
-      answers = interaction.message.components[0]
-      answers.components.forEach(n => n.data.disabled = false)
+      let odpovedi = new ActionRowBuilder();
+      for (let answer of event.answers.split('|')) {
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_select_${event._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+      }
 
-      let message = await channel.send({ embeds: [interaction.message.embeds[0].data], components: [answers], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: []} })
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: ['roles']} })
 
       event.message = message.id
 
-      if (interaction.customId.split('_').length == 4) interaction.editReply({ components: []})
+      if (interaction.customId.split('_').length !== 4) interaction.editReply({ components: []})
       await edge.post('general', 'events', event)
     },
     getEmbed: getEmbed

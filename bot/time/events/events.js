@@ -24,13 +24,18 @@ module.exports = {
         let guild = dc_client.guilds.cache.get('1105413744902811688')
         if (!guild) {console.time('TIME event - EVENTS - Nenašel jsem guildu');continue;}
 
+        let channel = await dc_client.channels.cache.get(data.channel)
+        if (!channel) { console.error('Time management (0) nenašel channel eventu ' + data._id); continue}
+        let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
+        if (!message) { console.error('Time management (0) nenašel zprávu eventu ' + data._id); continue}
+        if (message.components[0].components[0].data.disabled) { console.error(data._id + ' je PAUSED, nemůžu poslat ping'); continue}
+
         let notify = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => edge.config.discord.roles[n]).filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
         let errors = []
         let success = []
         for (let role of notify) {
           let members = role.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener))
 
-          
           for (let member of members) {
             member = member[1]
             try {
@@ -50,7 +55,7 @@ module.exports = {
 
       let channel = await dc_client.channels.cache.get(data.channel)
       if (!channel) { console.error('Time management nenašel channel eventu ' + data._id); continue}
-      let message = await channel?.messages.fetch(data.message || 0)
+      let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
       if (!message) { console.error('Time management nenašel zprávu eventu ' + data._id); continue}
 
       let components = message.components[0]

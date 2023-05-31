@@ -21,26 +21,30 @@ module.exports = {
 
       let ikona = interaction.guild.iconURL()
 
-      if (interaction.guild.id !== '1105413744902811688') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nejsi na EDGE DC!`, color: 15548997 }]})
+      if (interaction.guild?.id !== '1105413744902811688') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nejsi na EDGE DC!`, color: 15548997 }]})
 
       let event = interaction.options.getString('event')
       if (event == 'null') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný event!`, color: 15548997 }]})
 
       let data = await edge.get('general', 'events', {_id: event}).then(n => n[0])
 
-      let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true})
+      let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true, guild: interaction.guild})
   
-      if (data.lastPing) embed.description = embed.description + `\nLast Ping: <t:${data.lastPing/1000}:R>`
+      embed.title = embed.title + ' Informace'
+      if (data.lastPing) embed.description = embed.description + `\nLast Ping: <t:${Math.floor(data.lastPing/1000)}:R>`
       if (data.mode == 'team') embed.description = embed.description + `\n*Hlasuje se za tým*`
 
       let buttons = new ActionRowBuilder();
 
-      if (data.time < new Date().getTime()) buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_pause_${data._id}`).setStyle(4).setLabel('PAUSE'))
-      else buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_open_${data._id}`).setStyle(3).setLabel('OPEN'))
-      buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_ping_${data._id}`).setStyle(3).setLabel('PING NOW').setDisabled(data.mode == 'team' ? false : true))
-      buttons.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data._id}`).setStyle(2).setLabel('SEND NEW MSG').setDisabled(false))
+      let channel = dc_client.channels.cache.get(data.channel)
+      if (!channel) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }] })
+      let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
+      //if (!message) interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
 
-      
+      let disabled = message?.components[0].components[0].data.disabled
+      buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_toggle_${data._id}`).setStyle(disabled ? 3 : 4).setLabel(disabled ? 'OPEN' : 'PAUSE').setDisabled(message ? false : true))
+      buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_ping_${data._id}`).setStyle(3).setLabel('PING NOW').setDisabled(data.mode == 'team' ? false : true).setDisabled(message ? false : true))
+      buttons.addComponents(new ButtonBuilder().setCustomId(`${data.type || 'hlasovani'}_cmd_accept_${data._id}`).setStyle(2).setLabel('SEND NEW MSG').setDisabled(false).setDisabled(message ? true : false))
 
       await interaction.editReply({ embeds: [embed], components: [buttons]})
 
@@ -49,12 +53,12 @@ module.exports = {
 
       let tymy = await edge.get('general', 'events', {})
 
-      let show = tymy.filter(n => n._id !== 'list').map(n => { return {name: n.name, value: n._id} })
+      let show = tymy.map(n => { return {name: n._id, value: n._id} })
       let focused = interaction.options.getFocused()
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný tým'}])
+      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný event'}])
     },
-    pause: async (edge, interaction) => {
+    toggle: async (edge, interaction) => {
       await interaction.update({ type:6 })
       let question = interaction.customId.split('_')[3]
 
@@ -64,15 +68,20 @@ module.exports = {
 
       let channel = await dc_client.channels.cache.get(data.channel)
       if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
-      let message = await channel?.messages.fetch(data.message || 0)
+      let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
       if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
-
+      let disabled = message.components[0].components[0].data.disabled
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: interaction.guild })
-      if (data.time && data.time < new Date().getTime()) embed.title = embed.title + ' - PAUSED'
+      //if (!data.time || data.time && data.time < new Date().getTime()) embed.title = embed.title //+ ' - PAUSED'
 
       let components = message.components[0]
-      components.components.forEach(n => n.data.disabled = true)
+      components.components.forEach(n => n.data.disabled = !disabled)
       await message.edit({ components: [components], embeds: [embed]})
+
+      let comp = interaction.message.components[0]
+      comp.components[0].data.label = !disabled ? 'OPEN' : 'PAUSE'
+      comp.components[0].data.style = !disabled ? 3 : 4
+      await interaction.editReply({components: [comp]})
     },
     open: async (edge, interaction) => {
       await interaction.update({ type:6 })
@@ -84,7 +93,7 @@ module.exports = {
       
       let channel = await dc_client.channels.cache.get(data.channel)
       if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
-      let message = await channel?.messages.fetch(data.message || 0)
+      let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
       if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
 
       if (data.time && data.time > new Date().getTime()) {
@@ -118,7 +127,6 @@ module.exports = {
       for (let role of notify) {
         let members = role.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener))
 
-        
         for (let member of members) {
           member = member[1]
           try {
@@ -127,7 +135,7 @@ module.exports = {
           } catch (e) {errors.push(member.user)}
         }
       }
-      let embed = {title: `Notify ${data._id} eventu!`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+      let embed = {title: `Notify ${data._id} eventu! - command interaction`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
       if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
       global.channels?.log?.send({ embeds: [embed] })
       interaction.followUp({ ephemeral: true, embeds: [embed]})
