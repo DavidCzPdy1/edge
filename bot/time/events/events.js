@@ -26,7 +26,7 @@ module.exports = {
 
         let channel = await dc_client.channels.cache.get(data.channel)
         if (!channel) { console.error('Time management (0) nenašel channel eventu ' + data._id); continue}
-        let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
+        let message = data.message ? await channel?.messages.fetch(data.message).catch(e => {}) : null
         if (!message) { console.error('Time management (0) nenašel zprávu eventu ' + data._id); continue}
         if (message.components[0].components[0].data.disabled) { console.error(data._id + ' je PAUSED, nemůžu poslat ping'); continue}
 
@@ -55,7 +55,7 @@ module.exports = {
 
       let channel = await dc_client.channels.cache.get(data.channel)
       if (!channel) { console.error('Time management nenašel channel eventu ' + data._id); continue}
-      let message = await channel?.messages.fetch(data.message || 0).catch(e => {})
+      let message = data.message ? await channel?.messages.fetch(data.message).catch(e => {}) : null
       if (!message) { console.error('Time management nenašel zprávu eventu ' + data._id); continue}
 
       let components = message.components[0]

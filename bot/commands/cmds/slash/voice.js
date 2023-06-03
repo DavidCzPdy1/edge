@@ -13,7 +13,8 @@ module.exports = {
       let content = 'null'
 
       let row = await axios.get(`https://m.radio7.cz/vysilame_row.php`).then(n => n.data)
-      if (row) {
+      content = row
+     // if (row) {
 /*
         let porad = row.match(/(<strong>)(.*?)(<\/strong>: )/)
         if (porad.length) porad = porad[2]?.trim()
@@ -21,14 +22,18 @@ module.exports = {
 
         content = porad + ': ' + text
 */
+/*
       let text = row.replace('<strong>', '').replace('</strong>', '').trim()
       let reg = / [A-Z][a-ž]*: /g
-      let info = text.match(reg) ? text.match(reg).map((n, i) => n + text.split(cRegex)[i]) : [text]
+      let info = text.match(reg) ? text.match(reg).map((n, i) => n + text.split(reg)[i]) : [text]
       console.log(text)
       console.log(info)
 
       content = info.join('\n')
       }
+      */
+
+      
 
       let voice = edge.discord.voice
       voice.play()

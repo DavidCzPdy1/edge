@@ -13,15 +13,16 @@ module.exports = {
   run: async (edge, options) => {
     
     let content = 'Edge discord'
-
+/*
     let row = await axios.get(`https://m.radio7.cz/vysilame_row.php`).then(n => n.data)
     if (row) {
       let porad = row.match(/(<strong>)(.*?)(<\/strong>: )/)
-      if (porad.length) porad = porad[2]?.trim()
+      if (porad?.length) porad = porad[2]?.trim()
       let text = row.replace(/(<strong>)(.*?)(<\/strong>: )/i, '')?.trim()
 
       content = porad + ': ' + text
     }
+    */
 
     let voice = edge.discord.voice
     voice.play()

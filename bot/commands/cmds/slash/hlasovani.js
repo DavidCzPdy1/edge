@@ -21,9 +21,10 @@ const getEmbed = (data, options = {}) => {
   if (options.guild) {
     embed.fields = embed.fields.map(n => {
       let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
-      let value = data[n.name.split(' - ')[0]].map(n => {
-        if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${n}>` :  `<@${n}>`)
-        let mention = data.mode == 'team' ? options.guild.roles.cache.get(n) : options.guild.members.cache.get(n)
+      let value = data[n.name.split(' - ')[0]].map(a => {
+        let id = a.id || a
+        if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${id}>` :  `<@${id}>`)
+        let mention = data.mode == 'team' ? options.guild.roles.cache.get(id) : options.guild.members.cache.get(id)
         return mention?.name || mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'
@@ -163,7 +164,7 @@ module.exports = {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-        console.discord(`Přidání hlasu v \`${question}\`\n${embed.description}`)
+        console.discord(`Odstranění hlasu v \`${question}\`\n${embed.description}`)
       } else if (!answered) {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
@@ -206,10 +207,10 @@ module.exports = {
 
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_select_${event._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
       }
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: ['roles']} })
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
 
       event.message = message.id
 
