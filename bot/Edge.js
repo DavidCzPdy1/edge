@@ -5,6 +5,7 @@ const fs = require('fs');
 const DiscordHandler = require('./discord/DiscordHandler');
 const TimeHandler = require('./time/TimeHandler');
 const CommandsHandler = require('./commands/CommandsHandler');
+const GoogleHandler = require('./google/GoogleHandler');
 
 class UHGDevs extends CommandsHandler {
   constructor() {
@@ -13,6 +14,7 @@ class UHGDevs extends CommandsHandler {
   async appStart() {
     this.discord = new DiscordHandler(this)
     this.time = new TimeHandler(this)
+    this.google = new GoogleHandler(this)
   }
 
   async appConnect() {
@@ -20,6 +22,7 @@ class UHGDevs extends CommandsHandler {
     this.config.discord.enabled ? this.discord?.init() : null
 
     this.time?.init()
+    this.google?.init()
   }
 }
 

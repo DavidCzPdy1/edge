@@ -27,6 +27,7 @@ module.exports = {
       if (event == 'null') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný event!`, color: 15548997 }]})
 
       let data = await edge.get('general', 'events', {_id: event}).then(n => n[0])
+      if (!data) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyly nalezeny žádná data!`, color: 15548997 }]})
 
       let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true, guild: interaction.guild})
   
