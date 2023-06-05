@@ -10,8 +10,19 @@ module.exports = {
   ignore: '* * * * * *', //'sec min hour den(mesic) mesic den(tyden)'
   onstart: false,
   run: async (edge, options) => {
-    let database = await edge.get('general', 'events', {}).then(n => n.filter(a => !a.finished))
+    let database = await edge.get('general', 'events', {})//.then(n => n.filter(a => !a.finished))
+    
     for (let data of database) {
+      let guild = dc_client.guilds.cache.get('1105413744902811688')
+      if (!guild) {console.time('TIME event - EVENTS - Nenašel jsem guildu');continue;}
+
+      if (data.message) {
+        let message = await dc_client.channels.cache.get(data.channel)?.messages.fetch(data.message).catch(e => {})
+        if (message) { 
+          let embed = edge.commands.get('hlasovani').getEmbed(data, {guild: guild})
+          await message.edit({ embeds: [embed]})
+        }
+      }
       if (!data.time) continue;
       else if (data.time > new Date().getTime()) {
         if (!data.pings || data.mode !== 'team') continue;

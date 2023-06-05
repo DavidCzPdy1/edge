@@ -137,9 +137,6 @@ module.exports = {
       let ids = data.answers.split('|').map(n => {return { ids: data[n]?.map(a => a.id || a), name: n}})
       let answered = ids.find(n => n.ids.includes(id));
 
-      console.log(ids)
-    
-
       if (answer == 'Deny') {
         if (answered && answered.name !== 'Deny') return interaction.reply({ embeds: [{ title: 'Už mám zaznemenanou reakci!', description: 'Nemůžeš odstranit', color: 15548997 }], ephemeral: true })
         else if (answered) {
