@@ -57,7 +57,8 @@ module.exports = {
       let show = tymy.map(n => { return {name: n._id, value: n._id} })
       let focused = interaction.options.getFocused()
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný event'}])
+      let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
+      return interaction.respond(z.length ? z : [{ value: 'null', name: 'Nebyl nalezen žádný event'}])
     },
     toggle: async (edge, interaction) => {
       await interaction.update({ type:6 })

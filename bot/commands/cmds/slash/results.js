@@ -61,7 +61,8 @@ module.exports = {
       let show = tymy.map(n => { return { name: n._id, value: n._id } })
       let focused = interaction.options.getFocused()
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný event' }])
+      let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) 
+      return interaction.respond( z.length ? z : [{ value: 'null', name: 'Nebyl nalezen žádný event' }])
     } else if (current == 'answer') {
       let event = interaction.options.getString('event')
       let data = await edge.get('general', 'events', { _id: event }).then(n => n.filter(n => n.type == 'form')[0])
@@ -76,7 +77,8 @@ module.exports = {
       }).forEach(n => { if (!show.find(a => a.name = n.name)) show.push(n) });
 
       let focused = interaction.options.getFocused()
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezena žádná odpověď' }])
+      let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
+      return interaction.respond(z.length ? z : [{ value: 'null', name: 'Nebyl nalezena žádná odpověď' }])
     }
   },
   edit: async (edge, interaction) => {

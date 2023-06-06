@@ -30,7 +30,12 @@ module.exports = {
         title:`${data.name} Informace${data.emoji ? ` ${data.emoji}`:''}`,
         description: data.description || 'Tým nemá žádné informace'
       }
-      await interaction.editReply({ embeds: [embed]})
+
+      let buttons = new ActionRowBuilder() 
+        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_players_${tym}`).setStyle(2).setLabel('HRÁČI'))
+        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_trainers_${tym}`).setStyle(2).setLabel('TRENÉŘI'))
+
+      await interaction.editReply({ embeds: [embed], components: [buttons]})
 
     
 
@@ -42,7 +47,34 @@ module.exports = {
       let show = tymy.filter(n => n._id !== 'list').map(n => { return {name: n.name, value: n._id} })
       let focused = interaction.options.getFocused()
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný tým'}])
+      let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
+      return interaction.respond(z.length ? z : [{ value: 'null', name: 'Nebyl nalezen žádný tým'}])
     },
+    trainers: async (edge, interaction) => {
+      await interaction.update({ type:6 })
+      let tym = interaction.customId.split('_')[3]
+
+      //let guild = dc_client.guilds.cache.get('1105413744902811688')
+
+      let data = await edge.get('general', 'clubs', {_id: tym}).then(n => n[0])
+
+      let players = data.trainers.map(n => `<@${n}>`).join('\n')
+      interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${data.name}`, description: players, color: '7014665'}], ephemeral: true})
+    },
+    players: async (edge, interaction) => {
+      await interaction.update({ type:6 })
+      let tym = interaction.customId.split('_')[3]
+
+      //let guild = dc_client.guilds.cache.get('1105413744902811688')
+
+      let data = await edge.get('general', 'clubs', {_id: tym}).then(n => n[0])
+      
+      let players = data.users.map(n => {
+        let trainer = data.trainers.includes(n) ? ' - 🥏' : ''
+        //guild.members.cache.get(n)?.nickname || guild.members.cache.get(n)?.user.username || `<@${n}>`
+        return `<@${n}>${trainer}`
+      }).sort((a, b) => b.endsWith('🥏') - a.endsWith('🥏')).join('\n')
+      interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${data.name}`, description: players, color: 959711}], ephemeral: true})
+    }
 
 }

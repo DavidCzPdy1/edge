@@ -3,7 +3,7 @@ const { ActionRowBuilder, ButtonBuilder } = require('discord.js')
 
 module.exports = {
     name: 'verify',
-    description: 'Shows info about edge team!',
+    description: 'Verification for EDGE Discord Server!',
     permissions: [],
     options: [
       {
@@ -19,37 +19,51 @@ module.exports = {
         required: true,
         autocomplete: true
       },
+      {
+        name: 'custom',
+        description: 'Funkce pro trenéry',
+        type: 3,
+        required: false,
+        autocomplete: true
+      },
     ],
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
       await interaction.deferReply({ ephemeral: true })
 
-      if (interaction.guild?.id !== '1105413744902811688') return interaction.editReply({ embeds: [{ title: 'Tento command lze použít pouze na EDGE Discord serveru!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+      let guild = dc_client.guilds.cache.get('1105413744902811688')
+      if (!guild) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem EDGE Discord server!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
 
       let ikona = interaction.guild.iconURL()
 
       let jmeno = interaction.options.getString('jmeno')
       let tym = interaction.options.getString('tym')
 
+      let custom = interaction.options.getString('custom')
+      let member = custom ? guild.members.cache.get(custom) : interaction.member
+      if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+      if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+
       let embed = {
-        title: `Verifikoval/a ses jako ${jmeno}`,
+        title: custom ? `Verifikoval/a jsi ${member.user.username} jako ${jmeno}` : `Verifikoval/a ses jako ${jmeno}`,
         description: 'Nepožádal/a jsi o roli žádného týmu.\nPokud v budoucnu budeš chtít nějakou týmovou roli, použit tento command znovu',
+        color: 16763480
       }
 
-      let user = await edge.get('general', 'users', {_id: interaction.user.id})
+      let user = await edge.get('general', 'users', {_id: member.user.id})
       if (user.length) {
         user = user[0]
-        if (user.name !== jmeno) embed.title = `Změnil/a sis jméno z \`${user.name}\` na \`${jmeno}\``;
-        else embed.title = `Zůstalo ti jméno \`${jmeno}\``;
+        if (user.name !== jmeno) embed.title = custom ? `Změnil/a jsi jméno ${member.user.username} z \`${user.name}\` na \`${jmeno}\`` : `Změnil/a sis jméno z \`${user.name}\` na \`${jmeno}\``;
+        else embed.title = custom ? `${member.user.username} zůstalo jméno \`${jmeno}\`!` : `Zůstalo ti jméno \`${jmeno}\``;
 
-        if (interaction.member._roles.includes(tym)) embed.description = `Nadále jsi členem <@&${tym}>`
+        if (user.team == tym) embed.description = custom ? `${member.user} je nadále členem <@&${tym}>` : `Nadále jsi členem <@&${tym}>`
         else if (user.team === tym && tym == 'ne');
-        else if (user.team !== tym || user.taam == 'ne') user.requested = tym
+        else if (user.team !== tym || user.team == 'ne') user.requested = tym
 
         user.name = jmeno
       } else {
-        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: []}
+        user = {_id: member.user.id, name: jmeno, team: 'ne', list: [], blacklist: []}
         if (tym !== 'ne') {
           user.requested = tym;
         }
@@ -58,16 +72,21 @@ module.exports = {
 
       if (user.requested) {
         if (user.requested == 'ne') {
-          embed.description = 'Odstranil sis týmovou roli!'
+          embed.description = custom ? `Odstranil jsi ${member.user} týmovou roli!` : 'Odstranil sis týmovou roli!'
         } else {
-          let role = interaction.guild.roles.cache.get(tym)
+          let role = guild.roles.cache.get(tym)
           if (!role) return interaction.editReply({ embeds: [{ title: 'Neplatný tým!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
 
           if (user.channel) {
-            user.message = await interaction.guild.channels.cache.get('1109548259187380275').messages.fetch(user.channel)
+            user.message = await guild.channels.cache.get('1109548259187380275').messages.fetch(user.channel)
             if (!user.message) user.channel = undefined
           }
-          if (user.blacklist.includes(tym)) embed.description = `Nemáš možnost mít přístup k ${role} roli!`
+          if (user.blacklist.includes(tym)) embed.description = custom ? `${member.user} nemá přístup k ${role} roli!` : `Nemáš možnost mít přístup k ${role} roli!`
+          else if (custom) {
+            embed.description = `Změnil jsi roli ${member.user} na <@&${tym}>!`
+            user.team = tym
+            if (!user.list.includes(tym)) user.list.push(tym)
+          }
           else if (user.message) {
             embed.description = 'Už chceš ' + user.message.embeds[0].data.description.split(' chce ')[1]
             delete user.message
@@ -76,12 +95,12 @@ module.exports = {
             embed.description = `Požádal/a jsi o <@&${tym}> roli!\nPříslušný trenér byl informován a v blízké době se na Tvoji žádost podívá.`
     
             const buttons = new ActionRowBuilder()
-              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${tym}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
-              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${tym}_${interaction.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
+              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${tym}_${member.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
+              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${tym}_${member.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
       
             let proof = {
               title: 'Nová žádost o připojení k týmu',
-              description: `${interaction.user} chce získat přístup k <@&${tym}> roli!`,
+              description: `${member.user} chce získat přístup k <@&${tym}> roli!`,
               color: role.color
             }
             let channel = dc_client.channels.cache.get('1109548259187380275')
@@ -93,14 +112,14 @@ module.exports = {
           }
         }
       }
-
-      if (user.team !== 'ne') edge.discord.roles.roleAdd(interaction.member, interaction.guild.roles.cache.get(user.team))
+/*
+      if (user.team !== 'ne') edge.discord.roles.roleAdd(member, guild.roles.cache.get(user.team))
       let keys = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_'))
       
       for (let key of keys) {
-        if (edge.config.discord.roles[key] !== user.team) await edge.discord.roles.roleRemove(interaction.member, interaction.guild.roles.cache.get(edge.config.discord.roles[key]))
+        if (edge.config.discord.roles[key] !== user.team) await edge.discord.roles.roleRemove(member, guild.roles.cache.get(edge.config.discord.roles[key]))
       }
-
+*/
       if (user.channel && typeof user.channel !== 'string') user.channel = user.channel.id
       delete user.requested
 
@@ -108,18 +127,31 @@ module.exports = {
 
       console.discord(`${embed.title}\n${embed.description}`)
       await interaction.editReply({ embeds: [embed]})
-      edge.discord.roles.updateRoles([interaction.user.id])
+      edge.discord.roles.updateRoles([member.user.id])
     
 
     },
     autocomplete: async (edge, interaction) => {
 
-      let tymy = await edge.get('general', 'clubs', {})
+      let current = interaction.options._hoistedOptions.filter(n => n.focused)[0].name
 
-      let show = tymy.filter(n => n._id !== 'list').map(n => { return {name: n.name, value: n._id} })
-      let focused = interaction.options.getFocused()
+      if (current == 'tym') {
+        let tymy = await edge.get('general', 'clubs', {})
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).length ? show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) : [{ value: 'ne', name: 'Nechci žádnou týmovou roli'}])
+        let show = tymy.filter(n => n._id !== 'list').map(n => { return {name: n.name, value: n._id} })
+        let focused = interaction.options.getFocused()
+  
+        let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()))
+        return interaction.respond(z.length ? z : [{ value: 'ne', name: 'Nechci žádnou týmovou roli'}])
+      } else if (current == 'custom') {
+        if (!edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.respond([{ value: 'perms', name: 'Nemáš práva na custom verify!'}])
+
+        let show = dc_client.guilds.cache.get('1105413744902811688')?.members?.cache?.filter(n => !n.user.bot)?.map(n => {return {name: n.nickname||n.user.username, value: n.id, fullName: n.user.username}})
+
+        let focused = interaction.options.getFocused()
+        let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()) || n.value.toLowerCase().includes(focused.toLowerCase()) || n.fullName.toLowerCase().includes(focused.toLowerCase()))
+        return interaction.respond(z?.length ? z : [{ value: 'ne', name: 'Nenašel jsem uživatele!'}])
+      }
     },
     accept: async (edge, interaction) => {
       await interaction.update({ type:6 })

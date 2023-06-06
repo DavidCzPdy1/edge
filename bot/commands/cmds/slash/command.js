@@ -70,11 +70,12 @@ module.exports = {
       let show = edge.commands.map(n => { return {name: n.name, value: n.name} })
       let focused = interaction.options.getFocused()
 
-      return interaction.respond(show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) || [{ value: 'null', name: 'Nebyl nalezen žádný command'}])
+      let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
+      return interaction.respond(z.length ? z : [{ value: 'null', name: 'Nebyl nalezen žádný command'}])
     },
     reload: async (edge, interaction) => {
       await interaction.update({ type: 6 })
-      if (!edge.handlePerms(edge.commands.get('command').permissions, interaction)) return interaction.followUp({ content: 'Nemáš práva ne reload commandů!', ephemeral: true})
+      if (!edge.handlePerms(edge.commands.get('command').permissions, interaction)) return interaction.followUp({ content: 'Nemáš práva na reload commandů!', ephemeral: true})
       let reply = await edge.createCommands()
       interaction.followUp({ content: reply, ephemeral: true})
     }
