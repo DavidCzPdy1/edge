@@ -186,7 +186,7 @@ module.exports = {
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
-      if (data.Accept.filter(n => n.id == id).length >= data.numberAnswers) return interaction.reply({ embeds: [{ title: 'Reakce už je zaznamenána!', description: `Nemůžeš reagovat vícekrát, než ${data.numberAnswers}x!\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }], ephemeral: true })
+      if (data.Accept.filter(n => n.id == id).length >= data.numberAnswers) return interaction.followUp({ embeds: [{ title: 'Reakce už je zaznamenána!', description: `Nemůžeš reagovat vícekrát, než ${data.numberAnswers}x!\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }], ephemeral: true })
 
       let answers = interaction.fields.fields.map(n => {return {name: n.customId, value: n.value?.trim()}}).filter(n => n.value.length)
       let odpovedi = {}

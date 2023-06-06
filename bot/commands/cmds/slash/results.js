@@ -1,5 +1,7 @@
 
-const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder, ModalBuilder, TextInputBuilder } = require('discord.js')
+const textBox = (options) => new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId(options.id).setLabel(options.text).setPlaceholder(options.example ?? '').setStyle(options.style || 1).setRequired(options.required ?? true).setValue(options.value || '').setMaxLength(options.max ?? 4000).setMinLength(options.min ?? 0))
+
 
 module.exports = {
   name: 'results',
@@ -82,18 +84,18 @@ module.exports = {
     let id = interaction.customId.split('_')[4]
     let time = interaction.customId.split('_')[5]
 
-    let message = interaction.message
-
     let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
     if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }] })
     
-    let guild = dc_client.guilds.cache.get('1105413744902811688')
+    /* create and send MODAL*/
+    const modal = new ModalBuilder().setCustomId('results_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data._id}`)
+    for (let i = 0; i < data.questions.length; i++) {
+      let question = data.questions[i]
+      modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: answer.answers[question], required: i == data.questions.length - 1 ? false : true}))
+    }
+    await interaction.showModal(modal)
 
-    await message.edit(getEmbed(data, data.Accept.filter(n => n.id == id), guild))
-
-    //await interaction.update({ type:6 })
-    console.log(answer)
   },
   delete: async (edge, interaction) => {
     await interaction.update({ type:6 })
@@ -112,6 +114,46 @@ module.exports = {
 
     await edge.post('general', 'events', data)
     await interaction.editReply(getEmbed(data, data.Accept.filter(n => n.id == id), guild))
+
+    if (data.message) {
+      let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: guild })
+      let msg = await dc_client.channels.cache.get(data.channel)?.messages.fetch(data.message).catch(e => {})
+      await msg?.edit({ embeds: [embed]})
+    }
+  },
+  catchEdit: async (edge, interaction) => {
+    await interaction.update({ type:6 })
+    let title = interaction.customId.split('_')[3]
+    let id = interaction.customId.split('_')[4]
+    let time = interaction.customId.split('_')[5]
+
+    let guild = dc_client.guilds.cache.get('1105413744902811688')
+
+    let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+    let answer = data.Accept.find(n => n.id == id && n.time == time)
+    if (!answer) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], components: [] })
+
+    data.Accept = data.Accept.filter(n => !(n.id == id && n.time == time))
+
+    let answers = interaction.fields.fields.map(n => {return {name: n.customId, value: n.value?.trim()}}).filter(n => n.value.length)
+    let odpovedi = {}
+    for (const odpoved of answers) {
+      odpovedi[data.questions[odpoved.name]] = odpoved.value
+    }
+    answer.answers = odpovedi
+    answer.edited = interaction.user.id
+    data.Accept.push(answer)
+
+    data.Accept = data.Accept.sort((a, b) => a.time-b.time)
+
+    await edge.post('general', 'events', data)
+    await interaction.editReply(getEmbed(data, data.Accept.filter(n => n.id == id), guild))
+
+    if (data.message) {
+      let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: guild })
+      let msg = await dc_client.channels.cache.get(data.channel)?.messages.fetch(data.message).catch(e => {})
+      await msg?.edit({ embeds: [embed]})
+    }
   }
 }
 
