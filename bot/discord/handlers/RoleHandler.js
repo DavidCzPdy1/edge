@@ -68,8 +68,8 @@ class RoleHandler {
 
       if (user) {
         let nickname = user.name
-        if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "DavidCzPdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
-      } else try { await member.setNickname(null) } catch (e) { if (member.user.username !== "DavidCzPdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
+        if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
+      } else try { await member.setNickname(null) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
 
       /* Splits */
       let splits = Object.keys(this.config.roles).filter(n => n.startsWith('split_')).map(n => n.split('_')[1])
