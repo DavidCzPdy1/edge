@@ -182,6 +182,8 @@ module.exports = {
       let title = interaction.customId.split('_')[3]
       let id = interaction.customId.split('_')[4]
 
+      if (interaction.guild?.id !== '1105413744902811688') return interaction.followUp({ embeds: [{ title: 'Nenašel jsem edge discord server!', description: `Wierd error :D`, color: 15548997 }], ephemeral: true })
+
       let data = await edge.get('general', 'events', {_id: title})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
@@ -210,6 +212,8 @@ module.exports = {
 
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: interaction.guild })
       await interaction.message.edit({ embeds: [embed]})
+
+      await edge.google.nahratData(data, {guild: interaction.guild})
 
     }
 }

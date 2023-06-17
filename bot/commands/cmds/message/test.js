@@ -63,7 +63,63 @@ module.exports = {
      
             await channel?.send({ embeds: [embed] })
             
+        } else if (args[0] == 'verify') {
+        let channel = dc_client.guilds.cache.get('1105413744902811688')?.channels.cache.get('1108715450671579146')
+
+        let commands = await dc_client.application.commands.fetch()
+        let verify = commands.find(n => n.name == 'verify')?.id
+
+
+        let description = [
+            `➜ Napiš </verify:${verify}>`,
+            '',
+            '<:dot:1109460785723351110> **Co to dělá?**',
+            `➜ Změní ti jméno a přiřadí týmovou roli`,
+            '',
+            '<:dot:1109460785723351110> **Co je potřeba vyplnit?**',
+            `➜ Jméno a příjmení`,
+            `➜ Tým - pokud nejsi členem žádného týmu, nebo nechceš týmovou roli, tak můžeš napsat "ne"`,
+        ]
+        let embed = {
+            title: 'Verify command',
+            description: description.join('\n'),
+            color: 1813565,
+            footer: {
+                text: 'Edge Discord verify command',
+                icon_url: channel.guild.iconURL()
+            }
         }
+ 
+        await channel?.send({ embeds: [embed] })
+        
+    } else if (args[0] == 'rules') {
+        let channel = dc_client.guilds.cache.get('1105413744902811688')?.channels.cache.get('1105546511519072286')
+
+
+
+
+        let description = [
+            '**Discord pravidla**',
+            '➜ Respektuj [discord TOS](https://discord.com/terms)',
+            '➜ Chovej se slušně',
+            '➜ Respektuj ostatní uživatele',
+            '',
+            '**Frisbee pravidla**',
+            '➜ Odkaz [zde](https://www.cald.cz/pravidla-ultimate)'
+        ]
+        let embed = {
+            //title: 'Discord Pravidla',
+            description: description.join('\n'),
+            color: 10574079,
+            footer: {
+                text: 'Edge Discord pravidla',
+                icon_url: channel.guild.iconURL()
+            }
+        }
+ 
+        await channel?.send({ embeds: [embed] })
+        
+    }
 
     }
 }

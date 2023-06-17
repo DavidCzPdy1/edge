@@ -73,6 +73,7 @@ module.exports = {
       if (user.requested) {
         if (user.requested == 'ne') {
           embed.description = custom ? `Odstranil jsi ${member.user} týmovou roli!` : 'Odstranil sis týmovou roli!'
+          user.team = 'ne'
         } else {
           let role = guild.roles.cache.get(tym)
           if (!role) return interaction.editReply({ embeds: [{ title: 'Neplatný tým!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})

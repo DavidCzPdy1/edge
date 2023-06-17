@@ -116,6 +116,7 @@ module.exports = {
 
     await edge.post('general', 'events', data)
     await interaction.editReply(getEmbed(data, data.Accept.filter(n => n.id == id), guild))
+    await edge.google.nahratData(data, {guild: guild})
 
     if (data.message) {
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: guild })
@@ -150,6 +151,7 @@ module.exports = {
 
     await edge.post('general', 'events', data)
     await interaction.editReply(getEmbed(data, data.Accept.filter(n => n.id == id), guild))
+    await edge.google.nahratData(data, {guild: guild})
 
     if (data.message) {
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: guild })

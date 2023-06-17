@@ -19,47 +19,12 @@ module.exports = {
 
     let events = await edge.get('general', 'events', {})//.then(n => n[0])
 
-    let event = events[0]
+    //let event = events[0]
 
-
-    let answers = event.answers.split('|').map((n, i) => {
-      let name = event[n].map(a => event.mode == 'team' ? guild.roles.cache.get(a).name : (guild.members.cache.get(a).nickname || guild.members.cache.get(a).user.username))
-      return { name: name, s: i }
-    })
-
-    let l = 0
-    for (a of answers) { if (l < a.name.length) l = a.name.length }
-
-
-    let format = []
-    for (let i = 0; i < l; i++) {
-      let push = []
-    
-      for (let a = 0; a < answers.length; a++) {
-        push[a] = answers[a].name[i] || ''
-      }
-      format.push(push)
+    for (let event of events) {
+      await google.nahratData(event, {guild: guild})
     }
 
-    let nahrat = [
-      event.answers.split('|'),
-      ...format
-    ]
-    console.log(nahrat)
-
-
-
-
-    let data = await google.sheets.spreadsheets.values.append({
-      auth: google.auth,
-      spreadsheetId: google.tableId,
-      range: 'List 1!A1:B1',
-      valueInputOption: 'USER_ENTERED',
-      resource: {
-        values: nahrat
-      }
-    }).then(n => n.data)
-    //console.log(data)
     interaction.editReply({ content: 'Testing' })
   }
 }

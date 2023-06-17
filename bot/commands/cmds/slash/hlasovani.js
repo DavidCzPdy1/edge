@@ -183,6 +183,8 @@ module.exports = {
       let embed = getEmbed(data, { guild: interaction.guild })
       await interaction.message.edit({ embeds: [embed]})
 
+      await edge.google.nahratData(data, {guild: interaction.guild})
+
       
     },
     deny: async (edge, interaction) => {
