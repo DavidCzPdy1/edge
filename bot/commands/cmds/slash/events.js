@@ -117,6 +117,8 @@ module.exports = {
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
+      if (data.mode !== "team") return interaction.followUp({ embeds: [{ title: 'ERROR!', description: `Event není typu \`team\`!`, color: 15548997 }], ephemeral: true })
+
       let answered = []
       data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})
 

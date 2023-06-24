@@ -101,7 +101,7 @@ module.exports = {
 
       data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')
 
-      let events = await edge.get('general', 'events', {_id: data.question})
+      let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data.question.toLowerCase()))
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo event s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
       if (events.length) return interaction.editReply({ embeds: [errorEmbed]})
       

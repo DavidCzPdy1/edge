@@ -44,9 +44,9 @@ module.exports = {
       let message = getEmbed(data, answers, guild)
 
       return await interaction.editReply(message)
-    }
+    } 
 
-    await interaction.editReply({ embeds: [embed], components: [] })
+    await interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla vybrána odpověď!`, footer: { text: 'TODO: Přidat overall přehled'}, color: 15548997 }], components: [] })
 
   },
   autocomplete: async (edge, interaction) => {

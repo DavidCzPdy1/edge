@@ -48,7 +48,6 @@ module.exports = {
     platform: 'discord',
     run: async (edge, interaction) => {
 
-      //return interaction.reply({ content: 'Coming SOON', ephemeral: true})
       let data = {
         _id: interaction.options.getString('title').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
@@ -66,7 +65,7 @@ module.exports = {
         Deny: []
       }
 
-      let events = await edge.get('general', 'events', {_id: data._id})
+      let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data._id.toLowerCase()))
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo form s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
       if (events.length) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
       
