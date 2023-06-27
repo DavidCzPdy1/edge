@@ -76,7 +76,7 @@ module.exports = {
         data.time = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
 
         if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: true})
-        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
+        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
       } else data.finished = -1;
 
       const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data._id}`)
@@ -108,8 +108,8 @@ module.exports = {
 
 
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
         .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
         .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Preview`).setStyle(2).setLabel('Preview'))
 
         interaction.followUp({ embeds: [embed], components: [odpovedi, accept]})
