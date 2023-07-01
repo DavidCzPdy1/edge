@@ -12,7 +12,7 @@ module.exports = {
   onstart: false,
   run: async (edge, options) => {
     
-    let content = 'Edge discord'
+    let content = 'EDGE discord'
 /*
     let row = await axios.get(`https://m.radio7.cz/vysilame_row.php`).then(n => n.data)
     if (row) {

@@ -66,22 +66,22 @@ module.exports = {
   
 
       if (action == 'add') {
-        if (trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v ADD cmd', description: `<@${user.id}> už na listině trenérů je!`, color: 15548997, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+        if (trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v ADD cmd', description: `<@${user.id}> už na listině trenérů je!`, color: 15548997, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 
         trainer.list.push(user.id)
 
         await edge.post('general', 'clubs', trainer)
 
-        await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+        await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 
         return edge.discord.roles.updateRoles()
       } else if (action == 'remove') {
-        if (!trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v REMOVE cmd', description: `<@${user.id}> není na listině trenérů!`, color: 15548997, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+        if (!trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v REMOVE cmd', description: `<@${user.id}> není na listině trenérů!`, color: 15548997, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
         trainer.list = trainer.list.filter(n => n !== user.id)
 
         await edge.post('general', 'clubs', trainer)
 
-        await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl odebrán z listiny trenérů!`, color: 2067276, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+        await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl odebrán z listiny trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
         return edge.discord.roles.updateRoles()
       }
 

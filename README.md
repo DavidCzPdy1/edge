@@ -1,2 +1,2 @@
 # edge
-Discord bot for Czech Republic Ultimate Edge
+Discord bot for Czech Republic Ultimate EDGE server

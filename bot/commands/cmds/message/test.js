@@ -56,7 +56,7 @@ module.exports = {
                 description: description.join('\n'),
                 color: 1813565,
                 footer: {
-                    text: 'Edge Discord Informace',
+                    text: 'EDGE Discord Informace',
                     icon_url: channel.guild.iconURL()
                 }
             }
@@ -85,7 +85,7 @@ module.exports = {
             description: description.join('\n'),
             color: 1813565,
             footer: {
-                text: 'Edge Discord verify command',
+                text: 'EDGE Discord verify command',
                 icon_url: channel.guild.iconURL()
             }
         }
@@ -112,7 +112,7 @@ module.exports = {
             description: description.join('\n'),
             color: 10574079,
             footer: {
-                text: 'Edge Discord pravidla',
+                text: 'EDGE Discord pravidla',
                 icon_url: channel.guild.iconURL()
             }
         }

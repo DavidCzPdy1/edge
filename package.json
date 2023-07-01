@@ -1,7 +1,7 @@
 {
   "name": "edge",
   "version": "0.0.0",
-  "description": "Discord bot for Czech Republic Ultimate Edge",
+  "description": "Discord bot for Czech Republic Ultimate EDGE server",
   "main": "./bot/index.js",
   "scripts": {
     "start": "node ./bot/index.js"

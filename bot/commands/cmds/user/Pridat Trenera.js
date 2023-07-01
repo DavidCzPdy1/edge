@@ -16,13 +16,13 @@ module.exports = {
 
       let id = interaction.targetId
 
-      if (trainer.list.includes(id)) return interaction.editReply({ embeds: [{ title: 'ERROR v ADD cmd', description: `<@${id}> už na listině trenérů je!`, color: 15548997, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+      if (trainer.list.includes(id)) return interaction.editReply({ embeds: [{ title: 'ERROR v ADD cmd', description: `<@${id}> už na listině trenérů je!`, color: 15548997, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 
       trainer.list.push(id)
 
       await edge.post('general', 'clubs', trainer)
 
-      await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'Edge /trener cmd', icon_url: ikona } }]})
+      await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 
       return edge.discord.roles.updateRoles()
     }

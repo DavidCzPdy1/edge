@@ -33,7 +33,7 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true })
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem EDGE Discord server!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+      if (!guild) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem EDGE Discord server!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
       let ikona = interaction.guild.iconURL()
 
@@ -42,8 +42,8 @@ module.exports = {
 
       let custom = interaction.options.getString('custom')
       let member = custom ? guild.members.cache.get(custom) : interaction.member
-      if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
-      if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+      if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
+      if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
       let embed = {
         title: custom ? `Verifikoval/a jsi ${member.user.username} jako ${jmeno}` : `Verifikoval/a ses jako ${jmeno}`,
@@ -76,7 +76,7 @@ module.exports = {
           user.team = 'ne'
         } else {
           let role = guild.roles.cache.get(tym)
-          if (!role) return interaction.editReply({ embeds: [{ title: 'Neplatný tým!', color: 15548997, footer: { text: 'Edge /verify cmd' } }]})
+          if (!role) return interaction.editReply({ embeds: [{ title: 'Neplatný tým!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
           if (user.channel) {
             user.message = await guild.channels.cache.get('1109548259187380275').messages.fetch(user.channel)
