@@ -43,6 +43,16 @@ module.exports = {
         type: 3,
         required: false
       },
+      {
+        name: 'perms',
+        description: 'Kdo může hlasovat?',
+        type: 3,
+        required: false,
+        choices: [
+          { value: 'trener', name: 'Trenér' },
+          { value: 'member', name: 'Kdokoliv' },
+        ]
+      },
     ],
     type: 'slash',
     platform: 'discord',
@@ -55,7 +65,7 @@ module.exports = {
         mode: interaction.options.getString('mode') || 'team',
         type: 'form',
         channel: '1105918656203980870',
-        perms: 'trener',
+        perms: interaction.options.getString('perms') || 'trener',
         pings: Number(interaction.options.getString('pings')) || 0,
         created: new Date().getTime(),
         format: 'text' || 'mention',
@@ -76,7 +86,7 @@ module.exports = {
         data.time = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
 
         if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: true})
-        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)]})
+        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)], ephemeral: true})
       } else data.finished = -1;
 
       const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data._id}`)
@@ -214,5 +224,92 @@ module.exports = {
 
       await edge.google.nahratData(data, {guild: interaction.guild})
 
+    },
+    editHandler: async (edge, interaction) => {
+      let title = interaction.customId.split('_')[3]
+      //let id = interaction.customId.split('_')[4]
+      //let time = interaction.customId.split('_')[5]
+      
+      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      
+      if (data.mode == 'team' && !interaction.member._roles.includes(edge.config.discord.roles.position_trener)) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nemáš trenérskou roli!`, color: 15548997 }], ephemeral: true })
+      
+      let id = data.mode == 'team' ? interaction.member._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n)) : interaction.user.id
+
+      let answers = data.Accept.filter(n => n.id == id)
+      if (!answers.length) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
+      if (answers.length > 5) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nepodporuje se více jak 5 odpovědí!`, color: 15548997 }], ephemeral: true })
+      
+      if (answers.length > 1) {
+        let comp = new ActionRowBuilder();
+        for (let i = 0; i < answers.length; i++) {
+          let answer = answers[i]
+          comp.addComponents(new ButtonBuilder().setCustomId(`form_cmd_edit_${title}_${answer.id}_${answer.time}`).setStyle(2).setLabel(String(i)))
+        }
+        interaction.reply({ embeds: [{title: 'Jakou chceš upravit odpověď?', description: data.mode == 'team' ? `Úprava odpovědi týmu <@&${id}>`: `Úprava odpovědi uživatele <@${id}>`, color: 12343551 }], components: [comp], ephemeral: true})
+      } else {
+        /* create and send MODAL */
+        const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+answers[0].time).setTitle(`${data._id}`)
+        for (let i = 0; i < data.questions.length; i++) {
+          let question = data.questions[i]
+          let answer = answers[0]
+          modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: answer.answers[question], required: i == data.questions.length - 1 ? false : true}))
+        }
+        await interaction.showModal(modal)
+      }
+    },
+    edit: async (edge, interaction) => {
+      let title = interaction.customId.split('_')[3]
+      let id = interaction.customId.split('_')[4]
+      let time = interaction.customId.split('_')[5]
+  
+      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      let answer = data.Accept.find(n => n.id == id && n.time == time)
+      if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
+      
+      /* create and send MODAL */
+      const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data._id}`)
+      for (let i = 0; i < data.questions.length; i++) {
+        let question = data.questions[i]
+        modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: answer.answers[question], required: i == data.questions.length - 1 ? false : true}))
+      }
+      await interaction.showModal(modal)
+  
+    },
+    catchEdit: async (edge, interaction) => {
+      await interaction.update({ type:6 })
+      let title = interaction.customId.split('_')[3]
+      let id = interaction.customId.split('_')[4]
+      let time = interaction.customId.split('_')[5]
+  
+      let guild = dc_client.guilds.cache.get('1105413744902811688')
+  
+      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      let answer = data.Accept.find(n => n.id == id && n.time == time)
+      if (!answer) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], components: [], ephemeral: true })
+  
+      data.Accept = data.Accept.filter(n => !(n.id == id && n.time == time))
+  
+      let answers = interaction.fields.fields.map(n => {return {name: n.customId, value: n.value?.trim()}}).filter(n => n.value.length)
+      let odpovedi = {}
+      for (const odpoved of answers) {
+        odpovedi[data.questions[odpoved.name]] = odpoved.value
+      }
+      answer.answers = odpovedi
+      answer.edited = interaction.user.id
+      data.Accept.push(answer)
+  
+      data.Accept = data.Accept.sort((a, b) => a.time-b.time)
+  
+      await edge.post('general', 'events', data)
+      await interaction.followUp({ content: 'Změny byly uloženy!', ephemeral: true})
+      console.discord(`${interaction.user} změnil odpověď v ${title} formu.`)
+      await edge.google.nahratData(data, {guild: guild})
+  
+      if (data.message) {
+        let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: guild })
+        let msg = await dc_client.channels.cache.get(data.channel)?.messages.fetch(data.message).catch(e => {})
+        await msg?.edit({ embeds: [embed]})
+      }
     }
 }

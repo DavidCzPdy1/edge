@@ -74,7 +74,11 @@ module.exports = {
         let mention = data.mode == 'team' ? guild.roles.cache.get(n.id || n) : guild.members.cache.get(n.id || n)
         let name = mention?.name || mention?.nickname || mention?.user?.username
         return { name: name, value: n.id }
-      }).forEach(n => { if (!show.find(a => a.name = n.name)) show.push(n) });
+      }).forEach(n => {
+        let answer = show.find(a => a.name == n.name)
+        if (!answer) show.push(n)
+        else if (!answer.name.endsWith(' 2x')) answer.name = answer.name + ` 2x`
+      });
 
       let focused = interaction.options.getFocused()
       let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
@@ -88,9 +92,9 @@ module.exports = {
 
     let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
-    if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }] })
+    if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
     
-    /* create and send MODAL*/
+    /* create and send MODAL */
     const modal = new ModalBuilder().setCustomId('results_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data._id}`)
     for (let i = 0; i < data.questions.length; i++) {
       let question = data.questions[i]

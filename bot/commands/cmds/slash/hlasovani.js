@@ -79,6 +79,16 @@ module.exports = {
         type: 3,
         required: false
       },
+      {
+        name: 'perms',
+        description: 'Kdo může hlasovat?',
+        type: 3,
+        required: false,
+        choices: [
+          { value: 'trener', name: 'Trenér' },
+          { value: 'member', name: 'Kdokoliv' },
+        ]
+      },
     ],
     type: 'slash',
     platform: 'discord',
@@ -88,12 +98,12 @@ module.exports = {
       let data = {
         question: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
-        answers: interaction.options.getString('answers'),
+        answers: interaction.options.getString('answers').replaceAll('.', '/'),
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
         type: 'hlasovani',
         channel: '1105918656203980870',
-        perms: 'trener',
+        perms: interaction.options.getString('perms') || 'trener',
         pings: Number(interaction.options.getString('pings')) || 0,
         created: new Date().getTime(),
         format: 'text' || 'mention'
@@ -210,8 +220,12 @@ module.exports = {
 
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+        let styl = 2
+        if (event.type == 'form' && answer == 'Accept') styl = 3
+        else if (event.type == 'form' && answer == 'Deny') styl = 4
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
       }
+      if (event.type == 'form') odpovedi.addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${event._id}`).setStyle(2).setLabel('EDIT'))
 
       let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
 

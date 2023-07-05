@@ -31,7 +31,7 @@ module.exports = {
             
             
         } else if (args[0] == 'info') {
-            let channel = dc_client.guilds.cache.get('1105413744902811688')?.channels.cache.get('1107940836131479552')
+            let channel = dc_client.guilds.cache.get('1105413744902811688')?.channels.cache.get('1105546511519072286')
 
             let commands = await dc_client.application.commands.fetch()
             let verify = commands.find(n => n.name == 'verify')?.id
