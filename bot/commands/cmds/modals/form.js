@@ -39,8 +39,8 @@ module.exports = {
       },
       {
         name: 'pings',
-        description: 'Jak často mám upomínat členy týmů? (number - hours)',
-        type: 3,
+        description: 'Kolikrát mám před koncem upomenout trenéry týmů?',
+        type: 4,
         required: false
       },
       {
@@ -66,7 +66,8 @@ module.exports = {
         type: 'form',
         channel: '1105918656203980870',
         perms: interaction.options.getString('perms') || 'trener',
-        pings: Number(interaction.options.getString('pings')) || 0,
+        pings: interaction.options.getInteger('pings') || 0,
+        pingsData: [],
         created: new Date().getTime(),
         format: 'text' || 'mention',
         answers: 'Accept|Deny',
@@ -87,6 +88,18 @@ module.exports = {
 
         if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: true})
         else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)], ephemeral: true})
+
+        if (data.pings) {
+          for (let i = 0; i < pings; i++) {
+            let pingData = {
+              id: i,
+              pingAt: data.time - 86400000*(i+1) - 3600000*5,
+              pinged: false
+            }
+            data.pingsData.push(pingData)
+          }
+          console.log(data.pingsData)
+        }
       } else data.finished = -1;
 
       const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data._id}`)

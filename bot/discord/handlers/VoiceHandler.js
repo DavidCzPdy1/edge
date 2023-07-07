@@ -34,6 +34,7 @@ class VoiceHandler {
 
   joinChannel() {
     let voiceChannel = this.voiceChannel
+    if (!voiceChannel) voiceChannel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
     this.connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
   }
 

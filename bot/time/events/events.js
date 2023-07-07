@@ -16,8 +16,12 @@ module.exports = {
       if (!data.time) continue;
       else if (data.time > new Date().getTime()) {
         if (!data.pings || data.mode !== 'team') continue;
-        let lastPing = data.lastPing || data.created
-        if (lastPing + data.pings * 60 * 60 * 1000 > new Date().getTime()) continue;
+
+        let pings = data.pingsData.filter(n => !n.pinged)
+
+        if (!pings.length) continue;
+        if (pings[0].pingAt > new Date().getTime()) continue;
+        console.log(pings)
 
         let answered = []
         data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})
@@ -40,15 +44,17 @@ module.exports = {
           for (let member of members) {
             member = member[1]
             try {
-              await member.user.send(`Ahoj, tvůj tým ještě nezareagoval na zprávu v <#${data.channel}>`) 
+              await member.user.send({ content: `Ahoj, tvůj tým ještě nezareagoval na zprávu v <#${data.channel}>\nReakce končí za <t:${data.time/1000}:R>` }) 
               success.push(member.user)
             } catch (e) {errors.push(member.user)}
           }
         }
+
+        data.pingsData.find(n => n.id == pings[0].id).pinged = true
+
         let embed = {title: `Notify ${data._id} eventu!`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
         if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
         global.channels?.log?.send({ embeds: [embed] })
-        data.lastPing = new Date().getTime() - 50000
 
         await edge.post('general', 'events', data)
         continue
