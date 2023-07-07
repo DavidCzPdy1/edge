@@ -130,7 +130,8 @@ global.defaultConfig = () => {
         club_fox: '1108825782001860730'
       }
     },
-    time: {}
+    time: {},
+    keepAlive: false
   }
 }
 
