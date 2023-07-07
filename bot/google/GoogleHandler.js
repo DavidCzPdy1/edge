@@ -30,7 +30,7 @@ class GoogleHandler {
       auth: this.auth,
       spreadsheetId: this.tableId,
     });
-    return result.data.sheets.find(n => n.properties.title == name)?.properties
+    return result.data.sheets.find(n => n.properties.title == name.replaceAll(':', '|').replaceAll('!', '|'))?.properties
   }
 
   async createSheet(event) {
@@ -57,7 +57,7 @@ class GoogleHandler {
           {
             addSheet: {
               properties: {
-                title: event._id,
+                title: event._id.replaceAll(':', '|').replaceAll('!', '|'),
                 index: 1,
                 tabColorStyle: {
                   rgbColor: color[event.type]
@@ -104,7 +104,7 @@ class GoogleHandler {
       auth: this.auth,
       spreadsheetId: this.tableId,
       range: sheet.title,
-      valueInputOption: 'USER_ENTERED',
+      valueInputOption: 'RAW', // USER_ENTERED
       resource: {
         values: data
       }

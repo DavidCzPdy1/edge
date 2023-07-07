@@ -21,7 +21,6 @@ module.exports = {
 
         if (!pings.length) continue;
         if (pings[0].pingAt > new Date().getTime()) continue;
-        console.log(pings)
 
         let answered = []
         data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})

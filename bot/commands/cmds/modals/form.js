@@ -90,15 +90,14 @@ module.exports = {
         else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)], ephemeral: true})
 
         if (data.pings) {
-          for (let i = 0; i < pings; i++) {
+          for (let i = 0; i < data.pings; i++) {
             let pingData = {
               id: i,
               pingAt: data.time - 86400000*(i+1) - 3600000*5,
               pinged: false
             }
-            data.pingsData.push(pingData)
+            if (pingData.pingAt > new Date().getTime()) data.pingsData.push(pingData)
           }
-          console.log(data.pingsData)
         }
       } else data.finished = -1;
 
