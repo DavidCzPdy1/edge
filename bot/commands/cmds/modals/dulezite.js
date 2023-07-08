@@ -29,7 +29,7 @@ module.exports = {
       {
         name: 'ping',
         description: 'Koho mám označit?',
-        type: 9,
+        type: 8,
         required: false
       },
     ],
@@ -39,23 +39,18 @@ module.exports = {
 
       let data = {
         _id: String(new Date().getTime()),
-        channel: interaction.options.getChannel('role') || dc_client.channels.cache.get('1105918656203980870'),
+        channel: interaction.options.getChannel('channel')?.id || '1105918656203980870',
         ack: interaction.options.getString('ack') || 'team',
-        ping: interaction.getMentionable(ping) || undefined,
+        ping: interaction.options.getRole('ping')?.id || undefined,
         mention: false
       }
 
-      let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Kanál nebyl nalezen!`, color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
-      if (!data.channel) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
-  
-      channel?.send({ content: ping, embeds: [{ title: 'Důležitá zpráva', description: data.msg, color: 2067276 }], allowedMentions: { parse: data.mention ? ['roles', 'users'] : [] } })
-
-      const modal = new ModalBuilder().setCustomId('dulezite_cmd_create_'+data._id).setTitle(`${data._id}`)
-        .addComponents(textBox({ id: '1', text: 'Název', example: undefined, value: undefined, required: true}))
-        .addComponents(textBox({ id: '2', text: 'Popisek', example: undefined, value: undefined, required: true}))
-        .addComponents(textBox({ id: '3', text: 'Fields', example: undefined, value: undefined, required: false}))
-        .addComponents(textBox({ id: '4', text: 'SOON', example: undefined, required: false, value: undefined}))
-        .addComponents(textBox({ id: '5', text: 'SOON', example: undefined, value: undefined, required: false}))
+      const modal = new ModalBuilder().setCustomId('dulezite_cmd_create_'+data._id).setTitle(`Výroba nového postu!`)
+        .addComponents(textBox({ id: 'title', text: 'Název', example: undefined, value: undefined, required: true}))
+        .addComponents(textBox({ id: 'description', text: 'Popisek', example: undefined, value: undefined, required: true, style: 2}))
+        .addComponents(textBox({ id: 'fields', text: 'Fields', example: undefined, value: undefined, required: false, style: 2}))
+        //.addComponents(textBox({ id: '4', text: 'SOON', example: undefined, required: false, value: undefined}))
+        //.addComponents(textBox({ id: '5', text: 'SOON', example: undefined, value: undefined, required: false}))
       
       await interaction.showModal(modal);
       await edge.post('general', 'messages', data)
@@ -64,18 +59,29 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true })
       let id = interaction.customId.split('_')[3]
 
+
       let data = await edge.get('general', 'messages', {_id: id})
       if (!data.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem danou zpravu!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
-      data.info = interaction.fields.fields.map(n => n.value?.trim() ).filter(n => n.length)
+
+      let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Kanál nebyl nalezen!`, color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
+
+      if (!data.channel) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
+
+      data.info = interaction.fields.fields.map(n => { return {type: n.customId, value: n.value?.trim() }}).filter(n => n.value.length)
       console.log(data.info)
 
+      let embed = { title: data.info.title, description: data.info?.description, fields: data.info?.fields?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
+      
+      //data.channel?.send()
+      let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(true))
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT'))
-        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT').setDisabled(true))
+        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT').setDisabled(true))
 
-      interaction.editReply({ content: 'soon', embeds: [], components: []})
+      let msg = { content: `[<@&${data.ping}>]`, embeds: [embed], allowedMentions: { parse: data.mention ? ['roles', 'users'] : [ack, accept]} }
+      interaction.editReply(msg)
 
       await edge.post('general', 'events', data)
     },
