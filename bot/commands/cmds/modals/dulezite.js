@@ -30,7 +30,7 @@ module.exports = {
         name: 'ping',
         description: 'Koho mám označit?',
         type: 9,
-        required: true
+        required: false
       },
     ],
     type: 'slash',
