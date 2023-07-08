@@ -70,18 +70,18 @@ module.exports = {
       if (!data.channel) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
 
       data.info = interaction.fields.fields.map(n => { return {type: n.customId, value: n.value?.trim() }}).filter(n => n.value.length)
-      console.log(data.info)
 
-      let embed = { title: data.info.title, description: data.info?.description, fields: data.info?.fields?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
+      let embed = { title: data.info.find(n => n.type == 'title')?.value, description: data.info.find(n => n.type == 'description')?.value, fields: data.info.find(n => n.type == 'fields')?.value?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
       
       //data.channel?.send()
-      let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(true))
+      let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(true));
       let accept = new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT').setDisabled(true))
         .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT').setDisabled(true))
 
       let msg = { content: `[<@&${data.ping}>]`, embeds: [embed], allowedMentions: { parse: data.mention ? ['roles', 'users'] : [ack, accept]} }
-      interaction.editReply(msg)
+      console.log(embed)
+      await interaction.editReply(msg)
 
       await edge.post('general', 'events', data)
     },
