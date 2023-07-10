@@ -228,7 +228,7 @@ module.exports = {
       let channel = dc_client.channels.cache.get(event.channel)
       if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: true })
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
+      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
 
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
@@ -240,7 +240,7 @@ module.exports = {
       if (event.type == 'form') odpovedi.addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${event._id}`).setStyle(2).setLabel('EDIT'))
 
       let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
-
+      event.msgUrl = message.url
       event.message = message.id
 
       if (interaction.customId.split('_').length !== 4) interaction.editReply({ components: []})

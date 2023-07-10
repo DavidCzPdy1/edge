@@ -42,10 +42,12 @@ module.exports = {
         channel: interaction.options.getChannel('channel')?.id || '1105918656203980870',
         ack: interaction.options.getString('ack') || 'team',
         ping: interaction.options.getRole('ping')?.id || undefined,
-        mention: false
+        mention: false,
+        type: 'msg',
+        read: [],
       }
 
-      const modal = new ModalBuilder().setCustomId('dulezite_cmd_create_'+data._id).setTitle(`Výroba nového postu!`)
+      const modal = new ModalBuilder().setCustomId('dulezite_ignore_create_'+data._id).setTitle(`Výroba nového postu!`)
         .addComponents(textBox({ id: 'title', text: 'Název', example: undefined, value: undefined, required: true}))
         .addComponents(textBox({ id: 'description', text: 'Popisek', example: undefined, value: undefined, required: true, style: 2}))
         .addComponents(textBox({ id: 'fields', text: 'Fields', example: undefined, value: undefined, required: false, style: 2}))
@@ -53,36 +55,71 @@ module.exports = {
         //.addComponents(textBox({ id: '5', text: 'SOON', example: undefined, value: undefined, required: false}))
       
       await interaction.showModal(modal);
-      await edge.post('general', 'messages', data)
-    },
-    create: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
-      let id = interaction.customId.split('_')[3]
+      interaction = await interaction.awaitModalSubmit({filter: (n) => n.customId == 'dulezite_ignore_create_'+data._id, time: 180000}).catch(e => {})
+      if (!interaction) return
 
-
-      let data = await edge.get('general', 'messages', {_id: id})
-      if (!data.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem danou zpravu!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
-      data = data[0]
-
-
-      let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Kanál nebyl nalezen!`, color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
-
-      if (!data.channel) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
+      await interaction.deferReply({ ephemeral: true})
 
       data.info = interaction.fields.fields.map(n => { return {type: n.customId, value: n.value?.trim() }}).filter(n => n.value.length)
 
       let embed = { title: data.info.find(n => n.type == 'title')?.value, description: data.info.find(n => n.type == 'description')?.value, fields: data.info.find(n => n.type == 'fields')?.value?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
       
-      //data.channel?.send()
       let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(true));
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT').setDisabled(true))
-        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT').setDisabled(true))
+        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT').setDisabled(false))
+        .addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT').setDisabled(false))
 
-      let msg = { content: `[<@&${data.ping}>]`, embeds: [embed], allowedMentions: { parse: data.mention ? ['roles', 'users'] : [ack, accept]} }
-      console.log(embed)
+      let msg = { content: data.ping ? `[<@&${data.ping}>]` : undefined, embeds: [embed], allowedMentions: { parse: data.mention ? ['roles', 'users'] : []}, components: [data.ack != 'none' ? ack : undefined, accept].filter(n =>n) }
       await interaction.editReply(msg)
 
-      await edge.post('general', 'events', data)
+      await edge.post('general', 'messages', data)
     },
+    accept: async (edge, interaction) => {
+      await interaction.update({ type: 6 })
+      let id = interaction.customId.split('_')[3]
+      
+      let data = await edge.get('general', 'messages', { _id: id }).then(n => n[0])
+      if (!data) return interaction.editReply({ embeds: [], content: 'Zpráva nebyla nalezena v databázi!'})
+
+      let channel = dc_client.channels.cache.get(data.channel)
+      if (!channel) return interaction.editReply({ embeds: [], content: `Nebyl nalezen kanál s id ${data.channel}!`, components: [], ephemeral: true})
+
+      let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
+      if (!access) return interaction.followUp({ embeds: [], content: `Nemám oprávnění posílat embed zprávy do ${channel}!`, components: [], ephemeral: true })
+
+      let embed = { title: data.info.find(n => n.type == 'title')?.value, description: data.info.find(n => n.type == 'description')?.value, fields: data.info.find(n => n.type == 'fields')?.value?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
+      let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}_${data.ack}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(false));
+
+      let msg = { content: data.ping ? `[<@&${data.ping}>]` : undefined, embeds: [embed], allowedMentions: { parse: data.mention ? ['roles', 'users'] : []}, components: [data.ack != 'none' ? ack : undefined].filter(n =>n) }
+      let message = await channel.send(msg)
+
+      data.msgUrl = message.url
+      await edge.post('general', 'messages', data)
+
+      interaction.editReply({content: 'Zpráva byla úspěšně poslána!', embeds: [], components: [], ephemeral: true})
+    },
+    deny: async (edge, interaction) => {
+      await interaction.update({ type: 6 })
+      let id = interaction.customId.split('_')[3]
+      
+      await edge.delete('general', 'messages', { _id: id })
+      interaction.editReply({content: 'Zpráva byla odstraněna z databáze', embeds: [], components: [], ephemeral: true})
+    },
+    ack: async (edge, interaction) => {
+      await interaction.update({ type:6 })
+      let id = interaction.customId.split('_')[3]
+      let type = interaction.customId.split('_')[4]
+      
+      let data = await edge.get('general', 'messages', { _id: id }).then(n => n[0])
+      if (!data) return interaction.editReply({ components: []})
+
+      if (!data.read) data.read = []
+      if (data.read.includes(interaction.user.id)) return interaction.followUp({ ephemeral: true, content: 'Reakce už je zaznamenána!'})
+      data.read.push(interaction.user.id)
+
+      await edge.post('general', 'messages', data)
+
+      interaction.followUp({ephemeral: true, content: 'Zpráva označena, jako přečtená!'})
+
+    }
 }
