@@ -157,3 +157,11 @@ Format
  - returns 0,1
 */
 global.f = (number, max=2) => { return Number(number) ? Number(number).toLocaleString('en', {minimumFractionDigits: 0, maximumFractionDigits: max}) : number }
+
+
+/* 
+getUnique
+@returns {array}
+@usage array.filter(unique)
+*/
+global.unique = (value, index, array) => {return array.indexOf(value) === index}

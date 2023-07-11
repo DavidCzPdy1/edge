@@ -13,6 +13,8 @@ const GoogleHandler = require('./google/GoogleHandler');
 class UHGDevs extends CommandsHandler {
   constructor() {
     super()
+
+    this.sendDm = {}
   }
   async appStart() {
     this.discord = new DiscordHandler(this)
