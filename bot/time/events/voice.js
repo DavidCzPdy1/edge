@@ -6,7 +6,7 @@ const eventName = module.filename.includes('/') ? module.filename.split('/').fil
 module.exports = {
   name: eventName,
   description: "Voice time event",
-  emoji: '📜',
+  emoji: '🎶',
   time: '0 * * * * *', //'*/10 * * * * *'
   ignore: '* * * * * *', //'sec min hour den(mesic) mesic den(tyden)'
   onstart: false,

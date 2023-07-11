@@ -5,21 +5,21 @@ const eventName = module.filename.includes('/') ? module.filename.split('/').fil
 
 module.exports = {
   name: eventName,
-  description: "Time event manages trenings for Rakety Žižkoff",
-  emoji: '🤖',
+  description: "Time event manages trenings for Micropachycephalosauři Poděbrady",
+  emoji: '🦖',
   time: '0 */5 * * * *', //'*/10 * * * * *'
   ignore: '* * * * * *', //'sec min hour den(mesic) mesic den(tyden)'
   onstart: false,
   run: async (edge, options) => {
 
-    let guild = dc_client.guilds.cache.get('1122995611621392424')
-    if (!guild) return console.error('Nenašel jsem Rakety Discord server! (time event)')
+    let guild = dc_client.guilds.cache.get('1128307451066855515')
+    if (!guild) return console.error('Nenašel jsem Poděbradský Discord server! (time event)')
     
     let google = edge.google
 
-    let event = await google.getCalendar(google.rCalendarId).then(n => n[0])
+    let event = await google.getCalendar(google.pCalendarId).then(n => n[0])
 
-    let data = await edge.get('rakety', 'treninky', {}).then(n => n.filter(a => !a.ended)[0])
+    let data = await edge.get('podebrady', 'treninky', {}).then(n => n.filter(a => !a.ended)[0])
 
     if (!data && !event) return
     if (!data) data = newData(event)
@@ -31,13 +31,13 @@ module.exports = {
         let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
         if (message) {
           let selectMenu = new ActionRowBuilder().addComponents(
-            new MentionableSelectMenuBuilder().setCustomId('rakety-hlasovani_cmd_treninkEdit_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
+            new MentionableSelectMenuBuilder().setCustomId('micro-hlasovani_cmd_treninkEdit_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
           )
-          await dc_client.channels.cache.get('1128283058034966548')?.send({embeds: message.embeds, components: [selectMenu]})
+          await dc_client.channels.cache.get('1128307904341102592')?.send({embeds: message.embeds, components: [selectMenu]})
           await message.delete()
         }
       }
-      await edge.post('rakety', 'treninky', data)
+      await edge.post('podebrady', 'treninky', data)
 
       if (!event) return
       data = newData(event)
@@ -48,12 +48,12 @@ module.exports = {
 
       let buttons = new ActionRowBuilder()
       for (let answer of data.answers.split('|')) {
-        buttons.addComponents(new ButtonBuilder().setCustomId(`rakety-hlasovani_cmd_dochazka_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+        buttons.addComponents(new ButtonBuilder().setCustomId(`micro-hlasovani_cmd_dochazka_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
         data[answer] = []
       }
       let embed = getEmbed(data, {guild: guild})
       
-      let msg = {embeds: [embed], components: [buttons], content: `[<@&1128260094556123227>]`, allowedMentions: { parse: ['roles']} }
+      let msg = {embeds: [embed], components: [buttons], content: `[<@&1128309507190181928>]`, allowedMentions: { parse: ['roles']} }
 
       let channel = dc_client.channels.cache.get(data.channel)
       if (!channel) return console.error(`Nenašel jsem kanál s id ${channel}\n(RAKETY DC)`)
@@ -63,7 +63,7 @@ module.exports = {
       let message = await channel.send(msg)
       data.msgUrl = message.url
       data.message = message.id
-      await edge.post('rakety', 'treninky', data)
+      await edge.post('podebrady', 'treninky', data)
     }
     
   }
@@ -86,7 +86,7 @@ function newData(event) {
     time: null,
     mode: 'user',
     type: 'trenink',
-    channel: '1128258116694310922',
+    channel: '1128307712552337419',
     pings: 0,
     pingsData: [],
     created: new Date().getTime(),
