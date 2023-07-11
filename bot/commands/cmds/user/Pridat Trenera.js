@@ -5,6 +5,7 @@ module.exports = {
     name: 'Pridat Trenera',
     description: 'Add EDGE trainers!',
     permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}],
+    guild: ['1105413744902811688'],
     type: 'user',
     platform: 'discord',
     run: async (edge, interaction) => {

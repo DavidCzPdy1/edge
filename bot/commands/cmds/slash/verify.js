@@ -35,13 +35,13 @@ module.exports = {
       let guild = dc_client.guilds.cache.get('1105413744902811688')
       if (!guild) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem EDGE Discord server!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
-      let ikona = interaction.guild.iconURL()
+      let ikona = guild?.iconURL() || ''
 
       let jmeno = interaction.options.getString('jmeno')
       let tym = interaction.options.getString('tym')
 
       let custom = interaction.options.getString('custom')
-      let member = custom ? guild.members.cache.get(custom) : interaction.member
+      let member = custom ? guild.members.cache.get(custom) : interaction.member || guild.members.cache.get(interaction.user.id)
       if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
       if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 

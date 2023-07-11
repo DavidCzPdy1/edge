@@ -15,13 +15,16 @@ class GoogleHandler {
   async init() {
     let credits = await this.edge.get('login', 'google', {_id: 'login'}).then(n => n[0])
     this.auth = new google.auth.GoogleAuth({
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/calendar.readonly'],
       credentials: credits
     })
 
     this.client = await this.auth.getClient()
 
     this.sheets = google.sheets({ version: 'v4', auth: this.client})
+    this.calendar = google.calendar({version: 'v3', auth: this.client});
+
+    this.rCalendarId = await this.edge.get('login', 'google', {_id: 'rakety'}).then(n => n[0].calendar)
   }
 
 
@@ -159,6 +162,17 @@ class GoogleHandler {
     if (!sheet) sheet = await this.createSheet(event)
     await this.clearSheet(sheet)
     await this.postSheet(sheet, nahrat)
+  }
+
+  async getCalendar(id) {
+    const res = await this.calendar.events.list({
+      calendarId: id,
+      timeMin: new Date().toISOString(),
+      maxResults: 2,
+      singleEvents: true,
+      orderBy: 'startTime',
+    })
+    return res.data.items;
   }
     
 

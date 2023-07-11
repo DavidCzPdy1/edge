@@ -21,9 +21,9 @@ module.exports = {
     run: async (edge, interaction) => {
       await interaction.deferReply({ ephemeral: true })
 
-      let ikona = interaction.guild.iconURL()
+      let ikona = interaction.guild?.iconURL() || ''
 
-      let command = interaction.options.getString('command')
+      let command = interaction.options.getString('command') || null
 
       let cmd = edge.commands.get(command)
       if (!cmd) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Command nebyl nazen!`, color: 15548997 }]})
