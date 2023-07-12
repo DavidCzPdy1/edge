@@ -14,7 +14,7 @@ class RoleHandler {
     let members = await guild.members.fetch();
 
     for (let id of Object.keys(this.config.roles).filter(n => n.startsWith('club_')).map(n => this.config.roles[n])) {
-      let role = guild.roles.cache.get(id)
+      let role = guild.roles.cache?.get(id)
       if (!role) { console.error('Nebyla nalezena club role s ID ' + id); continue; }
 
       let data = {

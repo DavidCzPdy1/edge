@@ -1,4 +1,4 @@
-const { joinVoiceChannel, createAudioPlayer, AudioPlayerStatus, createAudioResource, StreamType } = require('@discordjs/voice')
+const { NoSubscriberBehavior, AudioPlayerStatus, entersState, joinVoiceChannel, createAudioPlayer, createAudioResource, StreamType, VoiceConnectionStatus } = require('@discordjs/voice')
 
 class VoiceHandler {
   constructor(discord) {
@@ -7,7 +7,9 @@ class VoiceHandler {
   }
 
   async init() {
-
+    //this.setupBroadcast()
+    //return
+    
     this.player = createAudioPlayer({ behaviors: { noSubscriber: 'play', maxMissedFrames: 200 } });
     this.voiceChannel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
     this.resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, });
@@ -36,6 +38,44 @@ class VoiceHandler {
     let voiceChannel = this.voiceChannel
     if (!voiceChannel) voiceChannel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
     this.connection = joinVoiceChannel({ channelId: voiceChannel.id, guildId: voiceChannel.guild.id, adapterCreator: voiceChannel.guild.voiceAdapterCreator, selfMute: false })
+  }
+
+  setupBroadcast() {
+    let channel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
+    if (!channel) return
+
+
+    let connection = joinVoiceChannel({
+        channelId: channel.id,
+        guildId: channel.guildId,
+        adapterCreator: channel.guild.voiceAdapterCreator,
+    });
+    const player = createAudioPlayer();
+    const resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, inlineVolume: true });
+    //resource.volume.setVolume(1);
+    connection.subscribe(player); 
+    connection.on(VoiceConnectionStatus.Ready, () => {console.log("ready"); player.play(resource);})
+    connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+        try {
+            console.log("Disconnected.")
+            await Promise.race([
+                entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+            ]);
+        } catch (error) {
+            connection.destroy();
+        }
+    });
+    player.on('error', error => {
+        console.error(`Error: ${error.message} with resource ${error.resource.metadata.title}`);
+        player.play(getNextResource());
+    });
+    player.on(AudioPlayerStatus.Playing, () => {
+        console.log('The audio player has started playing!');
+    }); 
+    player.on('idle', () => {
+        connection.destroy();
+    })
   }
 
 }
