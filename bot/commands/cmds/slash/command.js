@@ -38,18 +38,20 @@ module.exports = {
         let commands = await dc_client.application.commands.fetch()
 
         let prikaz = commands.find(n => n.name == command)
+        if (!prikaz && interaction.guild) prikaz = interaction.guild.commands.cache.find(n => n.name == command)
 
         let id = prikaz?.id
 
-        embed.fields.push({name: 'ID', value: `</${cmd.name}:${id}> | \`</${cmd.name}:${id}>\``, inline: false})
+        if (prikaz) embed.fields.push({name: 'ID', value: `</${cmd.name}:${id}> | \`</${cmd.name}:${id}>\``, inline: false})
       } else if (cmd.type == 'user') {
         let commands = await dc_client.application.commands.fetch()
 
         let prikaz = commands.find(n => n.name == command)
+        if (!prikaz && interaction.guild) prikaz = interaction.guild.commands.cache.find(n => n.name == command)
 
         let id = prikaz?.id
 
-        embed.fields.push({name: 'ID', value: `\`${id}>\``, inline: false})
+        if (prikaz) embed.fields.push({name: 'ID', value: `\`${id}>\``, inline: false})
         
       }
 
