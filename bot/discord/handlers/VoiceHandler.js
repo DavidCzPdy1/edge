@@ -11,12 +11,16 @@ class VoiceHandler {
   }
 
   play() {
-    if (!this.edge.config.discord.voice.enabled) return this.connection.destroy()
+    if (!this.edge.config.discord.voice.enabled) {
+      this.connection.destroy()
+      this.connection = undefined
+    }
     if (!this.connection) return this.newConnection()
   }
 
   newConnection(conn = null) {
     conn?.destroy()
+    this.connection = undefined
     this.player?.removeAllListeners()
 
     if (!this.edge.config.discord.voice.enabled) return;
