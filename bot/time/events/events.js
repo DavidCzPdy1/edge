@@ -11,6 +11,7 @@ module.exports = {
   onstart: false,
   run: async (edge, options) => {
     let database = await edge.get('general', 'events', {}).then(n => n.filter(a => !a.finished))
+    let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
     
     for (let data of database) {
       if (!data.time) continue;
@@ -34,7 +35,7 @@ module.exports = {
         if (!message) { console.error('Time management (0) nenašel zprávu eventu ' + data._id); continue}
         if (message.components[0].components[0].data.disabled) { console.error(data._id + ' je PAUSED, nemůžu poslat ping'); continue}
 
-        let notify = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => edge.config.discord.roles[n]).filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
+        let notify = teams.filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
         let errors = []
         let success = []
         for (let role of notify) {

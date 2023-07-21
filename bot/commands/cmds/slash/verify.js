@@ -113,14 +113,8 @@ module.exports = {
           }
         }
       }
-/*
-      if (user.team !== 'ne') edge.discord.roles.roleAdd(member, guild.roles.cache.get(user.team))
-      let keys = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_'))
+
       
-      for (let key of keys) {
-        if (edge.config.discord.roles[key] !== user.team) await edge.discord.roles.roleRemove(member, guild.roles.cache.get(edge.config.discord.roles[key]))
-      }
-*/
       if (user.channel && typeof user.channel !== 'string') user.channel = user.channel.id
       delete user.requested
 

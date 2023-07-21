@@ -37,8 +37,12 @@ class RoleHandler {
 
     if (ids.length) members = members.filter(n => ids.includes(n.user.id))
 
+    await this.updateClubDb()
+
     let trainer = await this.edge.get('general', 'treneri', { _id: 'list' }).then(n => n[0])
     let users = await this.edge.get('general', 'users', {})
+    let teams = await this.edge.get('general', 'clubs', {})
+    this.teams = teams
 
     for (let member of members) {
       member = member[1]
@@ -46,6 +50,8 @@ class RoleHandler {
       if (member.user.bot) continue
 
       let user = users.find(n => n._id == member.user.id)
+      let team = teams.find(n => n.id == user?.team)
+      
 
       /* EDGE VEDENÍ */
       if (trainer.leaders.includes(member.id)) await this.roleAdd(member, this.roles.get(this.config.roles.position_edge))
@@ -60,14 +66,14 @@ class RoleHandler {
       else await this.roleRemove(member, this.roles.get(this.config.roles.position_member))
 
       /* Club Roles */
-      let club = Object.keys(this.config.roles).filter(n => n.startsWith('club_')).map(n => this.config.roles[n])
+      let club = teams.map(n => n.id)
       for (let key of club) {
         if (!user || user.team !== key) await this.roleRemove(member, this.roles.get(key))
         else if (user && user.team == key) await this.roleAdd(member, this.roles.get(key))
       }
 
       if (user) {
-        let nickname = user.name
+        let nickname = user.name + (team?.short ? ` #${team.short}` : '')
         if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
       } else try { await member.setNickname(null) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
 
@@ -83,7 +89,69 @@ class RoleHandler {
       }
     }
 
-    this.updateClubDb()
+  }
+
+  async updateClubs(filter = [/*'1128307451066855515'*/]) {
+
+    let users = await this.edge.get('general', 'users', {})
+    let teams = await this.edge.get('general', 'clubs', {})
+    this.teams = teams
+
+    teams = teams.filter(n => n.server)
+    if (filter.length) teams = teams.filter(n => filter.includes(n.id))
+
+    for (let team of teams) {
+      let guild = dc_client.guilds.cache.get(team.server.guild)
+      if (!guild) {console.error(`Bot není na ${team.name} DC!`);continue;}
+/*
+      let con = {
+        changeName: true,
+
+        splitRole: true,
+        memberRole: true,
+        trainerRole: true
+      }
+      if (!team.server.config) team.server.config = con
+      await this.edge.post('general', 'clubs', team)
+*/
+      let config = team.server.config
+
+
+      let members = await guild.members.fetch()
+
+      for (let member of members) {
+
+        let user = users.find(n => n._id == member.user.id)
+
+        /* Change Name */
+        if (config.changeName) {
+          let nickname = user?.name || null
+          if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname||member.user.username) }
+        }
+
+        /* Member & Trainer role */
+        if (config.memberRole) {
+          let memberRole = guild.roles.cache.get(team.server.roles?.member||'123456789')
+          if (memberRole && user?.team && user?.team == team.server.roles.member) await this.roleAdd(member, role);
+          else if (memberRole) await this.roleRemove(member, role);
+        }
+        if (config.trainerRole) {
+          let trainers = await this.edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
+          let trainerRole = guild.roles.cache.get(team.server.roles?.trener||'123456789')
+          if (trainerRole && user?.team && user?.team == team.server.roles.member && trainers?.list?.includes(member.user.id)) await this.roleAdd(member, role);
+          else if (trainerRole) await this.roleRemove(member, role);
+        }
+
+        /* Split Roles */
+        if (config.splitRole) {
+          let splitRoles = guild.roles.cache.filter(n => n.name.includes('▬▬'))
+          /* GET ROLES BY POSITION */
+        }
+
+
+      }
+    }
+
   }
 
   async roleAdd(member, role) {
@@ -112,13 +180,6 @@ class RoleHandler {
 
     let roles = await guild.roles.fetch();
 
-    /*
-    let role = {}
-    role.club = this.config.clubRoles.map(id => roles.get(id))
-    role.position = this.config.positionRoles.map(id => roles.get(id))
-    role.mention = this.config.mentionRoles.map(id => roles.get(id))
-    role.split = this.config.splitRoles.map(id => roles.get(id))
-*/
     this.roles = roles
   }
 

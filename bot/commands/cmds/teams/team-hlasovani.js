@@ -29,7 +29,7 @@ const getEmbed = (data, options = {}) => {
 module.exports = {
     name: 'team-hlasovani',
     description: 'Creates new question!',
-    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1128308482160996453', type: 'ROLE', permission: true}],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1128308482160996453', type: 'ROLE', permission: true}, { id: '1122998678425174016', type: 'ROLE', permission: true}],
     guild: ['1128307451066855515', '1122995611621392424'],
     options: [
       {

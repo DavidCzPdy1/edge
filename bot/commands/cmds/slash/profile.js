@@ -29,6 +29,8 @@ module.exports = {
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
 
+      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+
       let user = interaction.options.getString('user') || interaction.user.id
       if (user == 'none') user = interaction.user.id
 
@@ -52,7 +54,7 @@ module.exports = {
           else data.read.forEach(n => {
             let member = guild.members.cache.get(n)
             if (!member) return
-            let role = member?._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n))
+            let role = member?._roles.find(n => teams.includes(n))
             if (!reacted.includes(role)) reacted.push(role)
           })
         } else {
@@ -62,7 +64,7 @@ module.exports = {
           let role = guild.roles.cache.get(edge.config.discord.roles.position_trener)
           notReacted = role.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener) && !reacted.includes(n.id)).map(n => n.id)
         } else {
-          notReacted = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => edge.config.discord.roles[n]).filter(n => !reacted.includes(n))//.map(n => guild.roles.cache.get(n))
+          notReacted = teams.filter(n => !reacted.includes(n))//.map(n => guild.roles.cache.get(n))
         }
   
         let ne = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : data._id, description: `Neodpověděli:\n${notReacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
@@ -77,7 +79,7 @@ module.exports = {
       if (!verify) return interaction.editReply({ content: `<@${user}> není verifikovaný! (potřebuju to na zobrazení jména :D)`, allowedMentions: {parse: []}})
 
       notReacted = []
-      let club = guild.members.cache.get(user)?._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n))
+      let club = guild.members.cache.get(user)?._roles.find(n => teams.includes(n))
 
       for (data of [...events, ...messages]) {
 
@@ -94,7 +96,7 @@ module.exports = {
             data.read.forEach(n => {
               let member = guild.members.cache.get(n)
               if (!member) return
-              let role = member?._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n))
+              let role = member?._roles.find(n => teams.includes(n))
               if (!reactedTeams.includes(role)) reactedTeams.push(role)
             })
             if (!reactedTeams.includes(club)) notReacted.push(data)

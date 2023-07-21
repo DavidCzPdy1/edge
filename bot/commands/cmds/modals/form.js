@@ -152,7 +152,8 @@ module.exports = {
       let access = interaction.member._roles.includes(edge.config.discord.roles[`position_${data.perms || 'trener'}`])
       if (!access) return interaction.reply({ embeds: [{ title: 'Nemáš potřebné oprávnění na reakci!', description: `Potřebuješ <@&${edge.config.discord.roles[`position_${data.perms}`]}>`, color: 15548997 }], ephemeral: true })
 
-      let id = data.mode == 'team' ? interaction.member._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n)) : interaction.user.id
+      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+      let id = data.mode == 'team' ? interaction.member._roles.find(n => teams.includes(n)) : interaction.user.id
       if (!id) return interaction.reply({ embeds: [{ title: 'Nemáš žádnou týmovou roli!', description: `Pokud nějakou chceš, použij /verify!`, color: 15548997 }], ephemeral: true })
       
       let ids = data.answers.split('|').map(n => {return { ids: data[n]?.map(a => a.id || a), name: n}})
@@ -246,7 +247,8 @@ module.exports = {
       
       if (data.mode == 'team' && !interaction.member._roles.includes(edge.config.discord.roles.position_trener)) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nemáš trenérskou roli!`, color: 15548997 }], ephemeral: true })
       
-      let id = data.mode == 'team' ? interaction.member._roles.find(n => Object.keys(edge.config.discord.roles).filter(a => a.startsWith('club_')).map(a => edge.config.discord.roles[a]).includes(n)) : interaction.user.id
+      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+      let id = data.mode == 'team' ? interaction.member._roles.find(n => teams.includes(n)) : interaction.user.id
 
       let answers = data.Accept.filter(n => n.id == id)
       if (!answers.length) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })

@@ -120,14 +120,6 @@ global.defaultConfig = () => {
         split_position: '1108827093514596544',
         split_club: '1108826950950211745',
         split_mention: '1108826744573661204',
-        club_majak: '1108825493739929620',
-        club_arrows: '1108833486321758291',
-        club_hammers: '1108825718776926208',
-        club_micro: '1108825861190340720',
-        club_sky: '1108825076083720263',
-        club_poletime: '1108825185932542102',
-        club_rakety: '1108825318069903443',
-        club_fox: '1108825782001860730'
       }
     },
     time: {},

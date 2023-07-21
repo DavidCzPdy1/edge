@@ -125,7 +125,8 @@ module.exports = {
       let guild = interaction.guild
       if (!guild) return console.error('EVENTS interaction - Nenašel jsem guildu')
 
-      let notify = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => edge.config.discord.roles[n]).filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
+      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+      let notify = teams.filter(n => !answered.includes(n)).map(n => guild.roles.cache.get(n))
       let errors = []
       let success = []
       for (let role of notify) {

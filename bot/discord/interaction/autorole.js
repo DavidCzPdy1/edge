@@ -36,9 +36,10 @@ module.exports = async (edge, interaction) => {
 
         let embed = { title: 'ERROR v AUTOROLE - select interaction', description: `Nanašel jsem požadovanou kategorii!`, color: 15548997, footer: { text: 'EDGE Discord', icon_url: guild?.iconURL() || '' } }
         let components = []
-        if (cat == 'pozice') embed = { title: 'Pozice Role', description: `<@&1105555145456107581> ➜ Lidi, kvůli kterým EDGE funguje\n<@&1105544649080320110> ➜ Role pro trenéry a jejich pomocníky\n<@&1105544581405229129> ➜ Role pro hráče s propojeným jménem`, color: 0255255, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
+        if (cat == 'pozice') embed = { title: 'Pozice Role', description: `<@&1105555145456107581> ➜ Lidi, kvůli kterým EDGE funguje\n<@&1105544649080320110> ➜ Role pro trenéry a jejich pomocníky\n<@&1105544581405229129> ➜ Role pro hráče s propojeným jménem`, color: 255255, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
         else if (cat == 'tym') {
-            let tymy = Object.keys(edge.config.discord.roles).filter(n => n.startsWith('club_')).map(n => `<@&${edge.config.discord.roles[n]}>`).join('\n')
+            let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+            let tymy = teams.map(n => `<@&${n}>`).join('\n')
             let desc = [
                 `Přehled týmů:`,
                 ``,
@@ -50,7 +51,7 @@ module.exports = async (edge, interaction) => {
             embed = {
                 title: 'Týmové Role',
                 description: desc.join('\n'),
-                color: 02550,
+                color: 2550,
                 footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }
             }
         } else if (cat == 'reaction') {
