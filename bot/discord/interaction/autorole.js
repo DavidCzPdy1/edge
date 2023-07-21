@@ -38,7 +38,7 @@ module.exports = async (edge, interaction) => {
         let components = []
         if (cat == 'pozice') embed = { title: 'Pozice Role', description: `<@&1105555145456107581> ➜ Lidi, kvůli kterým EDGE funguje\n<@&1105544649080320110> ➜ Role pro trenéry a jejich pomocníky\n<@&1105544581405229129> ➜ Role pro hráče s propojeným jménem`, color: 255255, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
         else if (cat == 'tym') {
-            let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+            let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
             let tymy = teams.map(n => `<@&${n}>`).join('\n')
             let desc = [
                 `Přehled týmů:`,

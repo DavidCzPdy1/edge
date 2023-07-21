@@ -11,7 +11,7 @@ module.exports = {
   onstart: false,
   run: async (edge, options) => {
     let database = await edge.get('general', 'events', {}).then(n => n.filter(a => !a.finished))
-    let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+    let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
     
     for (let data of database) {
       if (!data.time) continue;

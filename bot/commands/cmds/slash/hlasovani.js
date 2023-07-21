@@ -176,7 +176,7 @@ module.exports = {
       let access = interaction.member._roles.includes(edge.config.discord.roles[`position_${data.perms || 'trener'}`])
       if (!access) return interaction.followUp({ embeds: [{ title: 'Nemáš potřebné oprávnění na reakci!', description: `Potřebuješ <@&${edge.config.discord.roles[`position_${data.perms}`]}>`, color: 15548997 }], ephemeral: true })
 
-      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+      let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
       let id = data.mode == 'team' ? interaction.member._roles.find(n => teams.includes(n)) : interaction.user.id
       if (!id) return interaction.followUp({ embeds: [{ title: 'Nemáš žádnou týmovou roli!', description: `Pokud nějakou chceš, použij /verify!`, color: 15548997 }], ephemeral: true })
       

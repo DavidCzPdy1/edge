@@ -29,7 +29,7 @@ module.exports = {
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
 
-      let teams = (edge.discord.roles.teams || await this.edge.get('general', 'clubs', {})).map(n => n.id)
+      let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
 
       let user = interaction.options.getString('user') || interaction.user.id
       if (user == 'none') user = interaction.user.id
