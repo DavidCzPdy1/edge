@@ -11,6 +11,13 @@ class VoiceHandler {
   }
 
   play() {
+
+    try {
+      let member = dc_client.guilds.cache.get('1105413744902811688').members.cache.get(dc_client.user.id)
+      member?.edit({mute:false})
+    } catch (e) {}
+
+
     if (!this.edge.config.discord.voice.enabled) {
       this.connection.destroy()
       this.connection = undefined
