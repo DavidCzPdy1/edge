@@ -23,9 +23,6 @@ class GoogleHandler {
 
     this.sheets = google.sheets({ version: 'v4', auth: this.client})
     this.calendar = google.calendar({version: 'v3', auth: this.client});
-
-    this.rCalendarId = await this.edge.get('login', 'google', {_id: 'rakety'}).then(n => n[0].calendar)
-    this.pCalendarId = await this.edge.get('login', 'google', {_id: 'podebrady'}).then(n => n[0].calendar)
   }
 
 

@@ -5,20 +5,10 @@ const updateDesc = (embed, desc) => { embed.description = desc; return embed }
 
 module.exports = {
     name: 'trenink',
-    description: 'Creates new question!',
+    description: 'Statistiky z tréninků!',
     permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1128308482160996453', type: 'ROLE', permission: true}],
-    guild: ['1128307451066855515'],
+    guild: ['1128307451066855515', '1122995611621392424'],
     options: [
-      {
-        name: 'tym',
-        description: 'Jaký chceš zvolit tým?',
-        type: 3,
-        required: false,
-        choices: [
-          { value: 'rakety', name: 'Rakety Žižkoff' },
-          { value: 'podebrady', name: 'Micropachycephalosauři' },
-        ]
-      },
       {
         name: 'datum',
         description: 'Od jakého data chceš tréninky brát?',
@@ -33,7 +23,10 @@ module.exports = {
 
       let time = new Date (interaction.options.getString('datum') || `1. 1. 2023`)
 
-      let data = await edge.get(interaction.options.getString('tym') || `rakety`, 'treninky', {}).then(n => n.filter(a => /*a.ended == true &&*/ new Date (a.start.dateTime).getTime() > time.getTime()))
+      let team = await edge.get('general', 'clubs').then(n => n.find(a => a.server?.guild === interaction.guild.id))
+      if (!team) return interaction.editReply({ content: 'Použij příkaz na podporovaném discord serveru!'})
+
+      let data = await edge.get(`teams`, team.server.database, {}).then(n => n.filter(a => a.ended == true && new Date (a.start.dateTime).getTime() > time.getTime() && a.type == 'trenink'))
 
       let verify = await edge.get('general', 'users', {})
 
@@ -62,28 +55,3 @@ module.exports = {
 
     },
 }
-
-/*
-      edgeServers: [
-        {
-          name: 'Rakety Žižkoff',
-          id: '1122995611621392424',
-          database: 'rakety',
-          channels: {
-            trenink: '1128258116694310922',
-            archive: '1128283058034966548',
-            annoucment: '1123221519150088204'
-          }
-        },
-        {
-          name: 'Micropachycephalosauři',
-          id: '1128307451066855515',
-          database: 'podebrady',
-          channels: {
-            trenink: '1128307712552337419',
-            archive: '1128307904341102592',
-            annoucment: '1128330001641652305'
-          }
-        }
-      ]
-*/

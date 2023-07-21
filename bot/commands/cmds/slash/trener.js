@@ -33,18 +33,16 @@ module.exports = {
 
       let action = interaction.options.getString('action')
 
-      let data = await edge.get('general', 'clubs', {})
+      let data = await edge.get('general', 'users', {})
 
-      let trainer = data.find(n => n._id == 'list')
-
-      data = data.filter(n => n._id !== 'list')
+      let trainer = await edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
 
       if (action == 'list') {
 
         let desc = trainer.list.map(n => {
-          let tym = data.find(a => a.users.includes(n))
+          let user = data.find(a => a._id == n) || {}
+          let tym = user.team &&  user.team !== 'ne' ? ` - <@&${user.team}>` : ``
           let leader = trainer.leaders.includes(n) ? ' 👑' : ''
-          tym = tym ? ` - ${tym.name}` : ''
 
           let res = {send: `<@${n}>` + leader + tym, sort: tym.length ? tym.slice(3).toLowerCase() : 'zzz' }
           return res
@@ -70,7 +68,7 @@ module.exports = {
 
         trainer.list.push(user.id)
 
-        await edge.post('general', 'clubs', trainer)
+        await edge.post('general', 'treneri', trainer)
 
         await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 
@@ -79,7 +77,7 @@ module.exports = {
         if (!trainer.list.includes(user.id)) return interaction.editReply({ embeds: [{ title: 'ERROR v REMOVE cmd', description: `<@${user.id}> není na listině trenérů!`, color: 15548997, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
         trainer.list = trainer.list.filter(n => n !== user.id)
 
-        await edge.post('general', 'clubs', trainer)
+        await edge.post('general', 'treneri', trainer)
 
         await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${user.id}> byl odebrán z listiny trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
         return edge.discord.roles.updateRoles()

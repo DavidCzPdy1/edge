@@ -27,10 +27,10 @@ const getEmbed = (data, options = {}) => {
 }
 
 module.exports = {
-    name: 'micro-hlasovani',
+    name: 'team-hlasovani',
     description: 'Creates new question!',
     permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1128308482160996453', type: 'ROLE', permission: true}],
-    guild: ['1128307451066855515'],
+    guild: ['1128307451066855515', '1122995611621392424'],
     options: [
       {
         name: 'question',
@@ -67,27 +67,30 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true })
 
       let data = {
+        _id: String(new Date().getTime()),
         question: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
         answers: interaction.options.getString('answers').replaceAll('.', '/'),
         time: null,
-        mode: interaction.options.getString('mode') || 'user',
+        mode: 'user',
         type: 'hlasovani',
-        channel: '1123221519150088204',
         pings: 0,
         pingsData: [],
         created: new Date().getTime(),
         format: interaction.options.getString('format') || 'mention'||'text'
       }
 
+      let team = await edge.get('general', 'clubs').then(n => n.find(a => a.server?.guild === interaction.guild.id))
+      if (!team) return interaction.editReply({ content: '**ERROR!** Nenašel jsem daný dc server v club databázi!'})
+
+      data.color = team.color
+      data.content = team.server.ping?.annoucment ? `[<@&${team.server.ping.annoucment}>]` : undefined
+      data.channel = team.server?.channels?.annoucment
       data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')
-
-      let events = await edge.get('podebrady', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data.question.toLowerCase()))
-      let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo event s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
-      if (events.length) return interaction.editReply({ embeds: [errorEmbed]})
-      
-
       data.finished = -1;
+
+      let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Není nadefinovaný channel!\nKontaktuj prosím developera`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
+      if (!data.channel) return interaction.editReply({ embeds: [errorEmbed]})  
 
       let embed = getEmbed(data)
       if (embed.fields.length > 5) return interaction.editReply({ embeds: [updateDesc(errorEmbed, `Je zadáno moc odpovědí! (${embed.fields.length})`)]})
@@ -95,19 +98,15 @@ module.exports = {
       let odpovedi = new ActionRowBuilder();
 
       for (let answer of data.answers.split('|')) {
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`micro-hlasovani_cmd_select_${data.question}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_select_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
         data[answer] = []
       }
 
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`micro-hlasovani_cmd_accept_${data.question}`).setStyle(3).setLabel('POSLAT'))
-        .addComponents(new ButtonBuilder().setCustomId(`micro-hlasovani_cmd_deny_${data.question}`).setStyle(4).setLabel('NEPOSLAT'))
-        
-    
-      data._id = data.question
-      delete data.question
+        .addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_accept_${team.server.database}_${data._id}`).setStyle(3).setLabel('POSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_deny_${team.server.database}_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
 
-      await edge.post('podebrady', 'events', data)
+      await edge.post('teams', team.server.database, data)
 
       let souhrn = Object.keys(data).map(n => { return {name: n, value: data[n], inline: true}}).filter(n => typeof n.value === 'string' || typeof n.value === 'number')
       await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: true})
@@ -116,10 +115,11 @@ module.exports = {
     },
     select: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
-      let answer = interaction.customId.split('_')[4]
+      let db = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[4]
+      let answer = interaction.customId.split('_')[5]
 
-      let data = await edge.get('podebrady', 'events', {_id: question})
+      let data = await edge.get('teams', db, {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -144,27 +144,32 @@ module.exports = {
         interaction.followUp({ embeds: [embed], ephemeral: true })
       }
 
-      await edge.post('podebrady', 'events', data)
+      await edge.post('teams', db, data)
 
       let embed = getEmbed(data, { guild: interaction.guild })
       await interaction.message.edit({ embeds: [embed]})
     },
     deny: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let db = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[4]
 
-      await edge.delete('podebrady', 'events', {_id: question})
+      await edge.delete('teams', db, {_id: _id})
       interaction.editReply({ components: []})
     },
     accept: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let db = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[4]
 
-      let event = await edge.get('podebrady', 'events', {_id: question})
+      console.log(_id)
+      console.log(db)
+
+      let event = await edge.get('teams', db, {_id: _id})
       if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
       event = event[0]
 
-      let channel = dc_client.channels.cache.get(event.channel)
+      let channel = interaction.guild.channels.cache.get(event.channel)
       if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: true })
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
       if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
@@ -172,21 +177,22 @@ module.exports = {
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
         let styl = 2
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`micro-hlasovani_cmd_select_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_select_${db}_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
       }
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&1128309507190181928>]`, allowedMentions: { parse: ['roles']} })
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: event.content, allowedMentions: { parse: ['roles']} })
       event.msgUrl = message.url
       event.message = message.id
 
-      await edge.post('podebrady', 'events', event)
+      await edge.post('teams', db, event)
     },
     dochazka: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let _id = interaction.customId.split('_')[3]
-      let answer = interaction.customId.split('_')[4]
+      let db = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[4]
+      let answer = interaction.customId.split('_')[5]
 
-      let data = await edge.get('podebrady', 'treninky', {_id: _id})
+      let data = await edge.get('teams', db, {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný trénink!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -211,23 +217,23 @@ module.exports = {
         interaction.followUp({ embeds: [embed], ephemeral: true })
       }
 
-      await edge.post('podebrady', 'treninky', data)
+      await edge.post('teams', db, data)
 
       let embed = getEmbed(data, { guild: interaction.guild })
       await interaction.message.edit({ embeds: [embed]})
     },
     treninkEdit: async (edge, interaction) => {
       await interaction.update({ type:6 })
-
-      let _id = interaction.customId.split('_')[3]
-      let data = await edge.get('podebrady', 'treninky', {_id: _id})
+      let db = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[4]
+      let data = await edge.get('teams', db, {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný trénink!', description: `Už není v databázi!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
       //console.log(interaction)
 
       let toggleRole = interaction.roles?.first()?.name
-      if (!toggleRole || !toggleRole.startsWith('Edit ') || interaction.roles.size > 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit jednu z edit rolí:\n<@&1128309187001208872>/<@&1128309223038664754>/<@&1128309248837812254>`, color: 15548997 }], ephemeral: true })
+      if (!toggleRole || !toggleRole.startsWith('Edit ') || interaction.roles.size > 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit jednu z edit rolí!`, color: 15548997 }], ephemeral: true })
       let answer = toggleRole.replace('Edit ', '')
 
       if (interaction.users?.size < 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit více než jednoho uživatele!`, color: 15548997 }], ephemeral: true })
@@ -255,7 +261,7 @@ module.exports = {
         }
       }
 
-      await edge.post('podebrady', 'treninky', data)
+      await edge.post('teams', db, data)
       await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild})]})
       await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.question}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: true })
     }

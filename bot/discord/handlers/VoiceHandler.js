@@ -20,13 +20,14 @@ class VoiceHandler {
 
   newConnection(conn = null) {
     conn?.destroy()
+    if (this.connection && this.connection._state && this.connection._state.status !== 'destroyed') this.connection?.destroy()
     this.connection = undefined
     this.player?.removeAllListeners()
 
     if (!this.edge.config.discord.voice.enabled) return;
 
     let channel = dc_client.channels.cache.get(this.edge.config.discord.voice.channel)
-    if (!channel) return undefined
+    if (!channel) return console.error('Nenašel jsem VOICE CHANNEL')
     let connection = joinVoiceChannel({
       channelId: channel.id,
       guildId: channel.guildId,
@@ -35,8 +36,10 @@ class VoiceHandler {
     });
 
     //channel.guild.me.voice.setMute(false)
+    try {
+      channel.guild.members.cache.get(dc_client.user.id)?.edit({mute:false})
+    } catch (e) {}
     
-    channel.guild.members.cache.get(dc_client.user.id)?.edit({mute:false})
 
 
     const player = createAudioPlayer();
@@ -44,7 +47,7 @@ class VoiceHandler {
     //resource.volume.setVolume(1);
 
     connection.subscribe(player); 
-    connection.on(VoiceConnectionStatus.Ready, () => { player.play(resource) })
+    connection.on(VoiceConnectionStatus.Ready, () => { try { player.play(resource) } catch (e) {this.newConnection(connection)} })
     connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
         try {
             let res = await Promise.race([

@@ -139,7 +139,7 @@ module.exports = {
       if (current == 'tym') {
         let tymy = await edge.get('general', 'clubs', {})
 
-        let show = tymy.filter(n => n._id !== 'list').map(n => { return {name: n.name, value: n._id} })
+        let show = tymy.map(n => { return {name: n.name, value: n.id} })
         let focused = interaction.options.getFocused()
   
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()))

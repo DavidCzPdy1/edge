@@ -13,7 +13,7 @@ module.exports = {
 
       let ikona = interaction.guild.iconURL()
 
-      let trainer = await edge.get('general', 'clubs', {_id: 'list'}).then(n => n[0])
+      let trainer = await edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
 
       let id = interaction.targetId
 
@@ -21,7 +21,7 @@ module.exports = {
 
       trainer.list.push(id)
 
-      await edge.post('general', 'clubs', trainer)
+      await edge.post('general', 'treneri', trainer)
 
       await interaction.editReply({ embeds: [{ title: 'SUCCESS', description: `<@${id}> byl přidán na listinu trenérů!`, color: 2067276, footer: { text: 'EDGE /trener cmd', icon_url: ikona } }]})
 

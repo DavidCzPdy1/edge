@@ -25,8 +25,8 @@ class Mongo extends Config {
     }
 
     async post(db, col, query, upsert=true) {
-      let q = query._id ? {_id: query._id} : (query.uuid ? { uuid: query.uuid} : (query.name ? query.name : null))
-      if (!q) { console.error('Mongo db nenašlo _id|uuid|name'); return false }
+      let q = query._id ? {_id: query._id} : (query.id ? { id: query.id} : (query.name ? query.name : null))
+      if (!q) { console.error('Mongo db nenašlo _id|id|name'); return false }
       try {
         const collection = this.mongo.db(db).collection(col);
         return await collection.updateOne(q, { $set: query }, { upsert: upsert })

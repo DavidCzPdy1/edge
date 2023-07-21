@@ -11,22 +11,22 @@ class RoleHandler {
     if (!guild) return console.error('Bot není na EDGE DC')
     this.guild = guild
 
-    let members = await guild.members.fetch();
+    let data = await this.edge.get('general', 'clubs', {})
 
-    for (let id of Object.keys(this.config.roles).filter(n => n.startsWith('club_')).map(n => this.config.roles[n])) {
-      let role = guild.roles.cache?.get(id)
-      if (!role) { console.error('Nebyla nalezena club role s ID ' + id); continue; }
+    for (let club of data) {
 
-      let data = {
-        _id: id,
-        name: role.name,
-        color: role.color,
-        users: role.members.map(n => n.id),
-        trainers: role.members.filter(n => n._roles.includes(this.config.roles.position_trener)).map(n => n.id)
+      let role = guild.roles.cache.get(club.id) || guild.roles.cache.find(n => n.name == club.name)
+      if (!role) {
+        role = await guild.roles.create({
+          name: club.name,
+          color: club.color || 17575,
+          position: (guild.roles.cache.get('1108826744573661204')?.rawPosition || 0) + 1
+        })
       }
-
-      await edge.post('general', 'clubs', data)
+      
+      if (role.name !== club.name || role.id !== club.id || role.color !== club.color) await this.edge.post('general', 'clubs', {_id: club._id, color: role.color, name: role.name, id: role.id})
     }
+
   }
 
   async updateRoles(ids = []) {
@@ -37,7 +37,7 @@ class RoleHandler {
 
     if (ids.length) members = members.filter(n => ids.includes(n.user.id))
 
-    let trainer = await this.edge.get('general', 'clubs', { _id: 'list' }).then(n => n[0])
+    let trainer = await this.edge.get('general', 'treneri', { _id: 'list' }).then(n => n[0])
     let users = await this.edge.get('general', 'users', {})
 
     for (let member of members) {
