@@ -1,7 +1,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
+const { PermissionsBitField } = require('discord.js')
 class Config {
   constructor() {
 
@@ -55,9 +55,14 @@ class Config {
   handlePerms(perms, api) {
     if (!Array.isArray(perms) || !perms.length) return true
     let id = (api.user || api.author).id
-    let allowed = perms?.find(n => n.type == 'USER' && id === n.id || n.type === 'ROLE' && n.guild && global.dc_client?.guilds?.cache.get(n.guild)?.members.cache.get(id)?._roles?.includes(n.id) || n.type === 'ROLE' && api.member?._roles.includes(n.id)) || false
+    let allowed = perms?.find(n => n.type == 'USER' && id === n.id || n.type === 'ROLE' && api.member && api.member?._roles.includes(n.id) || n.type === 'ROLE' && n.guild && global.dc_client?.guilds?.cache.get(n.guild)?.members.cache.get(id)?._roles?.includes(n.id) || n.type == 'PERMS' && api.member && api.member.permissions?.has(n.id.filter(b=> Object.keys(PermissionsBitField.Flags).includes(b)).map(a => PermissionsBitField.Flags[a]))) || false
     if (allowed) return true
     else return false
+    
+    /*
+    type 'PERMS' options:
+    https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits
+    */
   }
 
   mergeSettings(def, given) {

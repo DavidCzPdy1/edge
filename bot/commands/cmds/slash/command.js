@@ -1,7 +1,7 @@
 
 const { ActionRowBuilder, ButtonBuilder } = require('discord.js')
 
-const printPerms = (perm) => `<@${perm.type == 'USER' ? '' : '&' }${perm.id}> ➜ ${perm.permission ? 'appoved' : 'denined'}`;
+const printPerms = (perm) => perm.type == 'PERMS' ? ('**Server Permissions** ➜ ' + perm.id.join(', ')) : `<@${perm.type == 'USER' ? '' : '&' }${perm.id}> ➜ ${perm.permission ? 'appoved' : 'denined'}`;
 
 module.exports = {
     name: 'command',

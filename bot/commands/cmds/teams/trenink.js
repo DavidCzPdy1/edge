@@ -1,12 +1,13 @@
 
-const { ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, ModalBuilder, TextInputBuilder } = require('discord.js')
 
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
+const textBox = (options) => new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId(options.id).setLabel(options.text).setPlaceholder(options.example ?? '').setStyle(options.style || 1).setRequired(options.required ?? true).setValue(options.value || '').setMaxLength(options.max ?? 4000).setMinLength(options.min ?? 0))
 
 module.exports = {
     name: 'trenink',
     description: 'Statistiky z tréninků!',
-    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1128308482160996453', type: 'ROLE', permission: true}],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: ['Administrator'], type: 'PERMS', permission: true }],
     guild: ['1128307451066855515', '1122995611621392424'],
     options: [
       {

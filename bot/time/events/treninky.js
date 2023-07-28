@@ -59,7 +59,7 @@ module.exports = {
         let channel = dc_client.channels.cache.get(data.channel)
         if (!channel) { console.error(`Nenašel jsem kanál s id ${data.channel} - ${team.name} treninky`); continue}
         let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-        if (!access) return console.error(`Nemám oprávnění posílat embed zprávy do ${channel} - ${team.name} treninky`)
+        if (!access) {console.error(`Nemám oprávnění posílat embed zprávy do ${channel} - ${team.name} treninky`); continue}
   
         let message = await channel.send(msg)
         data.msgUrl = message.url

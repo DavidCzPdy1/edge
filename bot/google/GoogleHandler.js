@@ -14,6 +14,7 @@ class GoogleHandler {
 
   async init() {
     let credits = await this.edge.get('login', 'google', {_id: 'login'}).then(n => n[0])
+
     this.auth = new google.auth.GoogleAuth({
       scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/calendar.readonly'],
       credentials: credits
@@ -23,6 +24,8 @@ class GoogleHandler {
 
     this.sheets = google.sheets({ version: 'v4', auth: this.client})
     this.calendar = google.calendar({version: 'v3', auth: this.client});
+
+    this.edgeCal = await this.edge.get('login', 'google', {_id: 'edgeCal'}).then(n => n[0].value)
   }
 
 
@@ -171,6 +174,14 @@ class GoogleHandler {
       orderBy: 'startTime',
     })
     return res.data.items;
+  }
+
+  async fetchCalendar(calendar, event) {
+    const res = await this.calendar.events.get({
+      calendarId: calendar,
+      eventId: event
+    })
+    return res.data;
   }
     
 
