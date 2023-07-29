@@ -42,13 +42,6 @@ class VoiceHandler {
       selfMute: false
     });
 
-    //channel.guild.me.voice.setMute(false)
-    try {
-      channel.guild.members.cache.get(dc_client.user.id)?.edit({mute:false})
-    } catch (e) {}
-    
-
-
     const player = createAudioPlayer();
     const resource = createAudioResource(this.edge.config.discord.voice.stream, { inputType: StreamType.Arbitrary, inlineVolume: true });
     //resource.volume.setVolume(1);
