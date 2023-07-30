@@ -28,6 +28,17 @@ console.discord = (message, args = {}) => {
 }
 
 /* 
+EMBED log
+@param {embed}
+@returns {undefined}
+@usage console.embed(embed)
+*/
+console.embed = (embed) => {
+  if (global.config?.discord.log_channel === true) global.channels?.log?.send({ embeds: [embed] })
+  return
+}
+
+/* 
 MONGO log
 @param {message, footer}
 @returns {embed}
@@ -76,7 +87,7 @@ console.error = async (message, type = '') => {
 
   let embed = { author: { name: String(message).trim() }, description: type || null, color: 15548997, footer: { text: path !== 'unknown path' ? path : null } }
 
-  //console.log(message)
+  console.log(message)
 
   console.log(chalk.bgRedBright.black(`[${getCurrentTime()}] Error >`) + ' ' + chalk.redBright(message) + chalk.blueBright(`${path !== 'unknown path' ? ` at ${global.path + path}` : ''}`))
   if (global.config?.log_channel === true) {

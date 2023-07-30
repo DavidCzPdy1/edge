@@ -27,5 +27,4 @@ module.exports = async (edge, client) => {
 
     await edge.discord.roles.init()
     edge.discord.roles.updateRoles()
-    edge.discord.voice.init()
 }

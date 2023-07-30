@@ -45,6 +45,13 @@ module.exports = {
       if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
       if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
+      if (jmeno === 'unverify') {
+        await edge.delete('general', 'users', {_id: member.user.id})
+        edge.discord.roles.updateRoles([member.user.id])
+        return interaction.editReply({ embeds: [{ title: 'SECRET UNVERIFY', description: `Unverifikoval jsi uživatele ${member.user}!`, color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
+      }
+
+
       let embed = {
         title: custom ? `Verifikoval/a jsi ${member.user.username} jako ${jmeno}` : `Verifikoval/a ses jako ${jmeno}`,
         description: 'Nepožádal/a jsi o roli žádného týmu.\nPokud v budoucnu budeš chtít nějakou týmovou roli, použit tento command znovu',

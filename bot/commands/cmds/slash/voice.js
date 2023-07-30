@@ -1,4 +1,5 @@
 const axios = require('axios')
+const { useMainPlayer, useQueue } = require('discord-player');
 
 module.exports = {
     name: 'voice',
@@ -9,11 +10,35 @@ module.exports = {
     platform: 'discord',
     run: async (edge, interaction) => {
       await interaction.deferReply({ ephemeral: true })
-      
-      let content = 'null'
 
-      let row = await axios.get(`https://m.radio7.cz/vysilame_row.php`).then(n => n.data)
-      content = row
+      let song = 'https://youtu.be/fLcVaq8uJIY?si=G4K6PxCFYZXXQQQw'
+      let channel = dc_client.channels.cache.get(edge.config.discord.voice.channel)
+
+      const player = useMainPlayer();
+      
+    
+      let search = await player.search(song, { });
+
+      let queue = player.queues.cache.get(interaction.guild.id)
+      if (!queue) queue = player.queues.create(channel.guild, { skipOnNoStream: false, volume: 100, leaveOnEnd: false, leaveOnEmpty: false})
+      
+      const entry = queue.tasksQueue.acquire();
+      await entry.getTask();
+      
+      queue.insertTrack(search, 0);
+
+      try {
+        if (!queue.isPlaying()) await queue.node.play();
+    } finally {
+        queue.tasksQueue.release();
+    }
+      
+
+
+      interaction.editReply({ content: 'soon', ephemeral: true})
+return
+
+
      // if (row) {
 /*
         let porad = row.match(/(<strong>)(.*?)(<\/strong>: )/)
@@ -35,8 +60,6 @@ module.exports = {
 
       
 
-      let voice = edge.discord.voice
-      voice.play()
-      interaction.editReply({ content: content })
+
     }
 }

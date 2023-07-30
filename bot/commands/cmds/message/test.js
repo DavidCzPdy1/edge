@@ -17,7 +17,7 @@ module.exports = {
 
             let embed = {
                 title: 'Role',
-                description: `<:dot:1109460785723351110>Rozděleno do tří sekcí!\n\n<:discord:1109464699843645531>➜ Pozice\n<:people:1109468903719059486> ➜ Tým\n<:custom:1109467732371570749> ➜ Ping\n\nPotřebuješ pomoc / něco nefunguje? Označ mě! ➜ <@&1109473883452612658>`,
+                description: `<:dot:1109460785723351110>Rozděleno do tří sekcí!\n\n<:discord:1109464699843645531> ➜ Pozice\n<:people:1109468903719059486> ➜ Tým\n<:custom:1109467732371570749> ➜ Ping\n\nPotřebuješ pomoc / něco nefunguje? Označ mě! ➜ <@&1109473883452612658>`,
                 footer: { text: 'Klikni na tlačítko pro více informací', icon_url: message.guild.iconURL()},
             }
 

@@ -20,6 +20,8 @@ module.exports = {
       let guild = dc_client.guilds.cache.get(team.server.guild)
       if (!guild) continue
 
+      if (!team.server.config?.treninky) continue;
+
       let calendar = await google.getCalendar(team.server.calendar).then(n => n/*.filter(a => a.summary.toLowerCase().includes(`trenink`) || a.summary.toLowerCase().includes(`trénink`))*/[0])
       let data = await edge.get('teams', team.server.database, {}).then(n => n.filter(a => !a.ended && a.type == 'trenink')[0])
       if (!data && !calendar) continue
