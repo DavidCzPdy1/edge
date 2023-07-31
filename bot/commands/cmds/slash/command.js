@@ -6,7 +6,7 @@ const printPerms = (perm) => perm.type == 'PERMS' ? ('**Server Permissions** ➜
 module.exports = {
     name: 'command',
     description: 'Discord command info!',
-    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}],
     options: [
       {
         name: 'command',
@@ -53,6 +53,15 @@ module.exports = {
 
         if (prikaz) embed.fields.push({name: 'ID', value: `\`${id}>\``, inline: false})
         
+      } else if (cmd.type == 'sub') {
+
+        let commands = await dc_client.application.commands.fetch()
+
+        let prikaz = commands.find(n => n.name == cmd.name?.split('-')[0])
+        if (!prikaz && interaction.guild) prikaz = interaction.guild.commands.cache.find(n => n.name == cmd.name?.split('-')[0])
+        let id = prikaz?.id
+
+        if (prikaz) embed.fields.push({name: 'ID', value: `</${cmd.name.replace('-', ' ')}:${id}> | \`</${cmd.name.replace('-', ' ')}:${id}>\``, inline: false})
       }
 
       if (cmd.permissions.length) embed.fields.push({name: 'Permissions', value: cmd.permissions.map(n => printPerms(n)).join('\n'), inline: false})

@@ -38,6 +38,15 @@ class CommandsHandler extends Mongo {
             })
         }
     }
+
+    cmds.filter(n => n.type == 'sub').forEach(c => {
+      let command = cmds.get(c.name.split('-')[0])
+      
+      if (command) {
+        command.options.push({ name: c.name.split('-')[1], description: c.description||"", type: 1, options: c.options || [] })
+      }
+    })
+
     this.commands = cmds
     this.aliases = aliases
     console.discord(`${this.commands.size}/${cmdCount} Commands Loaded`)

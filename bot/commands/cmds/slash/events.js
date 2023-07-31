@@ -4,7 +4,7 @@ const { ActionRowBuilder, ButtonBuilder, RoleSelectMenuBuilder } = require('disc
 module.exports = {
     name: 'events',
     description: 'Shows events info!',
-    permissions: [],
+    permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}],
     options: [
       {
         name: 'event',

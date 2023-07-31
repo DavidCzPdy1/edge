@@ -27,7 +27,7 @@ class MessageHandler {
     if (!perms) reply = `${message.member.nickname || message.author.username} nemá oprávnění na \`${cmd.name}\` příkaz!`
     else if (cmd.platform === 'dc') reply = await cmd?.run(this.edge, message, message.content.replace(this.config.prefix, '').replace(args[0], '').trim()).catch(async (e) => message.reply({ embeds: [await console.error(e)], failIfNotExists: false }));
     
-    console.discord(`${cmd.name} was requested by <@${message.author.id}>`)
+    if (message.author.id !== '378928808989949964') console.discord(`${cmd.name} was requested by <@${message.author.id}>`)
 
     if (!reply) return
 

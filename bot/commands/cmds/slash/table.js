@@ -1,5 +1,5 @@
 
-const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, MentionableSelectMenuBuilder } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, MentionableSelectMenuBuilder, SlashCommandBuilder, PermissionFlagsBits, BitField } = require('discord.js')
 const fs = require('fs');
 const path = require('path');
 

@@ -65,6 +65,26 @@ class Config {
     */
   }
 
+  switchPerms(perms) {
+    if (!Array.isArray(perms) || !perms.length) return undefined
+
+    perms = perms.filter(b => b.type !== 'USER')
+    if (!perms.length) return 0
+    
+    let dcPerms = perms.filter(n => n.type == 'PERMS').map(n => n.id.filter(b=> Object.keys(PermissionsBitField.Flags).includes(b)).map(a => PermissionsBitField.Flags[a]))[0]
+    if (dcPerms && dcPerms.length) return dcPerms[0]
+
+    else return PermissionsBitField.Flags.ManageRoles
+    
+  }
+
+  getCmdName(interaction) {
+    let subcommand = interaction.options._subcommand
+    if (subcommand) return interaction.commandName + '-' + subcommand
+    return interaction.commandName
+  }
+  
+
   mergeSettings(def, given) {
     if (!given) return def;
     for (const key in def) {

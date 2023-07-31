@@ -162,9 +162,6 @@ module.exports = {
       let db = interaction.customId.split('_')[3]
       let _id = interaction.customId.split('_')[4]
 
-      console.log(_id)
-      console.log(db)
-
       let event = await edge.get('teams', db, {_id: _id})
       if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
       event = event[0]
