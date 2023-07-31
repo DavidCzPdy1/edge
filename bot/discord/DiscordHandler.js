@@ -1,6 +1,5 @@
 
-const { Client, Collection, GatewayIntentBits, Partials, Message, VoiceChannel } = require('discord.js');
-const { Player } = require('discord-player');
+const { Client, Collection, GatewayIntentBits, Partials, Message } = require('discord.js');
 const path = require('node:path');
 const fs = require('fs');
 
@@ -19,7 +18,7 @@ class DiscordHandler {
   async init() {
     
     global.dc_client = new Client({
-      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildVoiceStates],
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages],
       partials: [Partials.Channel, Partials.GuildMember],
       allowedMentions: { parse: [] }
     });
@@ -43,23 +42,6 @@ class DiscordHandler {
     }
 
     console.discord(`${eventsCount}/${events.length} Events Loaded`)
-
-    let player = new Player(this.client);
-
- //https://discord-player.js.org/docs/discord-player/type/GuildQueueEvents
-    const voice = fs.readdirSync(path.join(__dirname, './voice')).filter((file) => file.endsWith(".js"));
-    let voiceCount = voice.length
-    for (const file of voice) {
-      try {
-          const event = require(`./voice/${file}`)
-          player.events.on(file.split(".")[0], event.bind(null, this.edge));
-      } catch (e) {
-          console.error(e)
-          voiceCount -= 1
-      }
-    }
-    
-    console.discord(`${voiceCount}/${voice.length} Voice Events Loaded`)
   } 
 
 }
