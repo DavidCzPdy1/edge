@@ -41,12 +41,11 @@ class DiscordHandler {
           eventsCount -= 1
       }
     }
-    
+
     console.discord(`${eventsCount}/${events.length} Events Loaded`)
 
     let player = new Player(this.client);
-    await player.extractors.loadDefault();
-    this.radio = await player.search(config.discord.voice.stream, {}).then(n => n.tracks[0])
+
  //https://discord-player.js.org/docs/discord-player/type/GuildQueueEvents
     const voice = fs.readdirSync(path.join(__dirname, './voice')).filter((file) => file.endsWith(".js"));
     let voiceCount = voice.length
