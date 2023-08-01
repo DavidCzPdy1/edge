@@ -5,7 +5,7 @@ const eventName = module.filename.includes('/') ? module.filename.split('/').fil
 
 module.exports = {
   name: eventName,
-  description: "Time event manages trenings for Micropachycephalosauři Poděbrady",
+  description: "Time event manages trenings for Edge Servers",
   emoji: '🦖',
   time: '0 */5 * * * *', //'*/10 * * * * *'
   ignore: '* * * * * *', //'sec min hour den(mesic) mesic den(tyden)'
@@ -16,57 +16,110 @@ module.exports = {
 
     let google = edge.google
 
-    for (team of teams) {
+    for (let team of teams) {
       let guild = dc_client.guilds.cache.get(team.server.guild)
       if (!guild) continue
 
-      if (!team.server.config?.treninky) continue;
-
-      let calendar = await google.getCalendar(team.server.calendar).then(n => n/*.filter(a => a.summary.toLowerCase().includes(`trenink`) || a.summary.toLowerCase().includes(`trénink`))*/[0])
-      let data = await edge.get('teams', team.server.database, {}).then(n => n.filter(a => !a.ended && a.type == 'trenink')[0])
-      if (!data && !calendar) continue
-      if (!data) data = newData(calendar, team)
-
-      // END EVENT NOW
-      if (new Date().getTime() > new Date(data.end.dateTime)) {
-        data.ended = true
-        if (data.message) {
-          let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
-          if (message) {
-            let selectMenu = new ActionRowBuilder().addComponents(
-              new MentionableSelectMenuBuilder().setCustomId('team-hlasovani_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
-            )
-            await dc_client.channels.cache.get(team.server.channels.archive)?.send({embeds: message.embeds, components: [selectMenu]})
-            await message.delete()
+      if (team.server.config?.treninky) {
+        let calendar = await google.getCalendar(team.server.calendar).then(n => n.filter(a => a.summary.toLowerCase().includes(`trenink`) || a.summary.toLowerCase().includes(`trénink`))[0])
+        let data = await edge.get('teams', team.server.database, {}).then(n => n.filter(a => !a.ended && a.type == 'trenink')[0])
+        if (!data && !calendar) continue
+        if (!data) data = newData(calendar, team)
+  
+        // END EVENT NOW
+        if (new Date().getTime() > new Date(data.end.dateTime)) {
+          data.ended = true
+          if (data.message) {
+            let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
+            if (message) {
+              let selectMenu = new ActionRowBuilder().addComponents(
+                new MentionableSelectMenuBuilder().setCustomId('team-hlasovani_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
+              )
+              await dc_client.channels.cache.get(team.server.channels.archive)?.send({embeds: message.embeds, components: [selectMenu]})
+              await message.delete()
+            }
           }
+          await edge.post('teams', team.server.database, data)
+  
+          if (!calendar) continue
+          data = newData(calendar, team)
         }
-        await edge.post('teams', team.server.database, data)
+  
+        // NEW EVENT NOW
+        if (!data.message) {
+  
+          let buttons = new ActionRowBuilder()
+          for (let answer of data.answers.split('|')) {
+            buttons.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+            data[answer] = []
+          }
+          let embed = getEmbed(data, {guild: guild})
+          
+          let msg = {embeds: [embed], components: [buttons], content: team.server?.ping?.trenink ? `[<@&${team.server.ping.trenink}>]` : undefined, allowedMentions: { parse: ['roles']} }
+    
+          let channel = dc_client.channels.cache.get(data.channel)
+          if (!channel) { console.error(`Nenašel jsem kanál s id ${data.channel} - ${team.name} treninky`); continue}
+          let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
+          if (!access) {console.error(`Nemám oprávnění posílat embed zprávy do ${channel} - ${team.name} treninky`); continue}
+    
+          let message = await channel.send(msg)
+          data.msgUrl = message.url
+          data.message = message.id
+          await edge.post('teams', team.server.database, data)
+        }
 
-        if (!calendar) continue
-        data = newData(calendar, team)
       }
 
-      // NEW EVENT NOW
-      if (!data.message) {
-
-        let buttons = new ActionRowBuilder()
-        for (let answer of data.answers.split('|')) {
-          buttons.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
-          data[answer] = []
+      if (team.server.config?.turnaje) {
+        let calendar = await google.getCalendar(team.server.calendar).then(n => n.filter(a => a.summary.toLowerCase().includes(`turnaj`))[0])
+        let data = await edge.get('teams', team.server.database, {}).then(n => n.filter(a => !a.ended && a.type == 'turnaj')[0])
+        if (!data && !calendar) continue
+        if (!data) data = newData(calendar, team)
+        data.type = 'turnaj'
+        data.channel = team.server.channels.turnaj
+  
+        // END EVENT NOW
+        if (new Date().getTime() > new Date(data.end.dateTime)) {
+          data.ended = true
+          if (data.message) {
+            let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
+            if (message) {
+              let selectMenu = new ActionRowBuilder().addComponents(
+                new MentionableSelectMenuBuilder().setCustomId('team-hlasovani_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
+              )
+              await dc_client.channels.cache.get(team.server.channels.archive)?.send({embeds: message.embeds, components: [selectMenu]})
+              await message.delete()
+            }
+          }
+          await edge.post('teams', team.server.database, data)
+  
+          if (!calendar) continue
+          data = newData(calendar, team)
         }
-        let embed = getEmbed(data, {guild: guild})
-        
-        let msg = {embeds: [embed], components: [buttons], content: team.server?.ping?.trenink ? `[<@&${team.server.ping.trenink}>]` : undefined, allowedMentions: { parse: ['roles']} }
   
-        let channel = dc_client.channels.cache.get(data.channel)
-        if (!channel) { console.error(`Nenašel jsem kanál s id ${data.channel} - ${team.name} treninky`); continue}
-        let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-        if (!access) {console.error(`Nemám oprávnění posílat embed zprávy do ${channel} - ${team.name} treninky`); continue}
+        // NEW EVENT NOW
+        if (!data.message) {
   
-        let message = await channel.send(msg)
-        data.msgUrl = message.url
-        data.message = message.id
-        await edge.post('teams', team.server.database, data)
+          let buttons = new ActionRowBuilder()
+          for (let answer of data.answers.split('|')) {
+            buttons.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+            data[answer] = []
+          }
+          let embed = getEmbed(data, {guild: guild})
+          
+          let msg = {embeds: [embed], components: [buttons], content: team.server?.ping?.trenink ? `[<@&${team.server.ping.trenink}>]` : undefined, allowedMentions: { parse: ['roles']} }
+    
+          let channel = dc_client.channels.cache.get(data.channel)
+          if (!channel) { console.error(`Nenašel jsem kanál s id ${data.channel} - ${team.name} turnaje`); continue}
+          let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
+          if (!access) {console.error(`Nemám oprávnění posílat embed zprávy do ${channel} - ${team.name} turnaje`); continue}
+    
+          let message = await channel.send(msg)
+          data.msgUrl = message.url
+          data.message = message.id
+          await edge.post('teams', team.server.database, data)
+        }
+
       }
 
 

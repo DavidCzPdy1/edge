@@ -78,14 +78,14 @@ class RoleHandler {
       } else try { await member.setNickname(null) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
 
       /* Splits */
-      let splits = Object.keys(this.config.roles).filter(n => n.startsWith('split_')).map(n => n.split('_')[1])
+      let splitRoles = guild.roles.cache.filter(n => n.name.includes('▬▬')).map(n => n).sort((a, b) => b.position - a.position)
+      let positions = splitRoles.map(n => n.position)
+      for (let i = 0; i < splitRoles.length; i++) {
+        let splitRole = splitRoles[i]
 
-      for (let key of splits) {
-        let cat = Object.keys(this.config.roles).filter(n => n.startsWith(`${key}_`)).map(n => this.config.roles[n])
-
-        if (member._roles.some(n => cat.includes(n))) await this.roleAdd(member, this.roles.get(this.config.roles[`split_${key}`]))
-        else await this.roleRemove(member, this.roles.get(this.config.roles[`split_${key}`]))
-
+        let hasRole = member.roles.cache.filter(a => a.position < positions[i] && a.position > positions[i+1] || 0)
+        if (hasRole.size) await this.roleAdd(member, splitRole)
+        else await this.roleRemove(member, splitRole)
       }
     }
 
@@ -112,7 +112,8 @@ class RoleHandler {
         splitRole: false,
         memberRole: false,
         trainerRole: false,
-        treninky: false
+        treninky: false,
+        turnaje: false
       }
 
       team.server.config = edge.mergeSettings(con, team.server.config || {})
