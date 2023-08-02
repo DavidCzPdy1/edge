@@ -16,6 +16,8 @@ const getEmbed = (data, options = {}) => {
     embed.description = embed.description + `\n**Time:** <t:${data.time/1000}:R>`
   }
 
+  if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
+  if (data.settings == 'hide') embed.description = embed.description + `\n*Hlasuje se skrytě*`
   if (data.mode == 'team' && !options.tym ) embed.description = embed.description + `\n*Reaguje se za tým*`
 
   if (options.guild) {
@@ -31,6 +33,9 @@ const getEmbed = (data, options = {}) => {
       return {name: name, value: value, inline: true}
     })
   }
+
+  if (data.settings == 'hide' && !options.show) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
+
   return embed
 }
 
@@ -89,6 +94,17 @@ module.exports = {
           { value: 'member', name: 'Kdokoliv' },
         ]
       },
+      {
+        name: 'settings',
+        description: 'Jaké chceš nastavení?',
+        type: 3,
+        required: false,
+        choices: [
+          { value: 'show', name: 'Zobrazovat hlasy & 1 hlas' },
+          { value: 'hide', name: 'Skrýt hlasy' },
+          { value: 'duplicate', name: '∞ hlasy' },
+        ]
+      },
     ],
     type: 'slash',
     platform: 'discord',
@@ -101,6 +117,7 @@ module.exports = {
         answers: interaction.options.getString('answers').replaceAll('.', '/'),
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
+        settings: interaction.options.getString('settings') || 'show',
         type: 'hlasovani',
         channel: '1105918656203980870',
         perms: interaction.options.getString('perms') || 'trener',
@@ -189,7 +206,7 @@ module.exports = {
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
         console.discord(`Odstranění hlasu v \`${question}\`\n${embed.description}`)
-      } else if (!answered) {
+      } else if (!answered || data.settings == 'duplicate') {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })

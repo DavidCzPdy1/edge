@@ -37,6 +37,9 @@ module.exports = {
       let event = interaction.options.getString('event')
       if (event == 'none') event = null
 
+      let trenerRole = guild.roles.cache.get(edge.config.discord.roles.position_trener)
+      let isTrener = user && user !== 'none' ? (trenerRole.members.get(user) ? true : false) : true
+
       if (event) {
         let data;
         let type = Number(event) ? 'msg' : 'event'
@@ -58,15 +61,13 @@ module.exports = {
             if (!reacted.includes(role)) reacted.push(role)
           })
         } else {
-          data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a))})
+          data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a?.id || a))})
         }
         if (mode == 'user') {
-          let role = guild.roles.cache.get(edge.config.discord.roles.position_trener)
-          notReacted = role.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener) && !reacted.includes(n.id)).map(n => n.id)
+          notReacted = trenerRole.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener) && !reacted.includes(n.id)).map(n => n.id)
         } else {
           notReacted = teams.filter(n => !reacted.includes(n))//.map(n => guild.roles.cache.get(n))
         }
-  
         let ne = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : data._id, description: `Neodpověděli:\n${notReacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
         let ano = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : data._id, description: `Odpověděli:\n${reacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
         return interaction.editReply({ embeds: [ne, ano], allowedMentions: {parse: []}})
@@ -104,8 +105,7 @@ module.exports = {
         } else {
 
           let reacted = []
-          data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a))})
-
+          data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a?.id || a))})
           if (mode == 'user' && !reacted.includes(user)) notReacted.push(data)
           else if (mode == 'team' && !reacted.includes(club)) notReacted.push(data)
         }
@@ -116,12 +116,12 @@ module.exports = {
 
       if (verify.list.length && !(verify.list.length == 1 && verify.list[0] == club)) fields.push({ name: 'Whitelist:', value: verify.list.map(n => `<@&${n}>`).join('\n')})
       if (verify.blacklist.length) fields.push({ name: 'Blacklist:', value: verify.blacklist.map(n => `<@&${n}>`).join('\n')})
-      if (notReacted.length) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n'), inlune: false})
+      if (notReacted.length && isTrener) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n'), inlune: false})
 
       let desc = undefined
       if (user !== interaction.user.id) desc = `Ping: <@${user}>`
 
-      return interaction.editReply({ embeds: [{title: 'Profil uživatele '+verify.name, description: desc, fields: fields, color: verify.color || 13287575}]})
+      return interaction.editReply({ embeds: [{title: 'Profil uživatele '+ verify.name, description: desc, fields: fields, color: verify.color || 13287575}]})
       
     },
     autocomplete: async (edge, interaction) => {

@@ -33,7 +33,7 @@ module.exports = {
             let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
             if (message) {
               let selectMenu = new ActionRowBuilder().addComponents(
-                new MentionableSelectMenuBuilder().setCustomId('team-hlasovani_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
+                new MentionableSelectMenuBuilder().setCustomId('team-anketa_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
               )
               await dc_client.channels.cache.get(team.server.channels.archive)?.send({embeds: message.embeds, components: [selectMenu]})
               await message.delete()
@@ -50,7 +50,7 @@ module.exports = {
   
           let buttons = new ActionRowBuilder()
           for (let answer of data.answers.split('|')) {
-            buttons.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+            buttons.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
             data[answer] = []
           }
           let embed = getEmbed(data, {guild: guild})
@@ -85,7 +85,7 @@ module.exports = {
             let message = await dc_client.channels.cache.get(data.channel).messages.fetch(data.message).catch(e => {})
             if (message) {
               let selectMenu = new ActionRowBuilder().addComponents(
-                new MentionableSelectMenuBuilder().setCustomId('team-hlasovani_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
+                new MentionableSelectMenuBuilder().setCustomId('team-anketa_cmd_treninkEdit_'+team.server.database+'_'+data._id).setPlaceholder('Choose One of EDIT roles & some users to toggle').setMinValues(2).setMaxValues(20)
               )
               await dc_client.channels.cache.get(team.server.channels.archive)?.send({embeds: message.embeds, components: [selectMenu]})
               await message.delete()
@@ -102,7 +102,7 @@ module.exports = {
   
           let buttons = new ActionRowBuilder()
           for (let answer of data.answers.split('|')) {
-            buttons.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+            buttons.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_dochazka_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
             data[answer] = []
           }
           let embed = getEmbed(data, {guild: guild})

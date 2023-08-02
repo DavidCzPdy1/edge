@@ -10,6 +10,9 @@ const getEmbed = (data, options = {}) => {
       color: 14666022,
   }
 
+  if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
+  if (data.settings == 'hide') embed.description = embed.description + `\n*Hlasuje se skrytě*`
+
   if (options.guild) {
     embed.fields = embed.fields.map(n => {
       let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
@@ -23,11 +26,14 @@ const getEmbed = (data, options = {}) => {
       return {name: name, value: value, inline: true}
     })
   }
+
+  if (data.settings == 'hide' && !options.show) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
+
   return embed
 }
 
 module.exports = {
-    name: 'team-hlasovani',
+    name: 'team-anketa',
     description: 'Creates new question!',
     permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: ['Administrator'], type: 'PERMS', permission: true }],
     guild: ['1128307451066855515', '1122995611621392424'],
@@ -60,6 +66,17 @@ module.exports = {
           { value: 'mention', name: 'Označení' },
         ]
       },
+      {
+        name: 'settings',
+        description: 'Jaké chceš nastavení?',
+        type: 3,
+        required: false,
+        choices: [
+          { value: 'show', name: 'Zobrazovat hlasy & 1 hlas' },
+          { value: 'hide', name: 'Skrýt hlasy' },
+          { value: 'duplicate', name: '∞ hlasy' },
+        ]
+      },
     ],
     type: 'slash',
     platform: 'discord',
@@ -74,6 +91,7 @@ module.exports = {
         time: null,
         mode: 'user',
         type: 'hlasovani',
+        settings: interaction.options.getString('settings') || 'show',
         pings: 0,
         pingsData: [],
         created: new Date().getTime(),
@@ -98,13 +116,13 @@ module.exports = {
       let odpovedi = new ActionRowBuilder();
 
       for (let answer of data.answers.split('|')) {
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_select_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${team.server.database}_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
         data[answer] = []
       }
 
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_accept_${team.server.database}_${data._id}`).setStyle(3).setLabel('POSLAT'))
-        .addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_deny_${team.server.database}_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_accept_${team.server.database}_${data._id}`).setStyle(3).setLabel('POSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_deny_${team.server.database}_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
 
       await edge.post('teams', team.server.database, data)
 
@@ -133,7 +151,7 @@ module.exports = {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-      } else if (!answered) {
+      } else if (!answered || data.settings == 'duplicate') {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
@@ -174,7 +192,7 @@ module.exports = {
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
         let styl = 2
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-hlasovani_cmd_select_${db}_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${db}_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
       }
 
       let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: event.content, allowedMentions: { parse: ['roles']} })

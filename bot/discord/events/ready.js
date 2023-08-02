@@ -2,7 +2,7 @@
 module.exports = async (edge, client) => {
 
     console.discord('Client ready, logged in as ' + client.user.tag, {startup: true})
-    client.user.setPresence({ activities: [ { name: 'Frisbee Games', type: 3 }, {name: 'Radio 7', type: 2} ], status: "online"})
+    client.user.setPresence({ activities: [ { name: 'Frisbee Games', type: 3 } ], status: "online"})
 
     global.channels = {}
     global.channels.log = global.config.discord.loggingChannel ? await client.channels.fetch(global.config.discord.loggingChannel).catch(console.error) : null

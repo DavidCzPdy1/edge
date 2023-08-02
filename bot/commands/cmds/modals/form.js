@@ -125,14 +125,14 @@ module.exports = {
       let embed = edge.commands.get('hlasovani').getEmbed(data)
       
 
-      let odpovedi = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`forum_cmd_select_${data._id}_Accept`).setStyle(3).setLabel('Accept').setDisabled(true))
-        .addComponents(new ButtonBuilder().setCustomId(`forum_cmd_select_${data._id}_Deny`).setStyle(4).setLabel('Deny').setDisabled(true))
+      let odpovedi = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Accept`).setStyle(3).setLabel('Accept').setDisabled(true))
+        .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Deny`).setStyle(4).setLabel('Deny').setDisabled(true))
 
 
       let accept = new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT'))
         .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
-        .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Preview`).setStyle(2).setLabel('Preview'))
+        .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_preview`).setStyle(2).setLabel('Preview'))
 
         interaction.followUp({ embeds: [embed], components: [odpovedi, accept]})
 
@@ -142,6 +142,8 @@ module.exports = {
       let title = interaction.customId.split('_')[3]
       let answer = interaction.customId.split('_')[4]
       let options = interaction.customId.split('_')[5]
+
+      let preview = answer == 'preview'
 
       let data = await edge.get('general', 'events', {_id: title})
       if (!data.length) return interaction.reply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
@@ -177,9 +179,9 @@ module.exports = {
 
         let answerCount =  data.Accept.filter(n => n.id == id).length
 
-        if (answerCount >= data.numberAnswers) return interaction.reply({ embeds: [{ title: 'Reakce už je zaznamenána!', description: `Reacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }], ephemeral: true })
+        if (answerCount >= data.numberAnswers && !preview) return interaction.reply({ embeds: [{ title: 'Reakce už je zaznamenána!', description: `Reacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }], ephemeral: true })
 
-        const modal = new ModalBuilder().setCustomId('form_cmd_react_'+data._id+'_'+id).setTitle(`${data._id}`)
+        const modal = new ModalBuilder().setCustomId('form_cmd_react_'+data._id+'_'+id + '_' + answer).setTitle(`${data._id}`)
         for (let i = 0; i < data.questions.length; i++) {
           let question = data.questions[i]
           modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: undefined, required: i == data.questions.length - 1 ? false : true}))
@@ -187,10 +189,10 @@ module.exports = {
         await interaction.showModal(modal)
 
       }
-      await edge.post('general', 'events', data)
+      if (!preview) await edge.post('general', 'events', data)
 
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: interaction.guild })
-      await interaction.message.edit({ embeds: [embed]})
+      if (!preview) await interaction.message.edit({ embeds: [embed]})
 
       
     },
@@ -203,6 +205,8 @@ module.exports = {
 
       let title = interaction.customId.split('_')[3]
       let id = interaction.customId.split('_')[4]
+
+      if (interaction.customId.split('_')[5] == 'preview') return interaction.followUp({ embeds: [{ title: 'Form byl v preview režimu!', description: `Odpověď nebyla zaznamenána!`, color: 15548997 }], ephemeral: true })
 
       if (interaction.guild?.id !== '1105413744902811688') return interaction.followUp({ embeds: [{ title: 'Nenašel jsem edge discord server!', description: `Wierd error :D`, color: 15548997 }], ephemeral: true })
 

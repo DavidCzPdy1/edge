@@ -31,9 +31,9 @@ module.exports = {
 
     let ikona = interaction.guild.iconURL()
 
-    let data = interaction.options.getString('turnaj')
-    if (data !== 'null') data = await edge.get('general', 'turnaj', { _id: data.replaceAll('_', '-') }).then(n => n[0])
-    if (!data || data === 'null') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný turnaj!`, color: 15548997 }] })
+    let tourney = interaction.options.getString('turnaj')
+    let data = tourney !== 'null' ? await edge.get('general', 'turnaj', { _id: tourney.replaceAll('_', '-') }).then(n => n[0]) : null
+    if (!data) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný turnaj!`, color: 15548997 }] })
 
     let hrac = interaction.options.getString('hrac')
     if (hrac) {
@@ -46,10 +46,10 @@ module.exports = {
       return interaction.editReply({ embeds: [embed], components: [button]})
 
     } else {
-      let embed = {title: 'Seznam lidí, co hledají tým', description: 'Pro kontakrování / přijetí přidej daného hráče při posílání příkazu', color: 15882495, fields: data.players.map(n => { return {name: n.name, value: n.answer.map(a => `${a.name} - ${a.value}`).join('\n')} })}
+      let embed = {title: 'Seznam lidí, co hledají tým', description: 'Pro kontakrování / přijetí přidej daného hráče při posílání příkazu', color: 15882495, fields: data.players.filter(n => !n.accepted).map(n => ({name: n.name, value: n.answer.map(a => `${a.name} - ${a.value}`).join('\n')}))}
       return interaction.editReply({ embeds: [embed]})
     }
-    
+  
 
   },
   autocomplete: async (edge, interaction) => {
@@ -114,6 +114,14 @@ module.exports = {
     await edge.post('general', 'turnaj', db)
 
     interaction.editReply({ content: 'Tvoje žádost byla přijata!'})
+    let channel = dc_client.channels.cache.get('1105917930610368614') // trainer chat
+    let embed = {title: `Nová odpověď v hledání týmu (LF) na "${db.name}"!`, description: `**Jméno:** <@${player.user}>\n**Tým:** ${player.team && player.team !== 'ne' ? '<@&' + player.team + '>' : 'Žádný'}`, color: 15882495, fields: player.answer }
+
+    console.discord(`${interaction.user} přidal/a LF`)
+
+    channel?.send({embeds: [embed]})
+    
+
     
   },
   LFDelete: async (edge, interaction) => {
@@ -131,6 +139,7 @@ module.exports = {
     await edge.post('general', 'turnaj', db)
 
     interaction.editReply({ content: 'Byla odstraněna tvoje žádost!'})
+    console.discord(`${interaction.user} odstranil/a LF`)
 
   },
   LFAccept: async (edge, interaction) => {
@@ -149,6 +158,8 @@ module.exports = {
     await edge.post('general', 'turnaj', db)
 
     interaction.editReply({ content: 'Daný hráč byl přijat a nebude se už zobrazovat!'})
+
+    console.discord(`${interaction.user} přijal/a <@${player}> v LF`)
 
   }
  

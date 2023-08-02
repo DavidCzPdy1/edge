@@ -83,7 +83,7 @@ class RoleHandler {
       for (let i = 0; i < splitRoles.length; i++) {
         let splitRole = splitRoles[i]
 
-        let hasRole = member.roles.cache.filter(a => a.position < positions[i] && a.position > positions[i+1] || 0)
+        let hasRole = member.roles.cache.filter(a => a.position < positions[i] && a.position > (positions[i+1] || 0))
         if (hasRole.size) await this.roleAdd(member, splitRole)
         else await this.roleRemove(member, splitRole)
       }
@@ -156,7 +156,7 @@ class RoleHandler {
           for (let i = 0; i < splitRoles.length; i++) {
             let splitRole = splitRoles[i]
     
-            let hasRole = member.roles.cache.filter(a => a.position < positions[i] && a.position > positions[i+1] || 0)
+            let hasRole = member.roles.cache.filter(a => a.position < positions[i] && a.position > (positions[i+1] || 0))
             if (hasRole.size) await this.roleAdd(member, splitRole)
             else await this.roleRemove(member, splitRole)
           }

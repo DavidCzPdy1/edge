@@ -29,10 +29,12 @@ module.exports = {
       let data = await edge.get('general', 'events', {_id: event}).then(n => n[0])
       if (!data) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyly nalezeny žádná data!`, color: 15548997 }]})
 
-      let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true, guild: interaction.guild})
+      let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true, guild: interaction.guild, show: true})
   
       embed.title = embed.title + ' Informace'
       if (data.lastPing) embed.description = embed.description + `\nLast Ping: <t:${Math.floor(data.lastPing/1000)}:R>`
+      if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
+      if (data.settings == 'hide') embed.description = embed.description + `\n*Hlasuje se skrytě*`
       if (data.mode == 'team') embed.description = embed.description + `\n*Hlasuje se za tým*`
 
       let buttons = new ActionRowBuilder();
