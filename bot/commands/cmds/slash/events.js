@@ -33,9 +33,6 @@ module.exports = {
   
       embed.title = embed.title + ' Informace'
       if (data.lastPing) embed.description = embed.description + `\nLast Ping: <t:${Math.floor(data.lastPing/1000)}:R>`
-      if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
-      if (data.settings == 'hide') embed.description = embed.description + `\n*Hlasuje se skrytě*`
-      if (data.mode == 'team') embed.description = embed.description + `\n*Hlasuje se za tým*`
 
       let buttons = new ActionRowBuilder();
 

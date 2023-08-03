@@ -15,8 +15,8 @@ const getEmbed = (data, options = {}) => {
 
   if (options.guild) {
     embed.fields = embed.fields.map(n => {
-      let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
-      let value = data[n.name.split(' - ')[0]].map(a => {
+      let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).length}`
+      let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
         let mention = options.guild.members.cache.get(id)
@@ -27,7 +27,7 @@ const getEmbed = (data, options = {}) => {
     })
   }
 
-  if (data.settings == 'hide' && !options.show) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
+  if (data.settings == 'hide' && !options.show && !options.showId) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
 
   return embed
 }
@@ -136,6 +136,7 @@ module.exports = {
       let db = interaction.customId.split('_')[3]
       let _id = interaction.customId.split('_')[4]
       let answer = interaction.customId.split('_')[5]
+      let select = interaction.customId.split('_')[6] === interaction.customId.split('_')[5]
 
       let data = await edge.get('teams', db, {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
@@ -146,21 +147,22 @@ module.exports = {
       let ids = data.answers.split('|').map(n => {return { ids: data[n], name: n}})
       let answered = ids.find(n => n.ids.includes(id));
 
+      let admin = interaction.member.permissions.has(8) // ADMINISTRATOR
 
-      if (data[answer].includes(id)) {
+      if (!select && data[answer].includes(id)) {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-      } else if (!answered || data.settings == 'duplicate') {
+      } else if (!select &&  (!answered || data.settings == 'duplicate')) {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-      } else {
+      } else if (!select) {
         data[answered.name] = data[answered.name].filter(n => n !== id)
         data[answer].push(id)
         let embed = { title: 'Změna hlasu!', description: `Z: \`${answered.name}\`\nNa: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-      }
+      } else return interaction.followUp({ embeds: [getEmbed(data, { guild: interaction.guild, showId: admin ? undefined : id, show: admin })], ephemeral: true })
 
       await edge.post('teams', db, data)
 
@@ -195,7 +197,10 @@ module.exports = {
         odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${db}_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
       }
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: event.content, allowedMentions: { parse: ['roles']} })
+      let components = [odpovedi]
+      if (event.settings == 'hide') components.push(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${db}_${event._id}_select_select`).setStyle(3).setLabel('Zobrazit odpověď').setDisabled(false)))
+
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: components, content: event.content, allowedMentions: { parse: ['roles']} })
       event.msgUrl = message.url
       event.message = message.id
 

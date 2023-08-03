@@ -22,8 +22,8 @@ const getEmbed = (data, options = {}) => {
 
   if (options.guild) {
     embed.fields = embed.fields.map(n => {
-      let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].length}`
-      let value = data[n.name.split(' - ')[0]].map(a => {
+      let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).length}`
+      let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${id}>` :  `<@${id}>`)
         let mention = data.mode == 'team' ? options.guild.roles.cache.get(id) : options.guild.members.cache.get(id)
@@ -34,7 +34,7 @@ const getEmbed = (data, options = {}) => {
     })
   }
 
-  if (data.settings == 'hide' && !options.show) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
+  if (data.settings == 'hide' && !options.show && !options.showId) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
 
   return embed
 }
@@ -183,6 +183,7 @@ module.exports = {
       await interaction.update({ type:6 })
       let question = interaction.customId.split('_')[3]
       let answer = interaction.customId.split('_')[4]
+      let select = interaction.customId.split('_')[5] === interaction.customId.split('_')[4]
 
       let data = await edge.get('general', 'events', {_id: question})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
@@ -200,24 +201,26 @@ module.exports = {
       let ids = data.answers.split('|').map(n => {return { ids: data[n], name: n}})
       let answered = ids.find(n => n.ids.includes(id));
 
+      let admin = interaction.member.permissions.has('268435456n') // MANAGE ROLES
 
-      if (data[answer].includes(id)) {
+
+      if (!select && data[answer].includes(id)) {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
         console.discord(`Odstranění hlasu v \`${question}\`\n${embed.description}`)
-      } else if (!answered || data.settings == 'duplicate') {
+      } else if (!select &&  (!answered || data.settings == 'duplicate')) {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
         console.discord(`Přidání hlasu v \`${question}\`\n${embed.description}`)
-      } else {
+      } else if (!select) {
         data[answered.name] = data[answered.name].filter(n => n !== id)
         data[answer].push(id)
         let embed = { title: 'Změna hlasu!', description: `Z: \`${answered.name}\`\nNa: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
         console.discord(`Změna hlasu v \`${question}\`\n${embed.description}`)
-      }
+      } else return interaction.followUp({ embeds: [getEmbed(data, { guild: interaction.guild, showId: admin ? undefined : id, show: admin })], ephemeral: true })
 
       await edge.post('general', 'events', data)
 
@@ -257,7 +260,10 @@ module.exports = {
       }
       if (event.type == 'form') odpovedi.addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${event._id}`).setStyle(2).setLabel('EDIT'))
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: [odpovedi], content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
+      let components = [odpovedi]
+      if (event.settings == 'hide') components.push(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_select_select`).setStyle(3).setLabel('Zobrazit odpověď').setDisabled(false)))
+
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: components, content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
       event.msgUrl = message.url
       event.message = message.id
 
