@@ -201,7 +201,7 @@ module.exports = {
       let ids = data.answers.split('|').map(n => {return { ids: data[n], name: n}})
       let answered = ids.find(n => n.ids.includes(id));
 
-      let admin = interaction.member.permissions.has('268435456n') // MANAGE ROLES
+      let admin = interaction.member.permissions.has(PermissionsBitField.Flags.ManageRoles) // MANAGE ROLES
 
 
       if (!select && data[answer].includes(id)) {
