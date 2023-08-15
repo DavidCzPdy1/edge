@@ -24,7 +24,7 @@ module.exports = {
         if (pings[0].pingAt > new Date().getTime()) continue;
 
         let answered = []
-        data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})
+        data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a?.id || a))})
 
         let guild = dc_client.guilds.cache.get('1105413744902811688')
         if (!guild) {console.time('TIME event - EVENTS - Nenašel jsem guildu');continue;}

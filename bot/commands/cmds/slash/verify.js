@@ -1,5 +1,6 @@
 
 const { ActionRowBuilder, ButtonBuilder } = require('discord.js')
+const axios = require('axios')
 
 module.exports = {
     name: 'verify',
@@ -71,6 +72,18 @@ module.exports = {
         user.name = jmeno
       } else {
         user = {_id: member.user.id, name: jmeno, team: 'ne', list: [], blacklist: []}
+        try {
+          if (process.env.namesApi) {
+            let url = `https://api.parser.name/?api_key=${process.env.namesApi}&endpoint=extract&text=${jmeno.replaceAll(' ', '%20')}`
+            let result = await axios.get(url)
+            if (result.data.data?.length) {
+              let gender = result.data.data[0].parsed.name.firstname.gender
+              if (gender == 'm') user.gender = 'M'
+              else if (gender == 'f') user.gender = 'W'
+            }
+          }
+        } catch (e) {}
+        
         if (tym !== 'ne') {
           user.requested = tym;
         }

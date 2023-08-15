@@ -27,15 +27,15 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true })
       /* - not secured, have fun glitching in :D */
 
+      if (interaction.options._hoistedOptions.find(n => n.value == 'none')) return interaction.editReply({ content: 'Neplatný autocomplete!', ephemeral: true})
+
       let guild = dc_client.guilds.cache.get('1105413744902811688')
 
       let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
 
       let user = interaction.options.getString('user') || interaction.user.id
-      if (user == 'none') user = interaction.user.id
 
       let event = interaction.options.getString('event')
-      if (event == 'none') event = null
 
       let trenerRole = guild.roles.cache.get(edge.config.discord.roles.position_trener)
       let isTrener = user && user !== 'none' ? (trenerRole.members.get(user) ? true : false) : true
@@ -114,9 +114,9 @@ module.exports = {
       let fields = []
       fields.push({name: 'Tým:', value: club ? `<@&${club}>` : 'Žádný', inline: false})
 
-      if (verify.list.length && !(verify.list.length == 1 && verify.list[0] == club)) fields.push({ name: 'Whitelist:', value: verify.list.map(n => `<@&${n}>`).join('\n')})
-      if (verify.blacklist.length) fields.push({ name: 'Blacklist:', value: verify.blacklist.map(n => `<@&${n}>`).join('\n')})
-      if (notReacted.length && isTrener) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n'), inlune: false})
+      if (verify.list.length && !(verify.list.length == 1 && verify.list[0] == club)) fields.push({ name: 'Whitelist:', value: verify.list.map(n => `<@&${n}>`).join('\n'), inline: false})
+      if (verify.blacklist.length) fields.push({ name: 'Blacklist:', value: verify.blacklist.map(n => `<@&${n}>`).join('\n'), inline: false})
+      if (notReacted.length && isTrener) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n').slice(0, 1024), inline: false})
 
       let desc = undefined
       if (user !== interaction.user.id) desc = `Ping: <@${user}>`
@@ -125,6 +125,8 @@ module.exports = {
       
     },
     autocomplete: async (edge, interaction) => {
+      if (!edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.respond([{ value: 'none', name: 'Nemáš práva na definování dalších hodnot!'}])
+
       let current = interaction.options._hoistedOptions.filter(n => n.focused)[0].name
 
       if (current == 'event') {

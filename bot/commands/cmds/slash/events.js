@@ -119,7 +119,7 @@ module.exports = {
       if (data.mode !== "team") return interaction.followUp({ embeds: [{ title: 'ERROR!', description: `Event není typu \`team\`!`, color: 15548997 }], ephemeral: true })
 
       let answered = []
-      data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a))})
+      data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a?.id || a))})
 
       let guild = interaction.guild
       if (!guild) return console.error('EVENTS interaction - Nenašel jsem guildu')

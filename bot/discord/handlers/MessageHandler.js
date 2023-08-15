@@ -7,8 +7,27 @@ class MessageHandler {
   }
 
   async onMessage(message) {
+
+    //if (message.channel.id == '1105918656203980870') await dc_client.channels.cache.get('1105917930610368614')?.send({ content: message.content, embeds: message.embeds, allowedMentions: { parse: []} })
+
     if (message.author.id == global.config.discord.clientID) return
-    if (message.channel.type === 1) global.channels?.log?.send({ embeds: [{ title: `${message.author.username}'s dm` , description: message.content}]})
+    if (message.channel.type === 1) {
+      try {
+        //await dc_client.channels.cache.get('1141101587876552894')?.send({ embeds: [{ title: `${message.author.username}'s dm` , description: message.content}]})
+        let webhook = await dc_client.channels.cache.get('1141101587876552894').fetchWebhooks().then(a => a.first())
+        //if (webhook.name !== message.author.name || webhook.avatar !== message.author.avatar) await webhook.edit({ name: message.author.username, avatar: message.author.avatar, })
+        await webhook.send({
+          content: message.content,
+          username: message.author.username,
+          avatarURL: message.author.avatarURL(),
+          files: message.attachments.map(n => n.attachment)
+        });
+      } catch (e) { console.error(e)}
+    } else if (message.channel.id == '1141101587876552894' && message.reference) {
+      let msg = await dc_client.channels.cache.get('1141101587876552894')?.messages.fetch(message.reference.messageId)
+      let user = dc_client.users.cache.find(n => n.username == msg.author.username)
+      if (user) await user?.send({ content: message.content, files: message.attachments.map(n => n.attachment)}).then(a => message.react('✅'))
+    }
 
 
     if (message.content.startsWith(this.config.prefix)) this.runCommand(message)

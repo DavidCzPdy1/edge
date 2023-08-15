@@ -119,13 +119,7 @@ global.defaultConfig = () => {
       roles: {
         position_edge: '1105555145456107581',
         position_trener: '1105544649080320110',
-        position_member: '1105544581405229129',
-        mention_oznameni: '1108829451309027328',
-        mention_lfman: '1108826232700805250',
-        mention_lfwoman: '1108826423839424595',
-        split_position: '1108827093514596544',
-        split_club: '1108826950950211745',
-        split_mention: '1108826744573661204',
+        position_member: '1105544581405229129'
       }
     },
     time: {},

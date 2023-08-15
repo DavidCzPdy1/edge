@@ -55,13 +55,11 @@ module.exports = async (edge, interaction) => {
                 footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }
             }
         } else if (cat == 'reaction') {
-            embed = { title: 'Reaction Role', description: '<:annouce:1109483778671382558> ➜ <@&1108829451309027328> ➜ Ping při novém oznámení\n<:muz:1109484368386343043> ➜ <@&1108826232700805250> ➜ Hledání kluků na hru\n<:zena:1109484492919423087> ➜ <@&1108826423839424595> ➜ Hledání dívek na hru\n', color: 800080, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
+            embed = { title: 'Reaction Role', description: '<:annouce:1109483778671382558> ➜ <@&1108829451309027328> ➜ Ping při novém oznámení\n<:people:1109468903719059486> ➜ <@&1141059014227132486> ➜ Hledání hráčů na hru\n', color: 800080, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
 
             let buttons =  new ActionRowBuilder()
             .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1108829451309027328')/*.setLabel('oznameni')*/.setStyle(2).setDisabled(false).setEmoji('<:annouce:1109483778671382558>'))
-            .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1108826232700805250').setStyle(2).setDisabled(false).setEmoji('<:muz:1109484368386343043>'))
-            .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1108826423839424595').setStyle(2).setDisabled(false).setEmoji('<:zena:1109484492919423087>'))
-            
+            .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1141059014227132486').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
 
             components = [buttons]
         }

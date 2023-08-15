@@ -73,7 +73,7 @@ class RoleHandler {
       }
 
       if (user) {
-        let nickname = user.name + (team?.short ? ` #${team.short}` : '')
+        let nickname = user.name + (team?.name ? ` #${team.name?.slice(0, 3)?.toUpperCase()}` : '') //(team?.short ? ` #${team.short}` : '')
         if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
       } else try { await member.setNickname(null) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname) }
 

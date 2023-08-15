@@ -68,7 +68,7 @@ module.exports = {
 
       if (!db.message && new Date(db.start).getTime() < new Date().getTime() + 2629800000) {
         let channel = dc_client.channels.cache.get('1110218138194301040')
-        let message = await channel?.send({ embeds: [db.embed], components: [buttons]})
+        let message = await channel?.send({ content: `<@&1141059014227132486>`, embeds: [db.embed], components: [buttons], allowedMentions: {parse: ['roles']}})
 
         db.msgUrl = message.url
         db.message = message.id
