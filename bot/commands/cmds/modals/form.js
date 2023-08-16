@@ -79,7 +79,7 @@ module.exports = {
 
       let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data._id.toLowerCase()))
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo form s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
-      if (events.length) return interaction.reply({ embeds: [errorEmbed], ephemeral: true})
+      if (events.length) return interaction.reply({ embeds: [errorEmbed], ephemeral: edge.isEphemeral(interaction)})
       
 
       if (data.time) {
@@ -87,8 +87,8 @@ module.exports = {
         let cas = [time[2], time[1].length == 1 ? `0${time[1]}` : time[1], time[0].length == 1 ? `0${time[0]}`: time[0] ]
         data.time = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
 
-        if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: true})
-        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)], ephemeral: true})
+        if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: edge.isEphemeral(interaction)})
+        else if (data.time - 1000*60*60*20 < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas je dřív než za 20 hodin!`)], ephemeral: edge.isEphemeral(interaction)})
 
         if (data.pings) {
           for (let i = 0; i < data.pings; i++) {
@@ -113,11 +113,11 @@ module.exports = {
       await edge.post('general', 'events', data)
     },
     create: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
       let title = interaction.customId.split('_')[3]
 
       let data = await edge.get('general', 'events', {_id: title})
-      if (!data.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!data.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       data = data[0]
 
       data.questions = interaction.fields.fields.map(n => n.value?.trim() ).filter(n => n.length)
@@ -199,7 +199,7 @@ module.exports = {
     },
     preview: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      interaction.followUp({ephemeral: true, content: 'Dotazník byl pouze v preview režimu! Odpověď něbyla uložena.'})
+      interaction.followUp({ephemeral: edge.isEphemeral(interaction), content: 'Dotazník byl pouze v preview režimu! Odpověď nebyla uložena.'})
     },
     react: async (edge, interaction) => {
       await interaction.update({ type:6 })

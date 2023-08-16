@@ -17,7 +17,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let ikona = interaction.guild.iconURL()
 
@@ -39,7 +39,6 @@ module.exports = {
       let channel = dc_client.channels.cache.get(data.channel)
       if (!channel) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }] })
       let message = data.message ? await channel?.messages.fetch(data.message).catch(e => {}) : null
-      //if (!message) interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
 
       let disabled = message?.components[0].components[0].data.disabled
       buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_toggle_${data._id}`).setStyle(disabled ? 3 : 4).setLabel(disabled ? 'OPEN' : 'PAUSE').setDisabled(message ? false : true))
@@ -64,13 +63,13 @@ module.exports = {
       let _id = interaction.customId.split('_')[3]
 
       let data = await edge.get('general', 'events', {_id: _id})
-      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       data = data[0]
 
       let channel = await dc_client.channels.cache.get(data.channel)
-      if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let message = data.message ? await channel?.messages.fetch(data.message).catch(e => {}) : null
-      if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
+      if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let disabled =  message?.components[0].components[0].data.disabled
       let embed = edge.commands.get('hlasovani').getEmbed(data, { guild: interaction.guild })
       //if (!data.time || data.time && data.time < new Date().getTime()) embed.title = embed.title //+ ' - PAUSED'
@@ -89,16 +88,16 @@ module.exports = {
       let _id = interaction.customId.split('_')[3]
 
       let data = await edge.get('general', 'events', {_id: _id})
-      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       data = data[0]
       
       let channel = await dc_client.channels.cache.get(data.channel)
-      if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!channel) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný channel!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let message = data.message ? await channel?.messages.fetch(data.message).catch(e => {}) : null
-      if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: true })
+      if (!message) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem danou zprávu!', description: `Pošli prosím novou!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
 
       if (data.time && data.time > new Date().getTime()) {
-        await interaction.followUp({ ephemeral: true, content: 'Čas byl změněn na neomezen'})
+        await interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: 'Čas byl změněn na neomezen'})
         data.time = null
         await edge.post('general', 'events', data)
       }
@@ -113,10 +112,10 @@ module.exports = {
       let _id = interaction.customId.split('_')[3]
 
       let data = await edge.get('general', 'events', {_id: _id})
-      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
+      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       data = data[0]
 
-      if (data.mode !== "team") return interaction.followUp({ embeds: [{ title: 'ERROR!', description: `Event není typu \`team\`!`, color: 15548997 }], ephemeral: true })
+      if (data.mode !== "team") return interaction.followUp({ embeds: [{ title: 'ERROR!', description: `Event není typu \`team\`!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
 
       let answered = []
       data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a?.id || a))})
@@ -142,7 +141,7 @@ module.exports = {
       let embed = {title: `Notify ${data.name || data._id} eventu! - command interaction`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
       if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
       global.channels?.log?.send({ embeds: [embed] })
-      interaction.followUp({ ephemeral: true, embeds: [embed]})
+      interaction.followUp({ ephemeral: edge.isEphemeral(interaction), embeds: [embed]})
       data.lastPing = new Date().getTime() - 50000
 
       await edge.post('general', 'events', data)

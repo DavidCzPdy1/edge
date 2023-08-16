@@ -26,7 +26,7 @@ module.exports = {
   type: 'slash',
   platform: 'discord',
   run: async (edge, interaction) => {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
     let ikona = interaction.guild.iconURL()
     let guild = dc_client.guilds.cache.get('1105413744902811688')
@@ -92,7 +92,7 @@ module.exports = {
 
     let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
-    if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
+    if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
     
     /* create and send MODAL */
     const modal = new ModalBuilder().setCustomId('results_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data.name || data._id}`)

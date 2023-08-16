@@ -19,7 +19,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let ikona = interaction.guild?.iconURL() || ''
 
@@ -86,7 +86,7 @@ module.exports = {
     },
     reload: async (edge, interaction) => {
       await interaction.update({ type: 6 })
-      if (!edge.handlePerms(edge.commands.get('command').permissions, interaction)) return interaction.followUp({ content: 'Nemáš práva na reload commandů!', ephemeral: true})
+      if (!edge.handlePerms(edge.commands.get('command').permissions, interaction)) return interaction.followUp({ content: 'Nemáš práva na reload commandů!', ephemeral: edge.isEphemeral(interaction)})
       let reply = await edge.createCommands()
       interaction.followUp({ content: reply, ephemeral: true})
     }

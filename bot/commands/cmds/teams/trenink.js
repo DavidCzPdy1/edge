@@ -20,7 +20,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let time = new Date (interaction.options.getString('datum') || `1. 1. 2023`)
 
@@ -51,7 +51,7 @@ module.exports = {
       desc = desc.sort((a, b) => b.Přijdu - a.Přijdu).map(n => `**${n.name}:** Přijdu - ${n.Přijdu}, Nepřijdu - ${n.Nepřijdu}, Přijdu pozdě - ${n[`Přijdu pozdě`]}, Total: ${n.Přijdu + n.Nepřijdu + n[`Přijdu pozdě`]}/${total}`).join('\n')
       
       
-      await interaction.editReply({ embeds: [{ title: 'Data:', description: `${desc}`, color: 2982048}], ephemeral: true})
+      await interaction.editReply({ embeds: [{ title: 'Data:', description: `${desc}`, color: 2982048}], ephemeral: edge.isEphemeral(interaction)})
       
 
     },

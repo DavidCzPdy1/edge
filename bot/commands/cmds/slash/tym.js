@@ -17,7 +17,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let ikona = interaction.guild.iconURL()
 
@@ -55,29 +55,29 @@ module.exports = {
       let tym = interaction.customId.split('_')[3]
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.followUp({ ephemeral: true, content: `Nebyl nalezen discord server!`})
+      if (!guild) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyl nalezen discord server!`})
 
       let role = guild.roles.cache.get(tym)
-      if (!role) return interaction.followUp({ ephemeral: true, content: `Nebyla nalezena discord role!`})
+      if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
 
       let members = guild.members.cache.filter(n => n._roles.includes(tym) && n._roles.includes(edge.config.discord.roles.position_trener))
       let players = members.map(n => `<@${n.user.id}>`).join('\n')
 
-      interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${role.name}`, description: players, color: '7014665'}], ephemeral: true})
+      interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${role.name}`, description: players, color: '7014665'}], ephemeral: edge.isEphemeral(interaction)})
     },
     players: async (edge, interaction) => {
       await interaction.update({ type:6 })
       let tym = interaction.customId.split('_')[3]
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.followUp({ ephemeral: true, content: `Nebyl nalezen discord server!`})
+      if (!guild) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyl nalezen discord server!`})
 
       let role = guild.roles.cache.get(tym)
-      if (!role) return interaction.followUp({ ephemeral: true, content: `Nebyla nalezena discord role!`})
+      if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
 
       let members = guild.members.cache.filter(n => n._roles.includes(tym))
       let players = members.map(n => `<@${n.user.id}>`+ (n._roles.includes(edge.config.discord.roles.position_trener) ? ` - 🥏`:``)).sort((a, b) => b.endsWith('🥏') - a.endsWith('🥏')).join('\n')
-      interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${role.name}`, description: players, color: 959711}], ephemeral: true})
+      interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${role.name}`, description: players, color: 959711}], ephemeral: edge.isEphemeral(interaction)})
     }
 
 }

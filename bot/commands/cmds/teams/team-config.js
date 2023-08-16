@@ -12,7 +12,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
       if (!team) return interaction.editReply({ content: 'Použij příkaz na podporovaném discord serveru!'})
@@ -28,7 +28,7 @@ module.exports = {
 
       
       
-      await interaction.editReply({ embeds: [{ title: 'Nastavení serveru týmu ' + team.name, description: `${'Vyber jednu z kategoríí, kterou chceš upravit!'}`, color: 2982048}], components: [menu], ephemeral: true})
+      await interaction.editReply({ embeds: [{ title: 'Nastavení serveru týmu ' + team.name, description: `${'Vyber jednu z kategoríí, kterou chceš upravit!'}`, color: 2982048}], components: [menu], ephemeral: edge.isEphemeral(interaction)})
       
 
     },
@@ -39,7 +39,7 @@ module.exports = {
       
 
       let team = await edge.get('general', 'clubs', {_id: Number(_id)}).then(n => n[0])
-      if (!team) return interaction.reply({ ephemeral: true, content: 'Error s id - tým nebyl nalezen'})
+      if (!team) return interaction.reply({ ephemeral: edge.isEphemeral(interaction), content: 'Error s id - tým nebyl nalezen'})
 
       let configDesc = {
         changeName: 'Mění nickname na "Jméno Příjmení"',
@@ -64,7 +64,7 @@ module.exports = {
           y++
         }
 
-        interaction.followUp({ embeds: [{ title: 'Overall nastavení týmu ' + team.name, description: Object.keys(team.server.config).map(n => `**${n}** - ${configDesc[n]||'CHybí popisek :D'}`).join('\n'), color: 298048}], components: buttons, ephemeral: true})
+        interaction.followUp({ embeds: [{ title: 'Overall nastavení týmu ' + team.name, description: Object.keys(team.server.config).map(n => `**${n}** - ${configDesc[n]||'CHybí popisek :D'}`).join('\n'), color: 298048}], components: buttons, ephemeral: edge.isEphemeral(interaction)})
 
       } else if (type == 'calendar') {
 
@@ -84,7 +84,7 @@ module.exports = {
         
 
         let reactEmbed = { title: 'Nastavení týmu ' + team.name + ' bylo změněno!', description: `**ID Google calendáře:**\n\n**Staré:** \`${old}\`\n**Nové:** \`${team.server.calendar}\``, color: 298055, footer: { text: `Reacted by ${interaction.user.username} | ${console.date()}`}}
-        interaction.followUp({ ephemeral: true, embeds: [reactEmbed]})
+        interaction.followUp({ ephemeral: edge.isEphemeral(interaction), embeds: [reactEmbed]})
         console.embed(reactEmbed)
         
       } else {
@@ -111,7 +111,7 @@ module.exports = {
         
 
         let reactEmbed = { title: 'Nastavení týmu ' + team.name + ' bylo změněno!', fields: fields, color: 298055, footer: { text: `Reacted by ${interaction.user.username} | ${console.date()}`}}
-        interaction.followUp({ ephemeral: true, embeds: [reactEmbed]})
+        interaction.followUp({ ephemeral: edge.isEphemeral(interaction), embeds: [reactEmbed]})
         console.embed(reactEmbed)
       }
       
@@ -124,7 +124,7 @@ module.exports = {
       await interaction.update({ type: 6 })
       
       let team = await edge.get('general', 'clubs', {_id: Number(_id)}).then(n => n[0])
-      if (!team) return interaction.followUp({ ephemeral: true, content: 'Error s id - tým nebyl nalezen'})
+      if (!team) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: 'Error s id - tým nebyl nalezen'})
 
       team.server.config[value] = !team.server.config[value] 
       await edge.post('general', 'clubs', team)

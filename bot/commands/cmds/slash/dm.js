@@ -15,7 +15,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let msg = interaction.options.getString('message')
       let id = new Date().getTime()
@@ -54,10 +54,10 @@ module.exports = {
       let id = interaction.customId.split('_')[3]
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.followUp({ content: 'Nenašel jsem guildu!', ephemeral: true })
+      if (!guild) return interaction.followUp({ content: 'Nenašel jsem guildu!', ephemeral: edge.isEphemeral(interaction) })
 
       let data = edge.sendDm[id]
-      if (!data) return interaction.followUp({ content: 'Nenašel jsem nastavení zprávy, zkus znovu prosím nastavit role!', ephemeral: true })
+      if (!data) return interaction.followUp({ content: 'Nenašel jsem nastavení zprávy, zkus znovu prosím nastavit role!', ephemeral: edge.isEphemeral(interaction) })
 
       let msg = data.msg
       let users = data.roles.map(n => guild.roles.cache.get(n)).map(n => n.members).map(n => Array.from(n.values())).flat().filter(n => n._roles.includes('1105544649080320110')).filter(unique).map(n => n.user)

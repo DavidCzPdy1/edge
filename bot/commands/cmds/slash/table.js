@@ -11,7 +11,7 @@ module.exports = {
   type: 'slash',
   platform: 'discord',
   run: async (edge, interaction) => {
-    await interaction.deferReply({ ephemeral: true })
+    await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
 
     interaction.editReply({ content: 'Testing' })

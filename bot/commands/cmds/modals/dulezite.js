@@ -58,7 +58,7 @@ module.exports = {
       interaction = await interaction.awaitModalSubmit({filter: (n) => n.customId == 'dulezite_ignore_create_'+data._id, time: 180000}).catch(e => {})
       if (!interaction) return
 
-      await interaction.deferReply({ ephemeral: true})
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction)})
 
       data.info = interaction.fields.fields.map(n => { return {type: n.customId, value: n.value?.trim() }}).filter(n => n.value.length)
 
@@ -82,10 +82,10 @@ module.exports = {
       if (!data) return interaction.editReply({ embeds: [], content: 'Zpráva nebyla nalezena v databázi!'})
 
       let channel = dc_client.channels.cache.get(data.channel)
-      if (!channel) return interaction.editReply({ embeds: [], content: `Nebyl nalezen kanál s id ${data.channel}!`, components: [], ephemeral: true})
+      if (!channel) return interaction.editReply({ embeds: [], content: `Nebyl nalezen kanál s id ${data.channel}!`, components: [] })
 
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-      if (!access) return interaction.followUp({ embeds: [], content: `Nemám oprávnění posílat embed zprávy do ${channel}!`, components: [], ephemeral: true })
+      if (!access) return interaction.followUp({ embeds: [], content: `Nemám oprávnění posílat embed zprávy do ${channel}!`, components: [], ephemeral: edge.isEphemeral(interaction) })
 
       let embed = { title: data.info.find(n => n.type == 'title')?.value, description: data.info.find(n => n.type == 'description')?.value, fields: data.info.find(n => n.type == 'fields')?.value?.split('||').map(n => {return {name: n.split('|')[0], value: n.split('|')[1], inline: n.split('|')[2]||false}}),  color: 5832623 }
       let ack = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`dulezite_cmd_ack_${data._id}_${data.ack}`).setStyle(2).setLabel('PŘEČTENO').setDisabled(false));
@@ -96,14 +96,14 @@ module.exports = {
       data.msgUrl = message.url
       await edge.post('general', 'messages', data)
 
-      interaction.editReply({content: 'Zpráva byla úspěšně poslána!', embeds: [], components: [], ephemeral: true})
+      interaction.editReply({content: 'Zpráva byla úspěšně poslána!', embeds: [], components: [] })
     },
     deny: async (edge, interaction) => {
       await interaction.update({ type: 6 })
       let id = interaction.customId.split('_')[3]
       
       await edge.delete('general', 'messages', { _id: id })
-      interaction.editReply({content: 'Zpráva byla odstraněna z databáze', embeds: [], components: [], ephemeral: true})
+      interaction.editReply({content: 'Zpráva byla odstraněna z databáze', embeds: [], components: [] })
     },
     ack: async (edge, interaction) => {
       await interaction.update({ type:6 })

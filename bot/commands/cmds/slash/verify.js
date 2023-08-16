@@ -31,7 +31,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
       if (!guild) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem EDGE Discord server!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
@@ -173,7 +173,7 @@ module.exports = {
       let id = interaction.customId.split('_')[4]
       let tym = interaction.customId.split('_')[3]
 
-      if (!interaction.member._roles.includes(edge.config.discord.roles.position_trener) || !interaction.member._roles.includes(tym) && !interaction.member._roles.includes(edge.config.discord.roles.position_edge) && interaction.user.id !== '378928808989949964') return interaction.followUp({ embeds: [{ title: 'Nemáš oprávnění přijmout člověka!', color: 15548997 }], ephemeral: true})
+      if (!interaction.member._roles.includes(edge.config.discord.roles.position_trener) || !interaction.member._roles.includes(tym) && !interaction.member._roles.includes(edge.config.discord.roles.position_edge) && interaction.user.id !== '378928808989949964') return interaction.followUp({ embeds: [{ title: 'Nemáš oprávnění přijmout člověka!', color: 15548997 }], ephemeral: edge.isEphemeral(interaction)})
     
       let user = await edge.get('general', 'users', {_id: id}).then(n => n[0])
 
@@ -197,7 +197,7 @@ module.exports = {
       let id = interaction.customId.split('_')[4]
       let tym = interaction.customId.split('_')[3]
 
-      if (!interaction.member._roles.includes(edge.config.discord.roles.position_trener) || !interaction.member._roles.includes(tym) && !interaction.member._roles.includes(edge.config.discord.roles.position_edge) && interaction.user.id !== '378928808989949964') return interaction.followUp({ embeds: [{ title: 'Nemáš oprávnění odmítnout člověka!', color: 15548997 }], ephemeral: true})
+      if (!interaction.member._roles.includes(edge.config.discord.roles.position_trener) || !interaction.member._roles.includes(tym) && !interaction.member._roles.includes(edge.config.discord.roles.position_edge) && interaction.user.id !== '378928808989949964') return interaction.followUp({ embeds: [{ title: 'Nemáš oprávnění odmítnout člověka!', color: 15548997 }], ephemeral: edge.isEphemeral(interaction)})
 
       let user = await edge.get('general', 'users', {_id: id}).then(n => n[0])
 

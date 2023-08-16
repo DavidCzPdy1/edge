@@ -24,10 +24,10 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
       /* - not secured, have fun glitching in :D */
 
-      if (interaction.options._hoistedOptions.find(n => n.value == 'none')) return interaction.editReply({ content: 'Neplatný autocomplete!', ephemeral: true})
+      if (interaction.options._hoistedOptions.find(n => n.value == 'none')) return interaction.editReply({ content: 'Neplatný autocomplete!'})
 
       let guild = dc_client.guilds.cache.get('1105413744902811688')
 

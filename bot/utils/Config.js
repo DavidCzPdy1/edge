@@ -64,6 +64,11 @@ class Config {
     https://discord-api-types.dev/api/discord-api-types-payloads/common#PermissionFlagsBits
     */
   }
+  isEphemeral(interaction) {
+    if (interaction.channel.id === '1140689582950731906') return false
+    //if (interaction.user.id === '378928808989949964') return true
+    return true
+  }
 
   switchPerms(perms) {
     if (!Array.isArray(perms) || !perms.length) return undefined

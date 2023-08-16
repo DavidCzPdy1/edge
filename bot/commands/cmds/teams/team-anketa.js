@@ -81,7 +81,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let data = {
         _id: String(new Date().getTime()),
@@ -127,8 +127,8 @@ module.exports = {
       await edge.post('teams', team.server.database, data)
 
       let souhrn = Object.keys(data).map(n => { return {name: n, value: data[n], inline: true}}).filter(n => typeof n.value === 'string' || typeof n.value === 'number')
-      await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: true})
-      await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: true})
+      await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: edge.isEphemeral(interaction)})
+      await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: edge.isEphemeral(interaction)})
 
     },
     select: async (edge, interaction) => {
@@ -183,13 +183,13 @@ module.exports = {
       let _id = interaction.customId.split('_')[4]
 
       let event = await edge.get('teams', db, {_id: _id})
-      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
+      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       event = event[0]
 
       let channel = interaction.guild.channels.cache.get(event.channel)
-      if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: true })
+      if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
+      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
 
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
@@ -247,16 +247,15 @@ module.exports = {
       let db = interaction.customId.split('_')[3]
       let _id = interaction.customId.split('_')[4]
       let data = await edge.get('teams', db, {_id: _id})
-      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný trénink!', description: `Už není v databázi!`, color: 15548997 }], ephemeral: true })
+      if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný trénink!', description: `Už není v databázi!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       data = data[0]
 
-      //console.log(interaction)
 
       let toggleRole = interaction.roles?.first()?.name
-      if (!toggleRole || !toggleRole.startsWith('Edit ') || interaction.roles.size > 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit jednu z edit rolí!`, color: 15548997 }], ephemeral: true })
+      if (!toggleRole || !toggleRole.startsWith('Edit ') || interaction.roles.size > 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit jednu z edit rolí!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let answer = toggleRole.replace('Edit ', '')
 
-      if (interaction.users?.size < 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit více než jednoho uživatele!`, color: 15548997 }], ephemeral: true })
+      if (interaction.users?.size < 1) return interaction.followUp({ embeds: [{ title: 'Chybné použití!', description: `Musíš zvolit více než jednoho uživatele!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
 
       let edited = []
       for (let member of interaction.members) {
@@ -283,6 +282,6 @@ module.exports = {
 
       await edge.post('teams', db, data)
       await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild})]})
-      await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.question}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: true })
+      await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.question}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: edge.isEphemeral(interaction) })
     }
 }

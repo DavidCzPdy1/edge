@@ -109,7 +109,7 @@ module.exports = {
     type: 'slash',
     platform: 'discord',
     run: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
 
       let data = {
         _id: String(new Date().getTime()),
@@ -173,8 +173,8 @@ module.exports = {
       await edge.post('general', 'events', data)
 
       let souhrn = Object.keys(data).map(n => { return {name: n, value: data[n], inline: true}}).filter(n => typeof n.value === 'string' || typeof n.value === 'number')
-      await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}], ephemeral: true})
-      await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: true})
+      await interaction.editReply({ embeds: [{ title: 'Souhrn:', fields: souhrn, color: 2982048}]})
+      await interaction.followUp({ embeds: [embed], components: [odpovedi, accept], ephemeral: edge.isEphemeral(interaction)})
 
     },
     select: async (edge, interaction) => {
@@ -241,13 +241,13 @@ module.exports = {
       let _id = interaction.customId.split('_')[3]
 
       let event = await edge.get('general', 'events', {_id: _id})
-      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
+      if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       event = event[0]
 
       let channel = dc_client.channels.cache.get(event.channel)
-      if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: true })
+      if (!channel) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nenašel jsem kanál s id \`${event.channel}\``, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
       let access = channel.guild.members.me?.permissionsIn(channel.id).has([PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.EmbedLinks]);
-      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: true })
+      if (!access) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nemám oprávnění posílat embed zprávy do ${channel}`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
 
       let odpovedi = new ActionRowBuilder();
       for (let answer of event.answers.split('|')) {
@@ -266,7 +266,12 @@ module.exports = {
       event.message = message.id
 
       if (interaction.customId.split('_').length !== 4) interaction.editReply({ components: []})
+
       await edge.post('general', 'events', event)
+
+      let comp = interaction.message.components
+      comp.map(a => a.components.map(n => {n.data.disabled = true; return n.data}))
+      await interaction.editReply( {components: comp} )
     },
     getEmbed: getEmbed
 }
