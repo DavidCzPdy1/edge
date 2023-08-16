@@ -41,12 +41,12 @@ module.exports = {
       let isTrener = user && user !== 'none' ? (trenerRole.members.get(user) ? true : false) : true
 
       if (event) {
-        let data;
-        let type = Number(event) ? 'msg' : 'event'
-        if (type == 'msg') data = await edge.get('general', 'messages', {_id: event})
-        else data = await edge.get('general', 'events', {_id: event})
-        if (!data.length) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná data ${type == 'msg' ? 'messsage ' : ''}eventu!`, color: 15548997 }]})
+        let data = await edge.get('general', 'messages', {_id: event})
+        if (!data.length) data = await edge.get('general', 'events', {_id: event})
+        if (!data.length) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná data eventu!`, color: 15548997 }]})
         data = data[0]
+
+        let type = data.type == 'hlasovani' || data.type == 'form' ? 'event' : 'msg'
   
         let mode = data.mode || data.ack || 'none'
         if (mode == 'none') return interaction.editReply({ content: 'Event nemá acknowlige!' })
@@ -68,8 +68,8 @@ module.exports = {
         } else {
           notReacted = teams.filter(n => !reacted.includes(n))//.map(n => guild.roles.cache.get(n))
         }
-        let ne = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : data._id, description: `Neodpověděli:\n${notReacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
-        let ano = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : data._id, description: `Odpověděli:\n${reacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
+        let ne = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : (data.name ? (`${data.name} - ${new Date(data.created).toLocaleString('cs-CZ')}`) : data._id), description: `Neodpověděli:\n${notReacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
+        let ano = { title: type == 'msg' ? data.info.find(a => a.type == 'title')?.value || data.id : (data.name ? (`${data.name} - ${new Date(data.created).toLocaleString('cs-CZ')}`) : data._id), description: `Odpověděli:\n${reacted.map(n => `<@${mode == 'user' ? '' :'&'}${n}>`).join('\n')}`}
         return interaction.editReply({ embeds: [ne, ano], allowedMentions: {parse: []}})
       }
 
@@ -82,9 +82,9 @@ module.exports = {
       notReacted = []
       let club = guild.members.cache.get(user)?._roles.find(n => teams.includes(n))
 
-      for (data of [...events, ...messages]) {
+      for (let data of [...events, ...messages]) {
 
-        let type = Number(data._id) ? 'msg' : 'event'
+        let type = data.type == 'hlasovani' || data.type == 'form' ? 'event' : 'msg'
 
         let mode = data.mode || data.ack || 'none'
         if (mode == 'none') continue;
@@ -116,7 +116,7 @@ module.exports = {
 
       if (verify.list.length && !(verify.list.length == 1 && verify.list[0] == club)) fields.push({ name: 'Whitelist:', value: verify.list.map(n => `<@&${n}>`).join('\n'), inline: false})
       if (verify.blacklist.length) fields.push({ name: 'Blacklist:', value: verify.blacklist.map(n => `<@&${n}>`).join('\n'), inline: false})
-      if (notReacted.length && isTrener) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n').slice(0, 1024), inline: false})
+      if (notReacted.length && isTrener) fields.push({ name: 'Nezareagováno:', value: notReacted.map(n => `[${n.info?.find(n => n.type == 'title')?.value || n.name ? (`${n.name} - ${new Date(n.created).toLocaleString('cs-CZ')}`) : n._id}](${n.msgUrl}) (${n.type.replace('msg', 'oznámení').replace('hlasovani', 'hlasování')})`).join('\n').slice(0, 1024), inline: false})
 
       let desc = undefined
       if (user !== interaction.user.id) desc = `Ping: <@${user}>`
@@ -133,7 +133,7 @@ module.exports = {
         let events = await edge.get('general', 'events', {})
         let messages = await edge.get('general', 'messages', {}).then(n => n.filter(a => a.ack !== 'none'))
 
-        let show = [...events, ...messages].map(n => { return {name: n.info?.find(n => n.type == 'title')?.value || n._id, value: n._id} })
+        let show = [...events, ...messages].map(n => { return {name: n.info?.find(n => n.type == 'title')?.value || (n.name ? (`${n.name} - ${new Date(n.created).toLocaleString('cs-CZ')}`) : n._id), value: n._id} })
 
         let focused = interaction.options.getFocused()
 
