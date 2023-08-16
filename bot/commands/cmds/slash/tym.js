@@ -28,7 +28,8 @@ module.exports = {
 
       let embed = {
         title:`${data.name} Informace${data.emoji ? ` ${data.emoji}`:''}`,
-        description: data.description || 'Tým nemá žádné informace'
+        description: data.description || 'Tým nemá žádné informace',
+        color: data.color || 86654
       }
 
       let buttons = new ActionRowBuilder() 
@@ -60,7 +61,7 @@ module.exports = {
       let role = guild.roles.cache.get(tym)
       if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
 
-      let members = guild.members.cache.filter(n => n._roles.includes(tym) && n._roles.includes(edge.config.discord.roles.position_trener))
+      let members = await guild.members.fetch().then(a => a.filter(n => n._roles.includes(tym) && n._roles.includes(edge.config.discord.roles.position_trener)))
       let players = members.map(n => `<@${n.user.id}>`).join('\n')
 
       interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${role.name}`, description: players, color: '7014665'}], ephemeral: edge.isEphemeral(interaction)})
@@ -75,7 +76,7 @@ module.exports = {
       let role = guild.roles.cache.get(tym)
       if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
 
-      let members = guild.members.cache.filter(n => n._roles.includes(tym))
+      let members = await guild.members.fetch().then(a => a.filter(n => n._roles.includes(tym)))
       let players = members.map(n => `<@${n.user.id}>`+ (n._roles.includes(edge.config.discord.roles.position_trener) ? ` - 🥏`:``)).sort((a, b) => b.endsWith('🥏') - a.endsWith('🥏')).join('\n')
       interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${role.name}`, description: players, color: 959711}], ephemeral: edge.isEphemeral(interaction)})
     }

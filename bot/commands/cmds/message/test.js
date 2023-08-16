@@ -39,13 +39,17 @@ module.exports = {
 
             let description = [
                 '<:dot:1109460785723351110> **Co je to EDGE?**',
-                '➜ EDGE je kontaktní služba, která pomáhá navazovat vztahy s mladými lidmi skrze společný zájem – sport. V České republice skrze frisbee ultimate. EDGE jsou sportovní týmy, kde mají mladí lidé možnost trénovat své tělo i ducha. Mohou se učit a osvojovat si hodnoty jako spolupráce, týmový duch, férovost, vytrvalost nebo zodpovědnost.',
+                '➜',
                 '',
                 '<:dot:1109460785723351110> **Co udělat po prvním přihlášení?**',
-                `➜ Podívat se do <#1105546511519072286> na pravidla`,
-                `➜ Podívat se do <#1105726655764365314> na nejnovější oznámení`,
-                `➜ Podívat se do <#1108715450671579146> a napsat </verify:${verify}>`,
-                `➜ Podívat se do <#1108823268208676967> a nastudovat si členění rolí, popřípadě si přiřadit ping role v položce <:custom:1109467732371570749>`,
+                `➜ Podívej se do <#1105726655764365314> na nejnovější oznámení`,
+                `➜ Podívej se do <#1108715450671579146> a napiš </verify:${verify}>`,
+                `➜ Podívej se do <#1108823268208676967> a nastuduj si členění rolí, popřípadě si přiřaď ping role v položce <:custom:1109467732371570749>`,
+                '',
+                '<:dot:1109460785723351110> **Proč tu jsem?**',
+                `➜ Získávej oficiální informace z první ruky`,
+                `➜ </tym:${commands.find(n => n.name == 'tym')?.id}> příkaz ukazuje aktuální informace jednotlivých týmů`,
+                `➜ Nemáš s kým hrát? Přihlaš se před turnajem a domluv si start za jiný tým!`,
                 '',
                 `<:dot:1109460785723351110> **Něco nejde?**`,
                 `➜ Zeptej se v <#1108718621754150983>, nebo označ <@&1109473883452612658>`,
@@ -119,7 +123,26 @@ module.exports = {
  
         await channel?.send({ embeds: [embed] })
         
-    }
+    } else if (args[0] == 'rakety') {
+        let channel = message.guild.channels.cache.get('1141313863703334982')
+        channel = message.channel
+
+        let embed = {
+            title: 'V jakém jsi týmu?',
+            description: `<:people:1109468903719059486> ➜ U15\n<:champion:1141315219369500766> ➜ A-Tým\n<:dum:1109508725519159306> ➜ Návštěvník`,
+            color: 15844367
+        }
+
+        let buttons =  new ActionRowBuilder()
+          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_U15').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
+          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_A').setStyle(2).setDisabled(false).setEmoji('<:champion:1141315219369500766>'))
+          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_G').setStyle(2).setDisabled(false).setEmoji('<:dum:1109508725519159306>'))
+          
+ 
+        channel.send({ embeds: [embed], components: [buttons] })
+        
+        
+    } 
 
     }
 }

@@ -14,6 +14,17 @@ module.exports = {
 
     let teams = await edge.get('general', 'clubs', {}).then(n => n.filter(a => a.server))
 
+    let a = { _id: 6, color: 15844367, id: '1108825318069903443', name: 'Rakety Žižkoff',
+      server: { guild: '1122995611621392424', database: 'raketyU15',
+        ping: { annoucment: '1128290333386608662', trenink: '1128260094556123227' },
+        calendar: 'jpbhl091kr2o1cf4ss4tubllqg@group.calendar.google.com',
+        channels: { trenink: '1128258116694310922', archive: '1128283058034966548', annoucment: '1123221519150088204', turnaj: '1123221519150088204' },
+        roles: { trener: '1131955450049482792', member: '1131955550788268172' },
+        config: { treninky: true }
+      },
+    }
+    //teams.push(a)
+
     let google = edge.google
 
     for (let team of teams) {
