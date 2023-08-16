@@ -165,11 +165,11 @@ class GoogleHandler {
     await this.postSheet(sheet, nahrat)
   }
 
-  async getCalendar(id) {
+  async getCalendar(id, max = 2) {
     const res = await this.calendar.events.list({
       calendarId: id,
       timeMin: new Date().toISOString(),
-      maxResults: 2,
+      maxResults: max,
       singleEvents: true,
       orderBy: 'startTime',
     })
