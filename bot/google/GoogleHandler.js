@@ -61,7 +61,7 @@ class GoogleHandler {
           {
             addSheet: {
               properties: {
-                title: event._id.replaceAll(':', '|').replaceAll('!', '|'),
+                title: (event.name ? (`${event.name} - ${new Date(event.created).toLocaleString('cs-CZ')}`) : event._id).replaceAll(':', '|').replaceAll('!', '|'),
                 index: 1,
                 tabColorStyle: {
                   rgbColor: color[event.type]
@@ -159,7 +159,7 @@ class GoogleHandler {
     }
 
 
-    let sheet = await this.getSheet(event._id)
+    let sheet = await this.getSheet(event.name ? (`${event.name} - ${new Date(event.created).toLocaleString('cs-CZ')}`) : event._id)
     if (!sheet) sheet = await this.createSheet(event)
     await this.clearSheet(sheet)
     await this.postSheet(sheet, nahrat)

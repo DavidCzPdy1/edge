@@ -59,7 +59,8 @@ module.exports = {
     run: async (edge, interaction) => {
 
       let data = {
-        _id: interaction.options.getString('title').replaceAll('_', ' '),
+        name: interaction.options.getString('title').replaceAll('_', ' '),
+        _id: String(new Date().getTime()),
         description: interaction.options.getString('description'),
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
@@ -101,7 +102,7 @@ module.exports = {
         }
       } else data.finished = -1;
 
-      const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data._id}`)
+      const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data.name || data._id}`)
         .addComponents(textBox({ id: '1', text: 'Otázka 1', example: 'Email', value: undefined, required: true}))
         .addComponents(textBox({ id: '2', text: 'Otázka 2', example: 'Telefon', value: undefined, required: false}))
         .addComponents(textBox({ id: '3', text: 'Otázka 3', example: 'Poznámka', value: undefined, required: false}))
@@ -139,13 +140,13 @@ module.exports = {
         await edge.post('general', 'events', data)
     },
     select: async (edge, interaction) => {
-      let title = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       let answer = interaction.customId.split('_')[4]
       let options = interaction.customId.split('_')[5]
 
       let preview = answer == 'preview'
 
-      let data = await edge.get('general', 'events', {_id: title})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.reply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -167,12 +168,12 @@ module.exports = {
           data[answer] = data[answer].filter(n => n !== id)
           let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
           interaction.reply({ embeds: [embed], ephemeral: true })
-          console.discord(`Odstranění reakce v \`${title}\`\n${embed.description}`)
+          console.discord(`Odstranění reakce v \`${data.name || data._id}\`\n${embed.description}`)
         } else {
           data[answer].push(id)
           let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
           interaction.reply({ embeds: [embed], ephemeral: true })
-          console.discord(`Přidání hlasu v \`${title}\`\n${embed.description}`)
+          console.discord(`Přidání hlasu v \`${data.name || data._id}\`\n${embed.description}`)
         }
       } else {
         if (answered && answered.name == 'Deny') data.Deny = data.Deny.filter(n => n !== id)
@@ -181,7 +182,7 @@ module.exports = {
 
         if (answerCount >= data.numberAnswers && !preview) return interaction.reply({ embeds: [{ title: 'Reakce už je zaznamenána!', description: `Reacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }], ephemeral: true })
 
-        const modal = new ModalBuilder().setCustomId('form_cmd_react_'+data._id+'_'+id + '_' + answer).setTitle(`${data._id}`)
+        const modal = new ModalBuilder().setCustomId('form_cmd_react_'+data._id+'_'+id + '_' + answer).setTitle(`${data.name || data._id}`)
         for (let i = 0; i < data.questions.length; i++) {
           let question = data.questions[i]
           modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: undefined, required: i == data.questions.length - 1 ? false : true}))
@@ -203,14 +204,14 @@ module.exports = {
     react: async (edge, interaction) => {
       await interaction.update({ type:6 })
 
-      let title = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       let id = interaction.customId.split('_')[4]
 
       if (interaction.customId.split('_')[5] == 'preview') return interaction.followUp({ embeds: [{ title: 'Form byl v preview režimu!', description: `Odpověď nebyla zaznamenána!`, color: 15548997 }], ephemeral: true })
 
       if (interaction.guild?.id !== '1105413744902811688') return interaction.followUp({ embeds: [{ title: 'Nenašel jsem edge discord server!', description: `Wierd error :D`, color: 15548997 }], ephemeral: true })
 
-      let data = await edge.get('general', 'events', {_id: title})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -232,7 +233,7 @@ module.exports = {
 
       let em = { title: 'Reakce zaznamenána!', description: `Reacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
       interaction.followUp({ embeds: [em], ephemeral: true })
-      console.discord(`Nová reakce v \`${title}\`\n${em.description}`)
+      console.discord(`Nová reakce v \`${data.name || data._id}\`\n${em.description}`)
 
       await edge.post('general', 'events', data)
 
@@ -243,11 +244,11 @@ module.exports = {
 
     },
     editHandler: async (edge, interaction) => {
-      let title = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       //let id = interaction.customId.split('_')[4]
       //let time = interaction.customId.split('_')[5]
       
-      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
       
       if (data.mode == 'team' && !interaction.member._roles.includes(edge.config.discord.roles.position_trener)) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nemáš trenérskou roli!`, color: 15548997 }], ephemeral: true })
       
@@ -262,12 +263,12 @@ module.exports = {
         let comp = new ActionRowBuilder();
         for (let i = 0; i < answers.length; i++) {
           let answer = answers[i]
-          comp.addComponents(new ButtonBuilder().setCustomId(`form_cmd_edit_${title}_${answer.id}_${answer.time}`).setStyle(2).setLabel(String(i)))
+          comp.addComponents(new ButtonBuilder().setCustomId(`form_cmd_edit_${_id}_${answer.id}_${answer.time}`).setStyle(2).setLabel(String(i)))
         }
         interaction.reply({ embeds: [{title: 'Jakou chceš upravit odpověď?', description: data.mode == 'team' ? `Úprava odpovědi týmu <@&${id}>`: `Úprava odpovědi uživatele <@${id}>`, color: 12343551 }], components: [comp], ephemeral: true})
       } else {
         /* create and send MODAL */
-        const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+answers[0].time).setTitle(`${data._id}`)
+        const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+answers[0].time).setTitle(`${data.name || data._id}`)
         for (let i = 0; i < data.questions.length; i++) {
           let question = data.questions[i]
           let answer = answers[0]
@@ -277,16 +278,16 @@ module.exports = {
       }
     },
     edit: async (edge, interaction) => {
-      let title = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       let id = interaction.customId.split('_')[4]
       let time = interaction.customId.split('_')[5]
   
-      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
       let answer = data.Accept.find(n => n.id == id && n.time == time)
       if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
       
       /* create and send MODAL */
-      const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data._id}`)
+      const modal = new ModalBuilder().setCustomId('form_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data.name || data._id}`)
       for (let i = 0; i < data.questions.length; i++) {
         let question = data.questions[i]
         modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: answer.answers[question], required: i == data.questions.length - 1 ? false : true}))
@@ -296,13 +297,13 @@ module.exports = {
     },
     catchEdit: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let title = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       let id = interaction.customId.split('_')[4]
       let time = interaction.customId.split('_')[5]
   
       let guild = dc_client.guilds.cache.get('1105413744902811688')
   
-      let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+      let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
       let answer = data.Accept.find(n => n.id == id && n.time == time)
       if (!answer) return interaction.followUp({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], components: [], ephemeral: true })
   
@@ -321,7 +322,7 @@ module.exports = {
   
       await edge.post('general', 'events', data)
       await interaction.followUp({ content: 'Změny byly uloženy!', ephemeral: true})
-      console.discord(`${interaction.user} změnil odpověď v ${title} formu.`)
+      console.discord(`${interaction.user} změnil odpověď v ${data.name || data._id} formu.`)
       await edge.google.nahratData(data, {guild: guild})
   
       if (data.message) {

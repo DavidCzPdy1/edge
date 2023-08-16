@@ -55,10 +55,10 @@ module.exports = {
     if (current !== 'event' && !interaction.options.getString('event')) return interaction.respond([{ name: 'Vyber nejdříve event!', value: 'null' }])
 
     if (current == 'event') {
-      let tymy = await edge.get('general', 'events', {})
-      tymy = tymy.filter(n => n.type == 'form')
+      let events = await edge.get('general', 'events', {})
+      events = events.filter(n => n.type == 'form')
 
-      let show = tymy.map(n => { return { name: n._id, value: n._id } })
+      let show = events.map(n => ({name: n.name ? (`${n.name} - ${new Date(n.created).toLocaleString('cs-CZ')}`) : n._id, value: n._id}))
       let focused = interaction.options.getFocused()
 
       let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25) 
@@ -86,16 +86,16 @@ module.exports = {
     }
   },
   edit: async (edge, interaction) => {
-    let title = interaction.customId.split('_')[3]
+    let _id = interaction.customId.split('_')[3]
     let id = interaction.customId.split('_')[4]
     let time = interaction.customId.split('_')[5]
 
-    let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+    let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
     if (!answer) return interaction.reply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], ephemeral: true })
     
     /* create and send MODAL */
-    const modal = new ModalBuilder().setCustomId('results_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data._id}`)
+    const modal = new ModalBuilder().setCustomId('results_cmd_catchEdit_'+data._id+'_'+id+'_'+time).setTitle(`${data.name || data._id}`)
     for (let i = 0; i < data.questions.length; i++) {
       let question = data.questions[i]
       modal.addComponents(textBox({ id: String(i), text: question, example: undefined, value: answer.answers[question], required: i == data.questions.length - 1 ? false : true}))
@@ -106,13 +106,13 @@ module.exports = {
   delete: async (edge, interaction) => {
     await interaction.update({ type:6 })
 
-    let title = interaction.customId.split('_')[3]
+    let _id = interaction.customId.split('_')[3]
     let id = interaction.customId.split('_')[4]
     let time = interaction.customId.split('_')[5]
 
     let guild = dc_client.guilds.cache.get('1105413744902811688')
 
-    let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+    let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
     if (!answer) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], components: [] })
 
@@ -130,13 +130,13 @@ module.exports = {
   },
   catchEdit: async (edge, interaction) => {
     await interaction.update({ type:6 })
-    let title = interaction.customId.split('_')[3]
+    let _id = interaction.customId.split('_')[3]
     let id = interaction.customId.split('_')[4]
     let time = interaction.customId.split('_')[5]
 
     let guild = dc_client.guilds.cache.get('1105413744902811688')
 
-    let data = await edge.get('general', 'events', { _id: title }).then(n => n[0])
+    let data = await edge.get('general', 'events', { _id: _id }).then(n => n[0])
     let answer = data.Accept.find(n => n.id == id && n.time == time)
     if (!answer) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyla nalezena žádná odpověď!`, color: 15548997 }], components: [] })
 
@@ -166,10 +166,10 @@ module.exports = {
 }
 
 function getEmbed(data, answers, guild) {
-  if (!answers.length) return { embeds: [{ title: `**${data._id}**`, description: 'Žádná odpověď'}], components: [] }
+  if (!answers.length) return { embeds: [{ title: `**${data.name || data._id}**`, description: 'Žádná odpověď'}], components: [] }
   let mention = data.mode == 'team' ? guild.roles.cache.get(answers[0].id) : guild.members.cache.get(answers[0].id)
   let name = mention?.name || mention?.nickname || mention?.user?.username
-  let embed = { title: `Answer by ${name}`, description: `**${data._id}**\n*${answers.length}/${data.numberAnswers} answer${data.numberAnswers > 1 ? 's' : ''}*`, fields: [], footer: {}}
+  let embed = { title: `Answer by ${name}`, description: `**${data.name || data._id}**\n*${answers.length}/${data.numberAnswers} answer${data.numberAnswers > 1 ? 's' : ''}*`, fields: [], footer: {}}
   let components = []    
 
   for (let answer of answers) {

@@ -4,7 +4,7 @@ const { ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require('discor
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
 const getEmbed = (data, options = {}) => {
   let embed =  {
-      title: data.question || data._id,
+      title: data.name || data._id,
       description: data.description,
       fields: data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }) || [],
       color: 1613,
@@ -112,7 +112,8 @@ module.exports = {
       await interaction.deferReply({ ephemeral: true })
 
       let data = {
-        question: interaction.options.getString('question').replaceAll('_', ' '),
+        _id: String(new Date().getTime()),
+        name: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
         answers: interaction.options.getString('answers').replaceAll('.', '/'),
         time: interaction.options.getString('time') || null,
@@ -129,7 +130,7 @@ module.exports = {
 
       data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')
 
-      let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data.question.toLowerCase()))
+      let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data._id.toLowerCase()))
       let errorEmbed = { title: `ERROR! Použij příkaz znovu: </${interaction.commandName}:${interaction.commandId}>`, description: `Hlasování nebo event s tímto názvem už existuje!`, fields: Object.keys(data).filter(n => data[n]).map(n => {return{ name: n, value: `\`${data[n]}\``, inline: true}}), color: 15548997, footer: { icon_url: interaction?.guild?.iconURL() || '', text: 'EDGE Discord'} }
       if (events.length) return interaction.editReply({ embeds: [errorEmbed]})
       
@@ -160,17 +161,14 @@ module.exports = {
       let odpovedi = new ActionRowBuilder();
 
       for (let answer of data.answers.split('|')) {
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_select_${data.question}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_select_${data._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(true))
         data[answer] = []
       }
 
       let accept = new ActionRowBuilder()
-        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data.question}`).setStyle(3).setLabel('POSLAT'))
-        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data.question}`).setStyle(4).setLabel('NEPOSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
         
-    
-      data._id = data.question
-      delete data.question
 
       await edge.post('general', 'events', data)
 
@@ -181,11 +179,11 @@ module.exports = {
     },
     select: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
       let answer = interaction.customId.split('_')[4]
       let select = interaction.customId.split('_')[5] === interaction.customId.split('_')[4]
 
-      let data = await edge.get('general', 'events', {_id: question})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -208,18 +206,18 @@ module.exports = {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-        console.discord(`Odstranění hlasu v \`${question}\`\n${embed.description}`)
+        console.discord(`Odstranění hlasu v \`${data.name || data._id}\`\n${embed.description}`)
       } else if (!select &&  (!answered || data.settings == 'duplicate')) {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-        console.discord(`Přidání hlasu v \`${question}\`\n${embed.description}`)
+        console.discord(`Přidání hlasu v \`${data.name || data._id}\`\n${embed.description}`)
       } else if (!select) {
         data[answered.name] = data[answered.name].filter(n => n !== id)
         data[answer].push(id)
         let embed = { title: 'Změna hlasu!', description: `Z: \`${answered.name}\`\nNa: \`${answer}\`\nReacted as ${(data.mode == 'team' ? ('<@&'+ id + `> (by ${interaction.user})`) : ('<@'+ id + '>'))}`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
-        console.discord(`Změna hlasu v \`${question}\`\n${embed.description}`)
+        console.discord(`Změna hlasu v \`${data.name || data._id}\`\n${embed.description}`)
       } else return interaction.followUp({ embeds: [getEmbed(data, { guild: interaction.guild, showId: admin ? undefined : id, show: admin })], ephemeral: true })
 
       await edge.post('general', 'events', data)
@@ -233,16 +231,16 @@ module.exports = {
     },
     deny: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
 
-      await edge.delete('general', 'events', {_id: question})
+      await edge.delete('general', 'events', {_id: _id})
       interaction.editReply({ components: []})
     },
     accept: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
 
-      let event = await edge.get('general', 'events', {_id: question})
+      let event = await edge.get('general', 'events', {_id: _id})
       if (!event.length) return interaction.editReply({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Zkopíruj si zadání commandu a zkus to znova, nebo kontaktuj developera!`, color: 15548997 }], ephemeral: true })
       event = event[0]
 

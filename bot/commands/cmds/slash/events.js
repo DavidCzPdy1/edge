@@ -23,10 +23,10 @@ module.exports = {
 
       if (interaction.guild?.id !== '1105413744902811688') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nejsi na EDGE DC!`, color: 15548997 }]})
 
-      let event = interaction.options.getString('event')
-      if (event == 'null') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný event!`, color: 15548997 }]})
+      let _id = interaction.options.getString('event')
+      if (_id == 'null') return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyl nalezen žádný event!`, color: 15548997 }]})
 
-      let data = await edge.get('general', 'events', {_id: event}).then(n => n[0])
+      let data = await edge.get('general', 'events', {_id: _id}).then(n => n[0])
       if (!data) return interaction.editReply({ embeds: [{ title: 'ERROR', description: `Nebyly nalezeny žádná data!`, color: 15548997 }]})
 
       let embed = edge.commands.get('hlasovani').getEmbed(data, {tym: true, guild: interaction.guild, show: true})
@@ -46,14 +46,14 @@ module.exports = {
       buttons.addComponents(new ButtonBuilder().setCustomId(`events_cmd_ping_${data._id}`).setStyle(3).setLabel('PING NOW').setDisabled(data.mode == 'team' ? false : true).setDisabled(message ? false : true))
       buttons.addComponents(new ButtonBuilder().setCustomId(`${/*data.type ||*/ 'hlasovani'}_cmd_accept_${data._id}`).setStyle(2).setLabel('SEND NEW MSG').setDisabled(false).setDisabled(message ? true : false))
 
-      await interaction.editReply({ embeds: [embed], components: [buttons]})
+      await interaction.editReply({ content: message?.url||undefined, embeds: [embed], components: [buttons]})
 
     },
     autocomplete: async (edge, interaction) => {
 
-      let tymy = await edge.get('general', 'events', {})
+      let events = await edge.get('general', 'events', {})
 
-      let show = tymy.map(n => { return {name: n._id, value: n._id} })
+      let show = events.map(n => ({name: n.name ? (`${n.name} - ${new Date(n.created).toLocaleString('cs-CZ')}`) : n._id, value: n._id}))
       let focused = interaction.options.getFocused()
 
       let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase())).slice(0, 25)
@@ -61,9 +61,9 @@ module.exports = {
     },
     toggle: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
 
-      let data = await edge.get('general', 'events', {_id: question})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -86,9 +86,9 @@ module.exports = {
     },
     open: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
 
-      let data = await edge.get('general', 'events', {_id: question})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
       
@@ -110,9 +110,9 @@ module.exports = {
     },
     ping: async (edge, interaction) => {
       await interaction.update({ type:6 })
-      let question = interaction.customId.split('_')[3]
+      let _id = interaction.customId.split('_')[3]
 
-      let data = await edge.get('general', 'events', {_id: question})
+      let data = await edge.get('general', 'events', {_id: _id})
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný event!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -139,7 +139,7 @@ module.exports = {
           } catch (e) {errors.push(member.user)}
         }
       }
-      let embed = {title: `Notify ${data._id} eventu! - command interaction`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+      let embed = {title: `Notify ${data.name || data._id} eventu! - command interaction`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
       if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
       global.channels?.log?.send({ embeds: [embed] })
       interaction.followUp({ ephemeral: true, embeds: [embed]})
