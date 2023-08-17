@@ -4,7 +4,7 @@ const { ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require('discor
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
 const getEmbed = (data, options = {}) => {
   let embed =  {
-      title: data.question || data._id,
+      title: data.title || data.name || data.question || data._id,
       description: data.description,
       fields: data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }) || [],
       color: 14666022,
@@ -237,6 +237,15 @@ module.exports = {
         interaction.followUp({ embeds: [embed], ephemeral: true })
       }
 
+      if (data.type == 'turnaj' && data.role) {
+        let role = interaction.guild.roles.cache.get(data.role)
+        if (role) {
+          if (data.Pojedu?.includes(id)) edge.discord.roles.roleAdd(interaction.member, role)
+          else edge.discord.roles.roleRemove(interaction.member, role)
+        } else console.error('Turnaj - nenašel jsem roli - ' + db)
+      }
+
+
       await edge.post('teams', db, data)
 
       let embed = getEmbed(data, { guild: interaction.guild })
@@ -276,12 +285,12 @@ module.exports = {
         } else {
           data[answered.name] = data[answered.name].filter(n => n !== id)
           data[answer].push(id)
-          edited.push(`${name} - změna hlasu z \`${answered.name}\` na: \`${answer}\``)
+          edited.push(`${name} - změna hlasu z \`${answered.name}\` na \`${answer}\``)
         }
       }
 
       await edge.post('teams', db, data)
       await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild})]})
-      await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.question}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: edge.isEphemeral(interaction) })
+      await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.name}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: edge.isEphemeral(interaction) })
     }
 }
