@@ -19,7 +19,7 @@ const getEmbed = (data, options = {}) => {
       let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
-        let mention = options.guild.members.cache.get(id)
+        let mention = options.guild.members.cache.get(id) || {nickname: id}
         return mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'
@@ -240,7 +240,7 @@ module.exports = {
       if (data.type == 'turnaj' && data.role) {
         let role = interaction.guild.roles.cache.get(data.role)
         if (role) {
-          if (data.Pojedu?.includes(id)) edge.discord.roles.roleAdd(interaction.member, role)
+          if (data.Pojedu?.includes(id) || data['Uvidím']?.includes(id)) edge.discord.roles.roleAdd(interaction.member, role)
           else edge.discord.roles.roleRemove(interaction.member, role)
         } else console.error('Turnaj - nenašel jsem roli - ' + db)
       }

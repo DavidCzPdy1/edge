@@ -135,7 +135,7 @@ function refreshDb(data, event, team) {
   data.title = type == 'trenink' ? `Docházka na ${event.summary}` : `Přihláška na ${event.summary}`
   data.description = `**Datum:** <t:${time}:f>\n${type == 'trenink' ? `**Od** <t:${time}:t> **do** <t:${timeEnd}:t>\nZačátek <t:${time}:R>`:`**Počet dní:** ${Math.ceil((Number(new Date(data.end)) - Number(new Date(data.start))) / 1000/60/60/24 )}`}\n`
   data.color = team.color
-  data.answers = type == 'trenink' ? 'Přijdu|Nepřijdu|Přijdu pozdě' : 'Pojedu|Nepojedu'
+  data.answers = type == 'trenink' ? 'Přijdu|Nepřijdu|Přijdu pozdě' : 'Pojedu|Nepojedu|Uvidím'
   data.mode = 'user',
   data.type = type
   data.channel = team.server.channels[type]
@@ -165,7 +165,7 @@ function getEmbed (data, options = {}) {
       let value = data[n.name.split(' - ')[0]].map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
-        let mention = options.guild.members.cache.get(id)
+        let mention = options.guild.members.cache.get(id) || {nickname: id}
         return mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'

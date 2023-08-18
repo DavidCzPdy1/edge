@@ -129,20 +129,33 @@ module.exports = {
 
         let embed = {
             title: 'V jakém jsi týmu?',
-            description: `<:people:1109468903719059486> ➜ U15\n<:champion:1141315219369500766> ➜ A-Tým\n<:dum:1109508725519159306> ➜ Návštěvník`,
+            description: `<:dum:1109508725519159306> ➜ U15\n<:champion:1141315219369500766> ➜ A-Tým\n<:people:1109468903719059486> ➜ Návštěvník`,
             color: 15844367
         }
 
         let buttons =  new ActionRowBuilder()
-          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_U15').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
-          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_A').setStyle(2).setDisabled(false).setEmoji('<:champion:1141315219369500766>'))
-          .addComponents(new ButtonBuilder().setCustomId('raketyRozdeleni_button_G').setStyle(2).setDisabled(false).setEmoji('<:dum:1109508725519159306>'))
+          .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_U15').setStyle(2).setDisabled(false).setEmoji('<:dum:1109508725519159306>'))
+          .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_Home').setStyle(2).setDisabled(false).setEmoji('<:champion:1141315219369500766>'))
+          .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_G').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
           
  
         channel.send({ embeds: [embed], components: [buttons] })
-        
-        
-    } 
+    } else if (args[0] == 'pdy') {
+        let channel = message.guild.channels.cache.get('1141313863703334982')
+        channel = message.channel
+
+        let embed = {
+            title: 'Verifikace',
+            description: `<:dum:1109508725519159306> ➜ Domácí tým\n<:people:1109468903719059486> ➜ Návštěvník`,
+            color: 154367
+        }
+
+        let buttons =  new ActionRowBuilder()
+            .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_Home').setStyle(2).setDisabled(false).setEmoji('<:dum:1109508725519159306>'))
+            .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_G').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
+ 
+        channel.send({ embeds: [embed], components: [buttons] })
+    }
 
     }
 }

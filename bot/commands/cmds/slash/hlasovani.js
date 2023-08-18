@@ -26,7 +26,7 @@ const getEmbed = (data, options = {}) => {
       let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${id}>` :  `<@${id}>`)
-        let mention = data.mode == 'team' ? options.guild.roles.cache.get(id) : options.guild.members.cache.get(id)
+        let mention = data.mode == 'team' ? options.guild.roles.cache.get(id) : options.guild.members.cache.get(id) || {nickname: id}
         return mention?.name || mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'

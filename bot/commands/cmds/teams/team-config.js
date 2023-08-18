@@ -46,7 +46,9 @@ module.exports = {
         splitRole: 'Přidává a odstraňuje automaticky split role (▬▬)',
         memberRole: 'Přidává automaticky roli, pokud je hráč členem týmu',
         trainerRole: 'Přidává automaticky trenérskou roli',
-        treninky: 'Automaticky posílá docházku na tréninky'
+        verifyRole: 'Přidává automaticky roli, pokud je hráč verifikovaný (role pro členy týmů i nečleny týmů)',
+        treninky: 'Automaticky posílá docházku na tréninky',
+        turnaje: 'Automaticky posílá přihlášku na turnaje a vytváří roli pro komunikaci'
       }
 
       if (type == 'config') {

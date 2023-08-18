@@ -112,6 +112,7 @@ class RoleHandler {
         splitRole: false,
         memberRole: false,
         trainerRole: false,
+        verifyRole: false,
         treninky: false,
         turnaje: false
       }
@@ -121,6 +122,7 @@ class RoleHandler {
       
       let config = team.server.config
 
+      let db = await edge.get('teams', team.server.database, {})
 
       let members = await guild.members.fetch()
 
@@ -136,18 +138,25 @@ class RoleHandler {
           if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname||member.user.username) }
         }
 
-        /* Member & Trainer role */
-        if (config.memberRole) {
-          let memberRole = guild.roles.cache.get(team.server.roles?.member||'123456789')
+        /* Member & Trainer role & Verify role */
+        if (config.memberRole && team.server.roles?.member) {
+          let memberRole = guild.roles.cache.get(team.server.roles?.member)
           if (memberRole && user?.team && user?.team == team.id) await this.roleAdd(member, memberRole);
           else if (memberRole) await this.roleRemove(member, memberRole);
         }
-        if (config.trainerRole) {
+        if (config.trainerRole && team.server.roles?.trener) {
           let trainers = await this.edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
-          let trainerRole = guild.roles.cache.get(team.server.roles?.trener||'123456789')
+          let trainerRole = guild.roles.cache.get(team.server.roles?.trener)
           if (trainerRole && user?.team && user?.team == team.id && trainers?.list?.includes(member.user.id)) await this.roleAdd(member, trainerRole);
           else if (trainerRole) await this.roleRemove(member, trainerRole);
         }
+
+        if (config.verifyRole && team.server.roles?.verify) {
+          let verifyRole = guild.roles.cache.get(team.server.roles?.verify)
+          if (verifyRole && user) await this.roleAdd(member, verifyRole);
+          else if (verifyRole) await this.roleRemove(member, verifyRole);
+        }
+
 
         /* Split Roles */
         if (config.splitRole) {
@@ -160,9 +169,35 @@ class RoleHandler {
             if (hasRole.size) await this.roleAdd(member, splitRole)
             else await this.roleRemove(member, splitRole)
           }
-
         }
 
+        /* Turnaj */
+        if (config.turnaje) {
+          for (let turnaj of db.filter(n => n.type == 'turnaj' && !n.ended)) {
+            if (!turnaj.role) continue
+            let role = guild.roles.cache.get(turnaj.role)
+            if (!role) {
+              let splits = ['mention', 'ping', 'oznámení']
+              let pos = guild.roles.cache.find(n => splits.some(a => n.name.toLowerCase().includes(a)))?.position || 1
+              role = await guild.roles.create({ name: `${turnaj.name}`, color: team.color, reason: 'Na komunikaci lidí, co jedou na turnaj! - FIX', position: pos })
+              turnaj.role = role.id
+              await edge.post('teams', team.server.database, turnaj)
+            }
+            if (turnaj.Pojedu.includes(member.user.id)) this.roleAdd(member, role)
+            else if (turnaj['Uvidím'].includes(member.user.id)) this.roleAdd(member, role)
+            else this.roleRemove(member, role)
+          }
+        }
+
+        /* CUSTOM */
+
+        /* Rakety Verify Handler*/
+        if (guild.id == '1122995611621392424') {
+          if (user) {
+            if (!user.rakety);
+
+          }
+        }
 
       }
     }
