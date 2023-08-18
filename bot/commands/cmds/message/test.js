@@ -155,6 +155,18 @@ module.exports = {
             .addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_G').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
  
         channel.send({ embeds: [embed], components: [buttons] })
+    } else if (args[0] == 'pdyInfo') {
+        let guild = message.guild
+        let channel = message.channel
+        let infoEmbed = { title: 'Micropachycephalosauři Poděbrady', description: 'Zázemí pro frisbee hráče z Poděbrad a okolí, ale vítání jsou i všichni ostatní\n\n<:dot:1109460785723351110>**Docházka na tréninky** ➜ <#1128307712552337419>\n<:dot:1109460785723351110>**Přihláška na turnaje** ➜ <#1135644875287699576>\n<:dot:1109460785723351110>**Oznámení a hlasování** ➜ <#1128330001641652305>\n\nVyplň **Reaction Role** když:\n<:dot:1109460785723351110>Chceš lepší upozornění\n<:dot:1109460785723351110>Nejsi v týmu, ale chceš na trénink přijít / chceš vidět aktuální informace týkajících se tréninků\n\nNějaký problém? ➜ <@378928808989949964>', color: 16405504, footer: { text: 'Micropachycephalosauři Discord info', icon_url: guild?.iconURL() || '' }}
+        let roleEmbed = { title: 'Reaction Role', description: '<:annouce:1109483778671382558> ➜ <@&1142167646930997368> ➜ Ping při novém oznámení nebo hlasování\n<:champion:1141315219369500766> ➜ <@&1128309507190181928> ➜ Ping při novém tréninku\n<:people:1109468903719059486> ➜ <@&1142160090988826795> ➜ Přístup k tréninkům\n', color: 16405504, footer: { text: 'Micropachycephalosauři Discord role', icon_url: guild?.iconURL() || '' }}
+        let buttons =  new ActionRowBuilder()
+        .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1142167646930997368')/*.setLabel('oznameni')*/.setStyle(2).setDisabled(false).setEmoji('<:annouce:1109483778671382558>'))
+        .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1128309507190181928')/*.setLabel('oznameni')*/.setStyle(2).setDisabled(false).setEmoji('<:champion:1141315219369500766>'))
+        .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1142160090988826795').setStyle(2).setDisabled(false).setEmoji('<:people:1109468903719059486>'))
+
+        channel?.send({ embeds: [infoEmbed], components: [] })
+        channel?.send({ embeds: [roleEmbed], components: [buttons] })
     }
 
     }

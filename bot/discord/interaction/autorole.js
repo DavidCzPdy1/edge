@@ -9,20 +9,20 @@ module.exports = async (edge, interaction) => {
 
         let roleId = interaction.customId.split('_')[2]
 
-        if (!guild) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Wierd, nejsi na serveru`, color: 15548997, footer: { text: 'EDGE Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+        if (!guild) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Wierd, nejsi na serveru`, color: 15548997, footer: { text: 'EDGE Bot', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
 
         let member = guild.members.cache.get(interaction.user.id)
-        if (!member) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyl nalezen member!`, color: 15548997, footer: { text: 'EDGE Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+        if (!member) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyl nalezen member!`, color: 15548997, footer: { text: 'EDGE Bot', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
 
         let role = guild.roles.cache.get(roleId)
-        if (!role) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyla nalezena role!`, color: 15548997, footer: { text: 'EDGE Discord', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
+        if (!role) return interaction.reply({ embeds: [{ title: 'ERROR v AUTOROLE interaction', description: `Nebyla nalezena role!`, color: 15548997, footer: { text: 'EDGE Bot', icon_url: guild?.iconURL() || '' } }], ephemeral: true });
 
         let result = await edge.discord.roles.roleToggle(member, role)
 
         await interaction.reply({ embeds: [{ title: 'SUCCESS', description: `Úspěště ti byla ${result ? 'přidána':'odebrána'} role ${role}`, color: result ? 2067276 : 15548997, footer: { text: 'EDGE Dicord ROLE', icon_url: guild?.iconURL() || '' } }], ephemeral: true})
 
         
-        console.discord(`AUTOROLE - <@${interaction.user.id}> ${result ? 'added' : 'removed'} ${role}`)
+        console.discord(`AUTOROLE - <@${interaction.user.id}> ${result ? 'added' : 'removed'} ${role.name} - ${role}`)
 
         return
 
