@@ -17,10 +17,10 @@ module.exports = async (edge, interaction) => {
 
       if (!user) {
           const modal = new ModalBuilder().setCustomId(`rozdeleni_verify_${id}`).setTitle(`Zadání jména!`)
-          .addComponents(textBox({ id: 'jmeno', text: 'Jaké máš jméno?', example: 'Jméno Příjmení', value: undefined, required: true}))
+          .addComponents(textBox({ id: 'jmeno', text: 'Jak se jmenuješ?', example: 'Jméno Příjmení', value: undefined, required: true}))
 
           return await interaction.showModal(modal);
-      } else await interaction.reply({ ephemeral: true, content: 'Už jsi verifikovaný, brzo dostaneš příslušné role!' })
+      } else await interaction.reply({ ephemeral: true, content: 'Již jsi verifikovaný, brzy dostaneš příslušné role!' })
 
       if (!user.clubs) user.clubs = []
       let club = user.clubs.find(a => a.id == team._id)
@@ -52,7 +52,7 @@ module.exports = async (edge, interaction) => {
         team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
         if (!team) team = {}
         
-        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, clicked: id}].filter(n => n.id)}
+        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || []}].filter(n => n.id)}
         try {
           if (process.env.namesApi) {
             let url = `https://api.parser.name/?api_key=${process.env.namesApi}&endpoint=extract&text=${jmeno.replaceAll(' ', '%20')}`
@@ -82,7 +82,7 @@ module.exports = async (edge, interaction) => {
         
         await edge.post('general', 'users', user)
         console.discord(`${jmeno} - tymova verifikace jako typu #${id}`)
-        await interaction.followUp({ ephemeral: true, content: 'Právě ses verifikoval, brzo dostaneš příslušné role!' })
+        await interaction.followUp({ ephemeral: true, content: 'Právě ses verifikoval, brzy dostaneš příslušné role!' })
     }
     edge.discord.roles.updateRoles([interaction.user.id])
 }

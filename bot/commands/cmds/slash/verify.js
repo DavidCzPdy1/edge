@@ -9,7 +9,7 @@ module.exports = {
     options: [
       {
         name: 'jmeno',
-        description: 'Jaké máš jméno? (\"Jméno Přijímení\")',
+        description: 'Jak se jmenuješ? (\"Jméno Přijímení\")',
         type: 3,
         required: true,
       },
