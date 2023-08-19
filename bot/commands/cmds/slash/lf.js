@@ -46,7 +46,7 @@ module.exports = {
       return interaction.editReply({ embeds: [embed], components: [button]})
 
     } else {
-      let embed = {title: 'Seznam lidí, co hledají tým', description: 'Pro kontakrování / přijetí přidej daného hráče při posílání příkazu', color: 15882495, fields: data.players.filter(n => !n.accepted).map(n => ({name: n.name, value: n.answer.map(a => `${a.name} - ${a.value}`).join('\n')}))}
+      let embed = {title: 'Seznam lidí, co hledají tým', description: 'Pro kontaktování / přijetí přidej daného hráče při posílání příkazu', color: 15882495, fields: data.players.filter(n => !n.accepted).map(n => ({name: n.name, value: n.answer.map(a => `${a.name} - ${a.value}`).join('\n')}))}
       return interaction.editReply({ embeds: [embed]})
     }
   

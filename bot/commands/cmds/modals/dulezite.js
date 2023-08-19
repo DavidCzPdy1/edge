@@ -114,12 +114,12 @@ module.exports = {
       if (!data) return interaction.editReply({ components: []})
 
       if (!data.read) data.read = []
-      if (data.read.includes(interaction.user.id)) return interaction.followUp({ ephemeral: true, content: 'Reakce už je zaznamenána!'})
+      if (data.read.includes(interaction.user.id)) return interaction.followUp({ ephemeral: true, content: 'Reakce již byla zaznamenána!'})
       data.read.push(interaction.user.id)
 
       await edge.post('general', 'messages', data)
 
-      interaction.followUp({ephemeral: true, content: 'Zpráva označena, jako přečtená!'})
+      interaction.followUp({ephemeral: true, content: 'Zpráva označena jako přečtená!'})
 
     }
 }

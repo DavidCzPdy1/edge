@@ -33,8 +33,8 @@ module.exports = {
       }
 
       let buttons = new ActionRowBuilder() 
-        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_players_${tym}`).setStyle(2).setLabel('HRÁČI'))
-        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_trainers_${tym}`).setStyle(2).setLabel('TRENÉŘI'))
+        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_players_${tym}_${data.name}`).setStyle(2).setLabel('HRÁČI'))
+        .addComponents(new ButtonBuilder().setCustomId(`tym_cmd_trainers_${tym}_${data.name}`).setStyle(2).setLabel('TRENÉŘI'))
 
       await interaction.editReply({ embeds: [embed], components: [buttons]})
 
@@ -54,31 +54,25 @@ module.exports = {
     trainers: async (edge, interaction) => {
       await interaction.update({ type:6 })
       let tym = interaction.customId.split('_')[3]
+      let name = interaction.customId.split('_')[4]
 
-      let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyl nalezen discord server!`})
+      let users = await edge.get('general', 'users', {}).then(n => n.filter(a => a.team == tym))
+      let trainer = await edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
 
-      let role = guild.roles.cache.get(tym)
-      if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
+      let players = users.filter(n => trainer.list.includes(n._id)).map(n => `<@${n._id}>`).sort().join('\n')
 
-      let members = await guild.members.fetch().then(a => a.filter(n => n._roles.includes(tym) && n._roles.includes(edge.config.discord.roles.position_trener)))
-      let players = members.map(n => `<@${n.user.id}>`).join('\n')
-
-      interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${role.name}`, description: players, color: '7014665'}], ephemeral: edge.isEphemeral(interaction)})
+      interaction.followUp({ embeds: [{ title: `Seznam trenérů týmu ${name}`, description: players, color: 7014665}], ephemeral: edge.isEphemeral(interaction)})
     },
     players: async (edge, interaction) => {
       await interaction.update({ type:6 })
       let tym = interaction.customId.split('_')[3]
+      let name = interaction.customId.split('_')[4]
 
-      let guild = dc_client.guilds.cache.get('1105413744902811688')
-      if (!guild) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyl nalezen discord server!`})
+      let users = await edge.get('general', 'users', {}).then(n => n.filter(a => a.list.includes(tym)))
+      let trainer = await edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
 
-      let role = guild.roles.cache.get(tym)
-      if (!role) return interaction.followUp({ ephemeral: edge.isEphemeral(interaction), content: `Nebyla nalezena discord role!`})
-
-      let members = await guild.members.fetch().then(a => a.filter(n => n._roles.includes(tym)))
-      let players = members.map(n => `<@${n.user.id}>`+ (n._roles.includes(edge.config.discord.roles.position_trener) ? ` - 🥏`:``)).sort((a, b) => b.endsWith('🥏') - a.endsWith('🥏')).join('\n')
-      interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${role.name}`, description: players, color: 959711}], ephemeral: edge.isEphemeral(interaction)})
+      let players = users.map(n => `<@${n._id}>${trainer.list.includes(n._id) && n.team == tym ? ` - 🥏`:``}${n.team !== tym ? ` - ❌`:``}`).sort().sort((a, b) => b.endsWith('🥏') - a.endsWith('🥏')).sort((a, b) => a.endsWith('❌') - b.endsWith('❌')).join('\n')
+      interaction.followUp({ embeds: [{ title: `Seznam hráčů týmu ${name}`, description: players, color: 959711}], ephemeral: edge.isEphemeral(interaction)})
     }
 
 }
