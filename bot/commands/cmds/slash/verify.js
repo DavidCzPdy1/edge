@@ -178,7 +178,7 @@ module.exports = {
       let user = await edge.get('general', 'users', {_id: id}).then(n => n[0])
 
       if (!user.list.includes(tym)) user.list.push(tym)
-      user.team = tym
+      if (!user.team || user.team == 'ne') user.team = tym
       user.channel = undefined
       await edge.post('general', 'users', user)
 
@@ -200,8 +200,6 @@ module.exports = {
       if (!interaction.member._roles.includes(edge.config.discord.roles.position_trener) || !interaction.member._roles.includes(tym) && !interaction.member._roles.includes(edge.config.discord.roles.position_edge) && interaction.user.id !== '378928808989949964') return interaction.followUp({ embeds: [{ title: 'Nemáš oprávnění odmítnout člověka!', color: 15548997 }], ephemeral: edge.isEphemeral(interaction)})
 
       let user = await edge.get('general', 'users', {_id: id}).then(n => n[0])
-
-      user.blacklist.push(tym)
 
       if (!user.blacklist.includes(tym)) user.blacklist.push(tym)
       user.channel = undefined
