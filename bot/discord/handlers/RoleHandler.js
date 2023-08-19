@@ -110,11 +110,10 @@ class RoleHandler {
         changeName: false,
 
         splitRole: false,
-        memberRole: false,
         trainerRole: false,
-        verifyRole: false,
         treninky: false,
-        turnaje: false
+        turnaje: false,
+        buttons: false
       }
 
       team.server.config = edge.mergeSettings(con, team.server.config || {})
@@ -138,23 +137,12 @@ class RoleHandler {
           if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname||member.user.username) }
         }
 
-        /* Member & Trainer role & Verify role */
-        if (config.memberRole && team.server.roles?.member) {
-          let memberRole = guild.roles.cache.get(team.server.roles?.member)
-          if (memberRole && user?.team && user?.team == team.id) await this.roleAdd(member, memberRole);
-          else if (memberRole) await this.roleRemove(member, memberRole);
-        }
+        /* Trainer role */
         if (config.trainerRole && team.server.roles?.trener) {
           let trainers = await this.edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
           let trainerRole = guild.roles.cache.get(team.server.roles?.trener)
           if (trainerRole && user?.team && user?.team == team.id && trainers?.list?.includes(member.user.id)) await this.roleAdd(member, trainerRole);
           else if (trainerRole) await this.roleRemove(member, trainerRole);
-        }
-
-        if (config.verifyRole && team.server.roles?.verify) {
-          let verifyRole = guild.roles.cache.get(team.server.roles?.verify)
-          if (verifyRole && user) await this.roleAdd(member, verifyRole);
-          else if (verifyRole) await this.roleRemove(member, verifyRole);
         }
 
 
@@ -189,13 +177,20 @@ class RoleHandler {
           }
         }
 
-        /* CUSTOM */
+        /* New verify SYSTEM */
+        if (config.buttons && team.server.buttons) {
+          let clubVerify = user?.clubs?.find(n => n.id == team._id)
+          let allRoles = team.server.buttons.map(n => n.roles).flat(1)
 
-        /* Rakety Verify Handler*/
-        if (guild.id == '1122995611621392424') {
-          if (user) {
-            if (!user.rakety);
-
+          for (let id of allRoles) {
+            let role = guild.roles.cache.get(id)
+            if (role && clubVerify?.roles?.includes(id)) this.roleAdd(member, role)
+            else if (role && !clubVerify?.roles?.includes(id)) this.roleRemove(member, role)
+          }
+          let bonusRoles = clubVerify?.bonus || []
+          for (let id of bonusRoles) {
+            let role = guild.roles.cache.get(id)
+            if (role) this.roleAdd(member, role)
           }
         }
 

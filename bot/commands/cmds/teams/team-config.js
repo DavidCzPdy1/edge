@@ -48,7 +48,8 @@ module.exports = {
         trainerRole: 'Přidává automaticky trenérskou roli',
         verifyRole: 'Přidává automaticky roli, pokud je hráč verifikovaný (role pro členy týmů i nečleny týmů)',
         treninky: 'Automaticky posílá docházku na tréninky',
-        turnaje: 'Automaticky posílá přihlášku na turnaje a vytváří roli pro komunikaci'
+        turnaje: 'Automaticky posílá přihlášku na turnaje a vytváří roli pro komunikaci',
+        buttons: 'Verifikace přes tlačítka :D'
       }
 
       if (type == 'config') {

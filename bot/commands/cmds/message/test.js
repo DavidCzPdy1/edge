@@ -158,7 +158,7 @@ module.exports = {
     } else if (args[0] == 'pdyInfo') {
         let guild = message.guild
         let channel = message.channel
-        let infoEmbed = { title: 'Micropachycephalosauři Poděbrady', description: 'Zázemí pro frisbee hráče z Poděbrad a okolí, ale vítání jsou i všichni ostatní\n\n<:dot:1109460785723351110>**Docházka na tréninky** ➜ <#1128307712552337419>\n<:dot:1109460785723351110>**Přihláška na turnaje** ➜ <#1135644875287699576>\n<:dot:1109460785723351110>**Oznámení a hlasování** ➜ <#1128330001641652305>\n\nVyplň **Reaction Role** když:\n<:dot:1109460785723351110>Chceš lepší upozornění\n<:dot:1109460785723351110>Nejsi v týmu, ale chceš na trénink přijít / chceš vidět aktuální informace týkajících se tréninků\n\nNějaký problém? ➜ <@378928808989949964>', color: 16405504, footer: { text: 'Micropachycephalosauři Discord info', icon_url: guild?.iconURL() || '' }}
+        let infoEmbed = { title: 'Micropachycephalosauři Poděbrady', description: 'Zázemí pro frisbee hráče z Poděbrad a okolí, ale vítaní jsou i všichni ostatní\n\n<:dot:1109460785723351110>**Docházka na tréninky** ➜ <#1128307712552337419>\n<:dot:1109460785723351110>**Přihláška na turnaje** ➜ <#1135644875287699576>\n<:dot:1109460785723351110>**Oznámení a hlasování** ➜ <#1128330001641652305>\n\nVyplň **Reaction Role** když:\n<:dot:1109460785723351110>Chceš lepší upozornění\n<:dot:1109460785723351110>Nejsi v týmu, ale chceš na trénink přijít / chceš vidět aktuální informace týkajících se tréninků\n\nNějaký problém? ➜ <@378928808989949964>', color: 16405504, footer: { text: 'Micropachycephalosauři Discord info', icon_url: guild?.iconURL() || '' }}
         let roleEmbed = { title: 'Reaction Role', description: '<:annouce:1109483778671382558> ➜ <@&1142167646930997368> ➜ Ping při novém oznámení nebo hlasování\n<:champion:1141315219369500766> ➜ <@&1128309507190181928> ➜ Ping při novém tréninku\n<:people:1109468903719059486> ➜ <@&1142160090988826795> ➜ Přístup k tréninkům\n', color: 16405504, footer: { text: 'Micropachycephalosauři Discord role', icon_url: guild?.iconURL() || '' }}
         let buttons =  new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1142167646930997368')/*.setLabel('oznameni')*/.setStyle(2).setDisabled(false).setEmoji('<:annouce:1109483778671382558>'))
@@ -167,7 +167,43 @@ module.exports = {
 
         channel?.send({ embeds: [infoEmbed], components: [] })
         channel?.send({ embeds: [roleEmbed], components: [buttons] })
+    } else if (args[0] == 'buttons') {
+        let channel = message.channel
+
+        let team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === message.guild.id))
+        if (!team) return 'Nenašel jsem tento server v databázi'
+
+        let nastaveni = team.server.buttons
+        if (!nastaveni) return 'Nenašel jsem nastavení tohoto serveru'
+        /* 
+        if (message.guild.id == '1128307451066855515') nastaveni = [
+            {id: '0', title: 'Domácí tým', emoji: '<:dum:1109508725519159306>', roles: ['1128327834549628979', '1142158365460533259']},
+            {id: '1', title: 'Návštěvník', emoji: '<:people:1109468903719059486>', roles: ['1142158365460533259']}
+        ];
+        else nastaveni = [
+            {id : '0', title: 'U15', emoji: '<:dum:1109508725519159306>', roles: ['1142174015734173816']},
+            {id : '1', title: 'U15 - Rodič', emoji: '<:people:1109468903719059486>', roles: ['1142174716170350813']},
+            {id : '2', title: 'A-Tým', emoji: '<:champion:1141315219369500766>', roles: ['1142172522092183712']}
+        ]
+        */
+
+        let embed = {
+            title: 'Verifikace',
+            description: nastaveni.map(n => `${n.emoji} ➜ ${n.title}`).join('\n'),
+            color: team.color
+        }
+
+        let buttons =  new ActionRowBuilder()
+
+        for (let role of nastaveni) {
+            buttons.addComponents(new ButtonBuilder().setCustomId('rozdeleni_button_'+role.id).setStyle(2).setDisabled(false).setEmoji(role.emoji))
+        }
+
+        //team.server.buttons = nastaveni
+        //await edge.post('general', 'clubs', team)
+        channel.send({ embeds: [embed], components: [buttons] })
     }
+
 
     }
 }

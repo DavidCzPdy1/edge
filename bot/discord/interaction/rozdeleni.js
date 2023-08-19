@@ -4,28 +4,47 @@ const textBox = (options) => new ActionRowBuilder().addComponents(new TextInputB
 
 module.exports = async (edge, interaction) => {
     let action = interaction.customId.split('_')[1]
-    let type = interaction.customId.split('_')[2]
+    let id = interaction.customId.split('_')[2]
 
     let user;
     let team;
 
     if (action == 'button') {
 
-        user = await edge.get('general', 'users', {_id: interaction.user.id}).then(n => n[0])
-        team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
-        if (!team) team = {}
+      user = await edge.get('general', 'users', {_id: interaction.user.id}).then(n => n[0])
+      team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
+      if (!team) team = {}
 
-        if (!user) {
-            const modal = new ModalBuilder().setCustomId(`rozdeleni_verify_${type}`).setTitle(`Zadání jména!`)
-            .addComponents(textBox({ id: 'jmeno', text: 'Jaké máš jméno?', example: 'Jméno Příjmení', value: undefined, required: true}))
+      if (!user) {
+          const modal = new ModalBuilder().setCustomId(`rozdeleni_verify_${id}`).setTitle(`Zadání jména!`)
+          .addComponents(textBox({ id: 'jmeno', text: 'Jaké máš jméno?', example: 'Jméno Příjmení', value: undefined, required: true}))
 
-            return await interaction.showModal(modal);
-        } else await interaction.reply({ ephemeral: true, content: 'Už jsi verifikovaný, brzo dostaneš příslušné role!' })
+          return await interaction.showModal(modal);
+      } else await interaction.reply({ ephemeral: true, content: 'Už jsi verifikovaný, brzo dostaneš příslušné role!' })
 
-        if (interaction.guild.id == '1122995611621392424' && team.id === user.team) {
-          user.rakety = type
-          await edge.post('general', 'users', user)
+      if (!user.clubs) user.clubs = []
+      let club = user.clubs.find(a => a.id == team._id)
+      if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || []})
+      else club.roles = team.server.buttons.find(a => a.id == id)?.roles || []
+      
+      if (!user.list.includes(team.id) && team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník' && !user.channel && !user.blacklist.includes(team.id)) {
+        const buttons = new ActionRowBuilder()
+            .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${team.id}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
+            .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${team.id}_${interaction.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
+    
+        let proof = {
+          title: 'Nová žádost o připojení k týmu',
+          description: `${interaction.user} chce získat přístup k <@&${team.id}> roli!`,
+          color: team.color
         }
+        let channel = dc_client.channels.cache.get('1109548259187380275')
+        let msg = await channel?.send({ embeds: [proof], components: [buttons], content: `[<@&${team.id}>]`, allowedMentions: { parse: ['roles'] }})
+        if (channel) user.channel = msg.channel.id
+      }
+
+
+      await edge.post('general', 'users', user)
+        
     } else if (action == 'verify') {
         await interaction.update({ type: 6 })
         let jmeno = interaction.fields.fields.get('jmeno').value
@@ -33,7 +52,7 @@ module.exports = async (edge, interaction) => {
         team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
         if (!team) team = {}
         
-        user = {_id: interaction.user.id, name: jmeno, team: type === 'G' ? 'ne' : team?.id || 'ne', list: type === 'G' ? [] : [team?.id||null].filter(n =>n), blacklist: []}
+        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, clicked: id}].filter(n => n.id)}
         try {
           if (process.env.namesApi) {
             let url = `https://api.parser.name/?api_key=${process.env.namesApi}&endpoint=extract&text=${jmeno.replaceAll(' ', '%20')}`
@@ -45,11 +64,24 @@ module.exports = async (edge, interaction) => {
             }
           }
         } catch (e) {}
-
-        if (interaction.guild.id == '1122995611621392424') user.rakety = type
+        
+        if (team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník') {
+          const buttons = new ActionRowBuilder()
+              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${team.id}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
+              .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${team.id}_${interaction.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
+      
+          let proof = {
+            title: 'Nová žádost o připojení k týmu',
+            description: `${interaction.user} chce získat přístup k <@&${team.id}> roli!`,
+            color: team.color
+          }
+          let channel = dc_client.channels.cache.get('1109548259187380275')
+          let msg = await channel?.send({ embeds: [proof], components: [buttons], content: `[<@&${team.id}>]`, allowedMentions: { parse: ['roles'] }})
+          if (channel) user.channel = msg.id
+        }
         
         await edge.post('general', 'users', user)
-        console.discord(`${jmeno} - tymova verifikace jako ${type}`)
+        console.discord(`${jmeno} - tymova verifikace jako typu #${id}`)
         await interaction.followUp({ ephemeral: true, content: 'Právě ses verifikoval, brzo dostaneš příslušné role!' })
     }
     edge.discord.roles.updateRoles([interaction.user.id])
