@@ -142,7 +142,7 @@ class RoleHandler {
           let trainers = await this.edge.get('general', 'treneri', {_id: 'list'}).then(n => n[0])
           let trainerRole = guild.roles.cache.get(team.server.roles?.trener)
           if (trainerRole && user?.team && user?.team == team.id && trainers?.list?.includes(member.user.id)) await this.roleAdd(member, trainerRole);
-          else if (trainerRole) await this.roleRemove(member, trainerRole);
+          else if (trainerRole && !user?.clubs?.find(n => n.id == team._id)?.bonus?.includes(trainerRole.id)) await this.roleRemove(member, trainerRole);
         }
 
 
