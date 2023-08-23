@@ -1,5 +1,5 @@
 
-const { ActionRowBuilder, ButtonBuilder, PermissionsBitField } = require('discord.js')
+const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, RoleSelectMenuBuilder } = require('discord.js')
 
 const updateDesc = (embed, desc) => { embed.description = desc; return embed }
 
@@ -10,12 +10,6 @@ module.exports = {
     permissions: [{ id: '378928808989949964', type: 'USER', permission: true}, { id: ['Administrator'], type: 'PERMS', permission: true }],
     guild: ['1128307451066855515', '1122995611621392424'],
     options: [
-      {
-        name: 'jmeno',
-        description: 'Jak se jmenuje? (\"Jméno Přijímení\")',
-        type: 3,
-        required: true,
-      },
       {
         name: 'custom',
         description: 'Koho chceš verifikovat?',
@@ -30,6 +24,12 @@ module.exports = {
         required: true,
         autocomplete: true
       },
+      {
+        name: 'jmeno',
+        description: 'Jak se jmenuje? (\"Jméno Přijímení\")',
+        type: 3,
+        required: false,
+      }
     ],
     type: 'slash',
     platform: 'discord',
@@ -44,15 +44,16 @@ module.exports = {
 
       let team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
       if (!team.server?.config?.buttons || !team?.server?.buttons) return interaction.editReply({ content: 'Daný tým nemá nastavené tlačítka!' })
-      if (!team.server.buttons.find(a => a.id == type) && type !== 'smazat') return interaction.editReply({ content: 'Neplatný button!' })
+      if (!team.server.buttons.find(a => a.id == type) && !(type === 'smazat' || type === 'bonus')) return interaction.editReply({ content: 'Neplatný button!' })
 
       let dcUser = dc_client.users.cache.get(custom)
       if (!dcUser) return interaction.editReply({ content: 'Nenašel jsem uživatele!' })
 
       let user = await edge.get('general', 'users', {_id: custom }).then(n => n[0])
       if (!user) {
-        if (type == 'smazat') return interaction.editReply({ content: 'Uživatel není verifikovaný!' })
-        user = {_id: dcUser.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, roles: team.server.buttons.find(a => a.id == type)?.roles || []}].filter(n => n.id)}
+        if (!jmeno) return interaction.editReply({ content: 'Není zadané jméno!' })
+        if (type == 'smazat' || type == 'bonus') return interaction.editReply({ content: 'Uživatel není verifikovaný!' })
+        user = {_id: custom, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, roles: team.server.buttons.find(a => a.id == type)?.roles || []}].filter(n => n.id)}
         try {
           if (process.env.namesApi) {
             let url = `https://api.parser.name/?api_key=${process.env.namesApi}&endpoint=extract&text=${jmeno.replaceAll(' ', '%20')}`
@@ -72,7 +73,7 @@ module.exports = {
       
           let proof = {
             title: 'Nová žádost o připojení k týmu',
-            description: `${interaction.user} \`(${jmeno})\` chce získat přístup k <@&${team.id}> roli!`,
+            description: `${dcUser} \`(${user.name})\` chce získat přístup k <@&${team.id}> roli!`,
             color: team.color
           }
           let channel = dc_client.channels.cache.get('1109548259187380275')
@@ -86,7 +87,13 @@ module.exports = {
         if (!user.clubs) user.clubs = []
 
         if (type == 'smazat') {
-          user.clubs = user.clubs.filter(a => a.id !== team._id)
+          let club = user.clubs.find(a => a.id == team._id)
+          if (!club) user.clubs.push({ id: team._id, roles: [], bonus: []})
+          else club.roles = []
+          //user.clubs = user.clubs.filter(a => a.id !== team._id)
+        } else if (type == 'bonus') {
+          let selectMenu = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('team-verify_cmd_bonus_'+user._id).setPlaceholder('Choose all bonus roles').setMinValues(0).setMaxValues(20))
+          return interaction.editReply({ embeds: [{ title: 'Bonus role', description: `**User:** ${dcUser}\n**Delete**: false\n**Role:** ${user.clubs.find(a => a.id == team._id)?.bonus?.map(n => `<@&${n}>`)?.join(', ')||'žádné'}` }], components: [selectMenu]})
         } else {
           let club = user.clubs.find(a => a.id == team._id)
           if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == type)?.roles || []})
@@ -96,7 +103,7 @@ module.exports = {
 
       await edge.post('general', 'users', user)
 
-      interaction.editReply({ content: `Custom buttons uživatele ${dcUser} jako **${team.server.buttons.find(a => a.id == type)?.title || 'reset' }**.\nRole: ${user.clubs.find(a => a.id == team._id)?.roles?.map(n => `<@&${n}>`)||'žádné'}`, allowedMentions: {parse: []} })
+      interaction.editReply({ content: `Custom buttons uživatele ${dcUser} jako **${team.server.buttons.find(a => a.id == type)?.title || 'reset' }**.\nRole: ${user.clubs.find(a => a.id == team._id)?.roles?.map(n => `<@&${n}>`)?.join(', ') ||'žádné'}`, allowedMentions: {parse: []} })
 
       edge.discord.roles.updateRoles([user._id])
      
@@ -119,10 +126,34 @@ module.exports = {
       } else if (current == 'type') {
         let show = team.server.buttons.map(n => { return {name: n.title, value: n.id} })
         show.push({name: 'Odstranit buttony', value: 'smazat'})
+        show.push({name: 'Bonusové role', value: 'bonus'})
         let focused = interaction.options.getFocused()
         
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()))
         return interaction.respond(z.length ? z : [{ value: 'ne', name: 'Nenašel jsem danou kategorii!'}])
       }
     },
+    bonus: async (edge, interaction) => {
+      await interaction.update({ type:6 })
+      let id = interaction.customId.split('_')[3]
+      let user = await edge.get('general', 'users', {_id: id }).then(n => n[0])
+      if (!user) return interaction.followUp({ embeds: [{ title: 'Critical error!', description: `Nenašel jsem daného uživatele v databázi (<@${id}>)!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
+
+      let team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
+      if (!team) return interaction.followUp({ embeds: [{ title: 'Critical error!', description: `Nenašel jsem daný tým v databázi!`, color: 15548997 }], ephemeral: edge.isEphemeral(interaction) })
+
+      let roles = interaction.roles.map(n => n.id)
+
+      if (!user.clubs) user.clubs = []
+      let club = user.clubs.find(a => a.id == team._id)
+      if (!club) user.clubs.push({ id: team._id, roles: [], bonus: roles})
+      else club.bonus = roles
+
+      
+      await edge.post('general', 'users', user)
+
+      interaction.followUp({ content: `Bonus role <@${user._id}>: ${user.clubs.find(a => a.id == team._id)?.bonus?.map(n => `<@&${n}>`)?.join(', ') ||'žádné'}`, allowedMentions: {parse: []}, ephemeral: edge.isEphemeral(interaction) })
+
+      edge.discord.roles.updateRoles([user._id])
+    }
 }
