@@ -121,7 +121,7 @@ module.exports = {
       
             let proof = {
               title: 'Nová žádost o připojení k týmu',
-              description: `${member.user} chce získat přístup k <@&${tym}> roli!`,
+              description: `${member.user} \`(${user.name})\` chce získat přístup k <@&${tym}> roli!`,
               color: role.color
             }
             let channel = dc_client.channels.cache.get('1109548259187380275')
