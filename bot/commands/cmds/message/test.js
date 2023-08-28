@@ -11,14 +11,15 @@ module.exports = {
     type: "message",
     run: async (edge, message, content) => {
         let args = content?.split(' ')
-
+        if (args[0] == 'quote') {message.channel.send({content: `Too much agreement kills a chat.`})}
         if (args[0] == 'role') {
             let channel = message.guild.channels.cache.get('1108823268208676967')
 
             let embed = {
                 title: 'Role',
-                description: `<:dot:1109460785723351110>Rozděleno do tří sekcí!\n\n<:discord:1109464699843645531> ➜ Pozice\n<:people:1109468903719059486> ➜ Tým\n<:custom:1109467732371570749> ➜ Ping\n\nPotřebuješ pomoc / něco nefunguje? Označ mě! ➜ <@&1109473883452612658>`,
+                description: `<:dot:1109460785723351110>Rozděleno do tří sekcí:\n\n<:discord:1109464699843645531> ➜ Hlavní role\n<:people:1109468903719059486> ➜ Týmové role\n<:custom:1109467732371570749> ➜ Role, které si každý vybírá sám\n\nPotřebuješ pomoc, nebo něco nefunguje? Označ mě! ➜ <@&1109473883452612658>`,
                 footer: { text: 'Klikni na tlačítko pro více informací', icon_url: message.guild.iconURL()},
+                color: 14634975
             }
 
             let buttons =  new ActionRowBuilder()
@@ -36,27 +37,31 @@ module.exports = {
             let commands = await dc_client.application.commands.fetch()
             let verify = commands.find(n => n.name == 'verify')?.id
 
-
-            let description = [
-                '<:dot:1109460785723351110> **Co je to EDGE?**',
+            /*
+            '<:dot:1109460785723351110> **Co je to EDGE?**',
                 '➜',
                 '',
-                '<:dot:1109460785723351110> **Co udělat po prvním přihlášení?**',
+            */
+
+            let description = [
+                `Vítej na EDGE serveru!`,
+                '',
+                '<:dot:1109460785723351110> **Co mám udělat po prvním přihlášení?**',
                 `➜ Podívej se do <#1105726655764365314> na nejnovější oznámení`,
                 `➜ Podívej se do <#1108715450671579146> a napiš </verify:${verify}>`,
-                `➜ Podívej se do <#1108823268208676967> a nastuduj si členění rolí, popřípadě si přiřaď ping role v položce <:custom:1109467732371570749>`,
+                `➜ Podívej se do <#1108823268208676967> na rozložení discord rolí <:custom:1109467732371570749>`,
                 '',
                 '<:dot:1109460785723351110> **Proč tu jsem?**',
                 `➜ Získávej oficiální informace z první ruky`,
                 `➜ </tym:${commands.find(n => n.name == 'tym')?.id}> příkaz ukazuje aktuální informace jednotlivých týmů`,
-                `➜ Nemáš s kým hrát? Přihlaš se před turnajem a domluv si start za jiný tým!`,
+                `➜ Nemáš s kým hrát? [Přihlaš](https://discord.com/channels/1105413744902811688/1110218138194301040) se před turnajem a domluv si start za jiný tým!`,
                 '',
-                `<:dot:1109460785723351110> **Něco nejde?**`,
+                `<:dot:1109460785723351110> **Nevíš si rady, nebo něco nefunguje?**`,
                 `➜ Zeptej se v <#1108718621754150983>, nebo označ <@&1109473883452612658>`,
                 ''
             ]
             let embed = {
-                title: 'Oficiální EDGE Server!',
+                title: 'Oficiální EDGE Server',
                 description: description.join('\n'),
                 color: 1813565,
                 footer: {
@@ -65,7 +70,11 @@ module.exports = {
                 }
             }
      
-            await channel?.send({ embeds: [embed] })
+            if (args[1] || message.reference) {
+                let msg = await channel?.messages.fetch(args[1] || message.reference.messageId)
+                await msg.edit({ embeds: [embed], components: [] })
+                await message?.delete()
+            } else channel.send({ embeds: [embed], components: [] })
             
         } else if (args[0] == 'verify') {
         let channel = dc_client.guilds.cache.get('1105413744902811688')?.channels.cache.get('1108715450671579146')
@@ -217,7 +226,18 @@ module.exports = {
             let msg = await channel?.messages.fetch(args[1] || message.reference.messageId)
             await msg.edit({ embeds: [embed], components: [buttons] })
         } else channel.send({ embeds: [embed], components: [buttons] })
-    }
+    } else if (args[0] == 'lf') {
+        let guild = message.guild
+        let channel = message.channel
+        let infoEmbed = { title: 'Hledání týmu', description: `**LF team**, je funkce (v <:beta2_1:1145658257415864330><:beta2_2:1145658259957616680> verzi), která propojuje jednotlivé hráče s konkrétními týmy a pomáhá všem si každý turnaj užít na maximum.\n\n**Před turnajem** se pošle krátká zpráva s tlačítky. Po kliknutí na tlačítko se zobrazí formulář s několika otázkami. Odpovědi se přepošlou všem trenérům. Trenér, který hledá hráče do týmu, pak jednotlivé hráče může kontaktovat.\n\n**Krátké FQA:**\n**Kdy mám LF team použít?**\nKdyž chceš jet na turnaj, ale nemáš svůj tým\n\n**Už mám vyplněnou odpověď, ale na turnaj nechci jet**\nPokud tě ještě nikdo nekontaktovat, tak jednoduše klikni na druhé tlačítko \`Chci zrušit žádost\`. Pokud tě už někdo kontaktoval, řeš to nejdřív prosím s daným člověkem a poté až klikni na tlačitko.`, color: 16405504}
+
+        if (args[1] || message.reference) {
+            let msg = await channel?.messages.fetch(args[1] || message.reference.messageId)
+            await msg.edit({ embeds: [infoEmbed], components: [] })
+            await message.delete()
+        } else channel.send({ embeds: [infoEmbed], components: [] })
+
+    } 
 
 
     }

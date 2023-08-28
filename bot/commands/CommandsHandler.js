@@ -49,7 +49,7 @@ class CommandsHandler extends Mongo {
 
     this.commands = cmds
     this.aliases = aliases
-    console.discord(`${this.commands.size}/${cmdCount} Commands Loaded`)
+    console.discord(`${this.commands.size}/${cmdCount} Commands Loaded`, { ignoreDiscord: true })
     return `${this.commands.size}/${cmdCount} Commands Loaded`
 }
 

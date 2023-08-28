@@ -23,7 +23,7 @@ console.discord = (message, args = {}) => {
   console.log(chalk.bgMagenta.black(`[${getCurrentTime()}] Discord >`) + ' ' + chalk.magenta(message))
 
   let embed = { title: 'Discord', description: `**${message}**`, color: 2067276, footer: { text: args.startup ? 'settings display soon' : null } }
-  if (global.config?.discord.log_channel === true) global.channels?.log?.send({ embeds: [embed] })
+  if (global.config?.discord.log_channel === true && !args.ignoreDiscord) global.channels?.log?.send({ embeds: [embed] })
   return embed
 }
 

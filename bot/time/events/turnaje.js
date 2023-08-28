@@ -53,7 +53,7 @@ module.exports = {
 
       let buttons =  new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId('lf_cmd_LFApply_'+id).setLabel('Ano, nemám s kým hrát').setStyle(3))
-        .addComponents(new ButtonBuilder().setCustomId('lf_cmd_LFDelete_'+id).setLabel('Chci zrušit svojí odpověď').setStyle(4))
+        .addComponents(new ButtonBuilder().setCustomId('lf_cmd_LFDelete_'+id).setLabel('Chci zrušit žádost').setStyle(4))
 
       let channel = dc_client.channels.cache.get(db.channel)
       if (!channel) { console.error(`Nenašel jsem kanál s id ${db.channel} - ${db.name}`); continue}
@@ -90,7 +90,9 @@ function refreshDb(data, event) {
   data.end = event.end.date || event.end.dateTime
   data.location = event.location ? `[${event.location.split(',')[0]}](https://www.google.com/maps/search/?api=1&query=${event.location.replaceAll(' ', '%20')})` : undefined
  
-  data.embed = {title: `Hledáš tým na ${event.summary}?`, description: `Čas: <t:${Math.floor(new Date(data.start).getTime()/1000)}:D>`, color: 8411391}
+  let info = data.info || ''
+
+  data.embed = {title: `Hledáš tým na ${event.summary}?`, description: `Čas: <t:${Math.floor(new Date(data.start).getTime()/1000)}:D>\n${info}`, color: 8411391}
   data.channel = '1110218138194301040'
 
   if (!data.created) data.created = new Date().getTime()

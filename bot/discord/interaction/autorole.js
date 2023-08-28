@@ -36,26 +36,25 @@ module.exports = async (edge, interaction) => {
 
         let embed = { title: 'ERROR v AUTOROLE - select interaction', description: `Nanašel jsem požadovanou kategorii!`, color: 15548997, footer: { text: 'EDGE Discord', icon_url: guild?.iconURL() || '' } }
         let components = []
-        if (cat == 'pozice') embed = { title: 'Pozice Role', description: `<@&1105555145456107581> ➜ Lidi, kvůli kterým EDGE funguje\n<@&1105544649080320110> ➜ Role pro trenéry a jejich pomocníky\n<@&1105544581405229129> ➜ Role pro hráče s propojeným jménem`, color: 255255, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
+        if (cat == 'pozice') embed = { title: 'Hlavní role', description: `<@&1105555145456107581> ➜ Role pro lidi, kteří EDGE řídí\n<@&1105544649080320110> ➜ Role pro trenéry\n<@&1105544581405229129> ➜ Role pro hráče s propojeným jménem`, color: 255255, footer: { text: 'Hlavní role EDGE Discordu', icon_url: guild?.iconURL() || '' }}
         else if (cat == 'tym') {
             let teams = (edge.discord.roles.teams || await edge.get('general', 'clubs', {})).map(n => n.id)
             let tymy = teams.map(n => `<@&${n}>`).join('\n')
             let desc = [
-                `Přehled týmů:`,
-                ``,
+                `Každý může mít naráz jen **jednu** týmovou roli.\nO svou roli si lze požádát pomocí **/verify** příkazu.\n\n**Přehled týmů:**`,
                 tymy,
                 ``,
                 ``,
-                `Jsi v nějakém týmu a nemáš jeho roli? Použij /verify`
+                `Jsi v nějakém týmu a nemáš jeho roli? Použij **/verify**`
             ]
             embed = {
-                title: 'Týmové Role',
+                title: 'Týmové role',
                 description: desc.join('\n'),
                 color: 2550,
-                footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }
+                footer: { text: 'Týmové role EDGE Discordu', icon_url: guild?.iconURL() || '' }
             }
         } else if (cat == 'reaction') {
-            embed = { title: 'Reaction Role', description: '<:annouce:1109483778671382558> ➜ <@&1108829451309027328> ➜ Ping při novém oznámení\n<:people:1109468903719059486> ➜ <@&1141059014227132486> ➜ Hledání hráčů na hru\n', color: 800080, footer: { text: 'EDGE Discord role', icon_url: guild?.iconURL() || '' }}
+            embed = { title: 'Reaction role', description: '<:annouce:1109483778671382558> ➜ <@&1108829451309027328> ➜ Označení při novém oznámení\n<:people:1109468903719059486> ➜ <@&1141059014227132486> ➜ Označení při novém turnaji s hlednáním hráčů na hru *(více informací [zde](https://discord.com/channels/1105413744902811688/1110218138194301040))*\n', color: 800080, footer: { text: 'Reaction role EDGE Discord', icon_url: guild?.iconURL() || '' }}
 
             let buttons =  new ActionRowBuilder()
             .addComponents(new ButtonBuilder().setCustomId('autorole_reaction_1108829451309027328')/*.setLabel('oznameni')*/.setStyle(2).setDisabled(false).setEmoji('<:annouce:1109483778671382558>'))
