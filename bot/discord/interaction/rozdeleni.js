@@ -24,8 +24,11 @@ module.exports = async (edge, interaction) => {
 
       if (!user.clubs) user.clubs = []
       let club = user.clubs.find(a => a.id == team._id)
-      if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || []})
-      else club.roles = team.server.buttons.find(a => a.id == id)?.roles || []
+      if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || [], type: id})
+      else {
+        club.roles = team.server.buttons.find(a => a.id == id)?.roles || []
+        club.type = id
+      }
       
       if (!user.list.includes(team.id) && team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník' && !user.channel && !user.blacklist.includes(team.id)) {
         const buttons = new ActionRowBuilder()
@@ -52,7 +55,7 @@ module.exports = async (edge, interaction) => {
         team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
         if (!team) team = {}
         
-        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || []}].filter(n => n.id)}
+        user = {_id: interaction.user.id, name: jmeno, team: 'ne', list: [], blacklist: [], clubs: [{id: team._id, roles: team.server.buttons.find(a => a.id == id)?.roles || [], type: team.server.buttons.find(a => a.id == id)?.id || -1}].filter(n => n.id)}
         try {
           if (process.env.namesApi) {
             let url = `https://api.parser.name/?api_key=${process.env.namesApi}&endpoint=extract&text=${jmeno.replaceAll(' ', '%20')}`

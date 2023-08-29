@@ -200,7 +200,7 @@ module.exports = {
             {id: '0', title: 'Domácí tým', emoji: '<:dum:1109508725519159306>', roles: ['1128327834549628979', '1142158365460533259']},
             {id: '1', title: 'Návštěvník', emoji: '<:people:1109468903719059486>', roles: ['1142158365460533259']}
         ];
-        else nastaveni = [
+        if (message.guild.id == '1122995611621392424') nastaveni = [
             {id : '0', title: 'U15', emoji: '<:dum:1109508725519159306>', roles: ['1142174015734173816']},
             {id : '1', title: 'U15 - Rodič', emoji: '<:people:1109468903719059486>', roles: ['1142174716170350813']},
             {id : '2', title: 'A-Tým', emoji: '<:champion:1141315219369500766>', roles: ['1142172522092183712']}
@@ -221,11 +221,32 @@ module.exports = {
 
         //team.server.buttons = nastaveni
         //await edge.post('general', 'clubs', team)
+        let embeds = []
+        let rakety = [
+            'Vítej na serveru ultimate frisbee týmu Rakety Žižkoff. Tento server slouží pro komunikaci v rámci týmu mezi hráči, rodiči hráčů a trenéry. V případě, že nejsi ani jedním z výše zmíněných, prosím opusť tento server.',
+            '',
+            '❔  Co udělat hned po prvním přihlášení? ❔',
+            '',
+            '1️⃣ Vyber, jaká je tvá role v týmu Rakety Žižkoff. Hráč A-týmu / hráč U15 / rodič U15.',
+            '2️⃣ Nastav si zobrazované jméno do formátu “jméno příjmení #role kategorie”. Podrobnější návod, jak na to, najdeš v channelu <#1143097631803965481>. Pokud chceš trenérům ulehčit orientaci, nastav si i profilový obrázek.',
+            '3️⃣ Pokud si s čímkoliv nevíš rady, podívej se do channelu <#1143097631803965481>. Pokud tam nenajdeš odpověď, neboj se napsat někomu z vedoucích. Důležité kontakty:',
+            '👉 správce serveru - <@778577790744133652>', 
+            '👉 kontaktní osoba pro A-tým - <@1013485719366418463> ',
+            '👉 kontaktní osoba pro U15 - Adam Vejvoda'
+        ]
+        let raketyInfo = {
+            title: 'Rakety Žižkoff',
+            description: rakety.join('\n'),
+            color: team.color
+        }
 
+        if (message.guild.id == '1122995611621392424') embeds.push(raketyInfo)
+        embeds.push(embed)
         if (args[1] || message.reference) {
             let msg = await channel?.messages.fetch(args[1] || message.reference.messageId)
-            await msg.edit({ embeds: [embed], components: [buttons] })
-        } else channel.send({ embeds: [embed], components: [buttons] })
+            await msg.edit({ embeds: embeds, components: [buttons] })
+            await message.delete()
+        } else channel.send({ embeds: embeds, components: [buttons] })
     } else if (args[0] == 'lf') {
         let guild = message.guild
         let channel = message.channel

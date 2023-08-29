@@ -88,16 +88,22 @@ module.exports = {
 
         if (type == 'smazat') {
           let club = user.clubs.find(a => a.id == team._id)
-          if (!club) user.clubs.push({ id: team._id, roles: [], bonus: []})
-          else club.roles = []
+          if (!club) user.clubs.push({ id: team._id, roles: [], bonus: [], type: -1})
+          else {
+            club.roles = []
+            club.type = -1
+          }
           //user.clubs = user.clubs.filter(a => a.id !== team._id)
         } else if (type == 'bonus') {
           let selectMenu = new ActionRowBuilder().addComponents(new RoleSelectMenuBuilder().setCustomId('team-verify_cmd_bonus_'+user._id).setPlaceholder('Choose all bonus roles').setMinValues(0).setMaxValues(20))
           return interaction.editReply({ embeds: [{ title: 'Bonus role', description: `**User:** ${dcUser}\n**Delete**: false\n**Role:** ${user.clubs.find(a => a.id == team._id)?.bonus?.map(n => `<@&${n}>`)?.join(', ')||'žádné'}` }], components: [selectMenu]})
         } else {
           let club = user.clubs.find(a => a.id == team._id)
-          if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == type)?.roles || []})
-          else club.roles = team.server.buttons.find(a => a.id == type)?.roles || []
+          if (!club) user.clubs.push({ id: team._id, roles: team.server.buttons.find(a => a.id == type)?.roles || [], type: type})
+          else { 
+            club.roles = team.server.buttons.find(a => a.id == type)?.roles || []
+            club.type = type
+          }
         }
       }
 
@@ -146,7 +152,7 @@ module.exports = {
 
       if (!user.clubs) user.clubs = []
       let club = user.clubs.find(a => a.id == team._id)
-      if (!club) user.clubs.push({ id: team._id, roles: [], bonus: roles})
+      if (!club) user.clubs.push({ id: team._id, roles: [], bonus: roles, types: -1})
       else club.bonus = roles
 
       

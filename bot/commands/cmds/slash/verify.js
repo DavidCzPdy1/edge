@@ -42,7 +42,7 @@ module.exports = {
       let tym = interaction.options.getString('tym')
 
       let custom = interaction.options.getString('custom')
-      let member = custom ? guild.members.cache.get(custom) : interaction.member || guild.members.cache.get(interaction.user.id)
+      let member = custom ? (guild.members.cache.get(custom) || interaction.guild.members.cache.get(custom)) : (interaction.member || guild.members.cache.get(interaction.user.id) || interaction.guild.members.cache.get(interaction.user.id)) 
       if (custom && !edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš oprávnění na custom verify!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
       if (custom && custom == 'ne' || !member) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem custom hráče!', color: 15548997, footer: { text: 'EDGE /verify cmd' } }]})
 
