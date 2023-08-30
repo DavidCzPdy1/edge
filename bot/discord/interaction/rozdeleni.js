@@ -50,7 +50,7 @@ module.exports = async (edge, interaction) => {
         
     } else if (action == 'verify') {
         await interaction.update({ type: 6 })
-        let jmeno = interaction.fields.fields.get('jmeno').value
+        let jmeno = interaction.fields.fields.get('jmeno').value.split('#')[0].trim()
 
         team = await edge.get('general', 'clubs', {}).then(n => n.find(a => a.server?.guild === interaction.guild.id))
         if (!team) team = {}
@@ -68,6 +68,12 @@ module.exports = async (edge, interaction) => {
           }
         } catch (e) {}
         
+        try {
+          if (interaction.guild.id == '1122995611621392424') {
+            if (!interaction.member.nickname) await interaction.member.setNickname(interaction.fields.fields.get('jmeno').value)
+          }
+        } catch (e) {}
+
         if (team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník') {
           const buttons = new ActionRowBuilder()
               .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${team.id}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
