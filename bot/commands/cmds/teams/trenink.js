@@ -27,7 +27,7 @@ module.exports = {
       let team = await edge.get('general', 'clubs').then(n => n.find(a => a.server?.guild === interaction.guild.id))
       if (!team) return interaction.editReply({ content: 'Použij příkaz na podporovaném discord serveru!'})
 
-      let data = await edge.get(`teams`, team.server.database, {}).then(n => n.filter(a => a.ended == true && new Date (a.start.dateTime).getTime() > time.getTime() && a.type == 'trenink'))
+      let data = await edge.get(`teams`, team.server.database, {}).then(n => n.filter(a => a.ended == true && new Date (a.start).getTime() > time.getTime() && a.type == 'trenink'))
 
       let verify = await edge.get('general', 'users', {})
 
