@@ -57,6 +57,12 @@ module.exports = {
         required: true
       },
       {
+        name: 'channel',
+        description: 'Kam chceš anketu poslat?',
+        type: 7,
+        required: true
+      },
+      {
         name: 'format',
         description: 'Formátování odpovědí',
         type: 3,
@@ -95,6 +101,7 @@ module.exports = {
         pings: 0,
         pingsData: [],
         created: new Date().getTime(),
+        channel: interaction.options.getChannel('channel')?.id || null,
         format: interaction.options.getString('format') || 'mention'||'text'
       }
 
@@ -103,7 +110,7 @@ module.exports = {
 
       data.color = team.color
       data.content = team.server.ping?.annoucment ? `[<@&${team.server.ping.annoucment}>]` : undefined
-      data.channel = team.server?.channels?.annoucment
+      if (!data.channel) data.channel = team.server?.channels?.annoucment
       data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')
       data.finished = -1;
 
