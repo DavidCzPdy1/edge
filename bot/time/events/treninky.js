@@ -139,7 +139,7 @@ function refreshDb(data, event, team) {
   data.mode = 'user',
   data.type = type
   data.channel = team.server.channels[type]
-  data.format = 'mention'||'text'
+  data.format = 'text' || 'mention'
 
   if (!data.created) data.created = new Date().getTime()
   data.updated = new Date().getTime()
