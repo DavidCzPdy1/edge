@@ -37,7 +37,7 @@ module.exports = async (edge, interaction) => {
     
         let proof = {
           title: 'Nová žádost o připojení k týmu',
-          description: `${interaction.user} \`(${jmeno})\` chce získat přístup k <@&${team.id}> roli!`,
+          description: `${interaction.user} \`(${user.name})\` chce získat přístup k <@&${team.id}> roli!`,
           color: team.color
         }
         let channel = dc_client.channels.cache.get('1109548259187380275')
