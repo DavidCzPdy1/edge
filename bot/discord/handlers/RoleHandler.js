@@ -139,7 +139,7 @@ class RoleHandler {
             let button = team.server.buttons?.find(n => n.id && (n.id == buttons?.type || n.roles.join('|') == buttons?.roles.join('|')))
             if (button && button.title && buttons.type) nickname = nickname + ` #${button.title}`
           }
-          if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { console.log(e)/*if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname||member.user.username)*/ }
+          if (member.nickname !== nickname) try { await member.setNickname(nickname) } catch (e) { /*if (member.user.username !== "davidczpdy") console.error('Nemám práva na změnu jména -> ' + nickname||member.user.username)*/ }
         }
 
         /* Trainer role */

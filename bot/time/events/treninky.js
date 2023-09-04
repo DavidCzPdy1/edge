@@ -83,7 +83,9 @@ module.exports = {
   
             let buttons = new ActionRowBuilder()
             for (let answer of db.answers.split('|')) {
-              buttons.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_dochazka_${team.server.database}_${db._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
+              if (`team-anketa_cmd_dochazka_${team.server.database}_${db._id}_${answer}`.length > 100) {
+                buttons.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_dochazka_${team.server.database}_${db.created}_${answer}_time`).setStyle(2).setLabel(answer).setDisabled(false))
+              } else buttons.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_dochazka_${team.server.database}_${db._id}_${answer}`).setStyle(2).setLabel(answer).setDisabled(false))
               db[answer] = []
             }
 

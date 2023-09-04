@@ -19,8 +19,8 @@ const getEmbed = (data, options = {}) => {
       let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
-        let mention = options.guild.members.cache.get(id) || {nickname: id}
-        return mention?.nickname || mention?.user?.username
+        let mention =  options.verify?.find(c => c._id == id) || options.guild.members.cache.get(id) || {nickname: `<@${id}>`}
+        return mention?.name || mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'
       return {name: name, value: value, inline: true}
@@ -173,7 +173,7 @@ module.exports = {
 
       await edge.post('teams', db, data)
 
-      let embed = getEmbed(data, { guild: interaction.guild })
+      let embed = getEmbed(data, { guild: interaction.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined })
       await interaction.message.edit({ embeds: [embed]})
     },
     deny: async (edge, interaction) => {
@@ -207,7 +207,7 @@ module.exports = {
       let components = [odpovedi]
       if (event.settings == 'hide') components.push(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${db}_${event._id}_select_select`).setStyle(3).setLabel('Zobrazit odpověď').setDisabled(false)))
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: components, content: event.content, allowedMentions: { parse: ['roles']} })
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild, verify: event.format == 'text' ? await edge.get('general', 'users', {}) : undefined})], components: components, content: event.content, allowedMentions: { parse: ['roles']} })
       event.msgUrl = message.url
       event.message = message.id
 
@@ -218,8 +218,12 @@ module.exports = {
       let db = interaction.customId.split('_')[3]
       let _id = interaction.customId.split('_')[4]
       let answer = interaction.customId.split('_')[5]
+      let shorten = interaction.customId.split('_')[6]
 
-      let data = await edge.get('teams', db, {_id: _id})
+      let data = []
+
+      if (!shorten) data = await edge.get('teams', db, {_id: _id})
+      else data = await edge.get('teams', db, {}).then(n => n.filter(a => a.created == _id))
       if (!data.length) return interaction.followUp({ embeds: [{ title: 'Nenašel jsem daný trénink!', description: `Kontaktuj prosím developera!`, color: 15548997 }], ephemeral: true })
       data = data[0]
 
@@ -227,7 +231,6 @@ module.exports = {
 
       let ids = data.answers.split('|').map(n => {return { ids: data[n], name: n}})
       let answered = ids.find(n => n.ids.includes(id));
-
 
       if (data[answer].includes(id)) {
         data[answer] = data[answer].filter(n => n !== id)
@@ -255,7 +258,7 @@ module.exports = {
 
       await edge.post('teams', db, data)
 
-      let embed = getEmbed(data, { guild: interaction.guild })
+      let embed = getEmbed(data, { guild: interaction.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined })
       await interaction.message.edit({ embeds: [embed]})
     },
     treninkEdit: async (edge, interaction) => {
@@ -297,7 +300,7 @@ module.exports = {
       }
 
       await edge.post('teams', db, data)
-      await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild})]})
+      await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined})]})
       await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.name}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: edge.isEphemeral(interaction) })
     }
 }
