@@ -73,7 +73,7 @@ module.exports = {
           try {
             if (db.message) {
               let message = await dc_client.channels.cache.get(db.channel)?.messages.fetch(db.message).catch(e => {})
-              await message?.edit({ embeds: [getEmbed(db, {guild: guild})] })
+              await message?.edit({ embeds: [getEmbed(db, {guild: guild, verify: db.format == 'text' ? await edge.get('general', 'users', {}) : undefined})] })
             }
           } catch (e) {console.error(e)}
 
@@ -89,7 +89,7 @@ module.exports = {
               db[answer] = []
             }
 
-            let embed = getEmbed(db, {guild: guild})
+            let embed = getEmbed(db, {guild: guild, verify: db.format == 'text' ? await edge.get('general', 'users', {}) : undefined})
             
             let msg = {embeds: [embed], components: [buttons], content: team.server?.ping[type] ? `[<@&${team.server.ping[type]}>]` : undefined, allowedMentions: { parse: ['roles']} }
       
@@ -167,8 +167,8 @@ function getEmbed (data, options = {}) {
       let value = data[n.name.split(' - ')[0]].map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
-        let mention = options.guild.members.cache.get(id) || {nickname: id}
-        return mention?.nickname || mention?.user?.username
+        let mention =  options.verify?.find(c => c._id == id) || options.guild.members.cache.get(id) || {nickname: `<@${id}>`}
+        return mention?.name || mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'
       return {name: name, value: value, inline: true}
