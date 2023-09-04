@@ -128,7 +128,7 @@ module.exports = {
 
         let focused = interaction.options.getFocused()
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()) || n.value.toLowerCase().includes(focused.toLowerCase()) || n.fullName.toLowerCase().includes(focused.toLowerCase()))
-        return interaction.respond(z?.length ? z : [{ value: 'ne', name: 'Nenašel jsem uživatele!'}])
+        return interaction.respond(z?.length ? z.slice(0,20) : [{ value: 'ne', name: 'Nenašel jsem uživatele!'}])
       } else if (current == 'type') {
         let show = team.server.buttons.map(n => { return {name: n.title, value: n.id} })
         show.push({name: 'Odstranit buttony', value: 'smazat'})
@@ -136,7 +136,7 @@ module.exports = {
         let focused = interaction.options.getFocused()
         
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()))
-        return interaction.respond(z.length ? z : [{ value: 'ne', name: 'Nenašel jsem danou kategorii!'}])
+        return interaction.respond(z.length ? z.slice(0,20) : [{ value: 'ne', name: 'Nenašel jsem danou kategorii!'}])
       }
     },
     bonus: async (edge, interaction) => {
