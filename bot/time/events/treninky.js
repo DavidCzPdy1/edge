@@ -78,7 +78,7 @@ module.exports = {
           } catch (e) {console.error(e)}
 
 
-          let anTime = type == 'trenink' ? (1000*60*60*24*3 + 1000*60*60*2) : 2629800000
+          let anTime = type == 'trenink' ? (1000*60*60*24*3 + 1000*60*60*2) : 2629800000 * 12 /*12 mesicu */
           if (!db.message && new Date(db.start).getTime() < (new Date().getTime() + anTime)) {
   
             let buttons = new ActionRowBuilder()
