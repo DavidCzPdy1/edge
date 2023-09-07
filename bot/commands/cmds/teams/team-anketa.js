@@ -102,7 +102,7 @@ module.exports = {
         pingsData: [],
         created: new Date().getTime(),
         channel: interaction.options.getChannel('channel')?.id || null,
-        format: interaction.options.getString('format') || 'mention'||'text'
+        format: interaction.options.getString('format') ||'text' || 'mention'
       }
 
       let team = await edge.get('general', 'clubs').then(n => n.find(a => a.server?.guild === interaction.guild.id))
