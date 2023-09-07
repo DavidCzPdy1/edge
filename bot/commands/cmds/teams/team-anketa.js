@@ -92,7 +92,7 @@ module.exports = {
       let data = {
         _id: String(new Date().getTime()),
         question: interaction.options.getString('question').replaceAll('_', ' '),
-        description: interaction.options.getString('description'),
+        description: interaction.options.getString('description')?.split(';').join('\n'),
         answers: interaction.options.getString('answers').replaceAll('.', '/'),
         time: null,
         mode: 'user',
