@@ -261,7 +261,7 @@ module.exports = {
       let components = [odpovedi]
       if (event.settings == 'hide') components.push(new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_select_select`).setStyle(3).setLabel('Zobrazit odpověď').setDisabled(false)))
 
-      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: components, content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: [/*'roles'*/]} })
+      let message = await channel.send({ embeds: [getEmbed(event, {guild: interaction.guild})], components: components, content: `[<@&${edge.config.discord.roles.position_trener}>]`, allowedMentions: { parse: ['roles']} })
       event.msgUrl = message.url
       event.message = message.id
 
