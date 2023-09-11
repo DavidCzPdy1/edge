@@ -7,7 +7,7 @@ const getEmbed = (data, options = {}) => {
       title: data.title || data.name || data.question || data._id,
       description: data.description,
       fields: data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }) || [],
-      color: 14666022,
+      color: data.color|| 14666022,
   }
 
   if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
@@ -19,7 +19,7 @@ const getEmbed = (data, options = {}) => {
       let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
         let id = a.id || a
         if (data.format == 'mention') return `<@${id}>`
-        let mention =  options.verify?.find(c => c._id == id) || options.guild.members.cache.get(id) || {nickname: `<@${id}>`}
+        let mention =  options.verify?.find(c => c._id == id) || options.guild.members.cache.get(id) || {nickname: id}
         return mention?.name || mention?.nickname || mention?.user?.username
       }).join('\n')
       if (!value.length) value = '\u200B'
