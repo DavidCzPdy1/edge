@@ -91,7 +91,7 @@ module.exports = async (edge, interaction) => {
         
         await edge.post('general', 'users', user)
         console.discord(`${jmeno} - tymova verifikace jako typu #${id}`)
-        await interaction.followUp({ ephemeral: true, content: 'Právě ses verifikoval, brzy dostaneš příslušné role!' })
+        await interaction.followUp({ ephemeral: true, content: 'Právě ses verifikoval/a, brzy dostaneš příslušné role!' })
     }
     edge.discord.roles.updateRoles([interaction.user.id])
 }
