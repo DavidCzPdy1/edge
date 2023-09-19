@@ -30,7 +30,7 @@ module.exports = async (edge, interaction) => {
         club.type = id
       }
       
-      if (!user.list.includes(team.id) && team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník' && !user.channel && !user.blacklist.includes(team.id)) {
+      if (!user.list.includes(team.id) && team.server.buttons.find(a => a.id == id)?.title !== 'Návštěvník' && !user.channel && !user.blacklist.includes(team.id) && interaction.guild.id !== '1122995611621392424') {
         const buttons = new ActionRowBuilder()
             .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${team.id}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
             .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${team.id}_${interaction.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
@@ -74,7 +74,7 @@ module.exports = async (edge, interaction) => {
           }
         } catch (e) {}
 
-        if (!(team.server.buttons.find(a => a.id == id)?.title == 'Návštěvník' || team.server.buttons.find(a => a.id == id)?.title.includes('Rodič'))) {
+        if (!(team.server.buttons.find(a => a.id == id)?.title == 'Návštěvník' || team.server.buttons.find(a => a.id == id)?.title.includes('Rodič')) && interaction.guild.id !== '1122995611621392424') {
           const buttons = new ActionRowBuilder()
               .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_accept_${team.id}_${interaction.user.id}`).setStyle(3).setLabel('PŘIJMOUT'))
               .addComponents(new ButtonBuilder().setCustomId(`verify_cmd_deny_${team.id}_${interaction.user.id}`).setStyle(4).setLabel('NEPŘIJMOUT'))
