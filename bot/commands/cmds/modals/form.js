@@ -103,11 +103,11 @@ module.exports = {
       } else data.finished = -1;
 
       const modal = new ModalBuilder().setCustomId('form_cmd_create_'+data._id).setTitle(`${data.name || data._id}`)
-        .addComponents(textBox({ id: '1', text: 'Otázka 1', example: 'Email', value: undefined, required: true}))
-        .addComponents(textBox({ id: '2', text: 'Otázka 2', example: 'Telefon', value: undefined, required: false}))
-        .addComponents(textBox({ id: '3', text: 'Otázka 3', example: 'Poznámka', value: undefined, required: false}))
-        .addComponents(textBox({ id: '4', text: 'Otázka 4', example: undefined, required: false, value: undefined}))
-        .addComponents(textBox({ id: '5', text: 'Otázka 5', example: undefined, value: undefined, required: false}))
+        .addComponents(textBox({ id: '1', text: 'Otázka 1', example: 'Email', value: undefined, required: true, max: 45}))
+        .addComponents(textBox({ id: '2', text: 'Otázka 2', example: 'Telefon', value: undefined, required: false, max: 45}))
+        .addComponents(textBox({ id: '3', text: 'Otázka 3', example: 'Poznámka', value: undefined, required: false, max: 45}))
+        .addComponents(textBox({ id: '4', text: 'Otázka 4', example: undefined, required: false, value: undefined, max: 45}))
+        .addComponents(textBox({ id: '5', text: 'Otázka 5', example: undefined, value: undefined, required: false, max: 45}))
       
       await interaction.showModal(modal);
       await edge.post('general', 'events', data)
