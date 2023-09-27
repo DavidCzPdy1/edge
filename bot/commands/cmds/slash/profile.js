@@ -144,8 +144,8 @@ module.exports = {
 
         let show = users.map(n => { return {name: n.name, value: n._id, user: dc_client.users.cache.get(n._id)} })
 
-        let focused = interaction.options.getFocused()
-        let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()) || n.user.username.toLowerCase().includes(focused.toLowerCase() || n.value.includes(focused))).slice(0, 25)
+        let focused = interaction.options.getFocused().toLowerCase()
+        let z = show.filter(n => n.name.toLowerCase().includes(focused) || n.user?.username.toLowerCase()?.includes(focused || n.value.toLowerCase().includes(focused))).slice(0, 25)
         return interaction.respond(z.length ? z : [{ value: 'none', name: 'Nebyl nalezen žádný event'}])
       }
       
