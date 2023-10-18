@@ -126,8 +126,8 @@ module.exports = {
       let embed = edge.commands.get('hlasovani').getEmbed(data)
       
 
-      let odpovedi = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Accept`).setStyle(3).setLabel('PŘIHLÁŠENÍ').setDisabled(true))
-        .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Deny`).setStyle(4).setLabel('ODMÍTNUTÍ').setDisabled(true))
+      let odpovedi = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Accept`).setStyle(3).setLabel('PŘIHLAŠUJI').setDisabled(true))
+        .addComponents(new ButtonBuilder().setCustomId(`form_cmd_select_${data._id}_Deny`).setStyle(4).setLabel('ODMÍTÁM').setDisabled(true))
 
 
       let accept = new ActionRowBuilder()
