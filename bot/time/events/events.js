@@ -25,6 +25,7 @@ module.exports = {
 
         let answered = []
         data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a?.id || a))})
+        if (data.filterIgnore) data.filterIgnore.forEach(a => answered.push(a?.id || a))
 
         let guild = dc_client.guilds.cache.get('1105413744902811688')
         if (!guild) {console.time('TIME event - EVENTS - Nenašel jsem guildu');continue;}
@@ -52,7 +53,8 @@ module.exports = {
 
         data.pingsData.find(n => n.id == pings[0].id).pinged = true
 
-        let embed = {title: `Notify ${data._id} eventu!`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+        let embed = {title: `Notify ${data.name || data._id} eventu!`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+        if (success.length) embed.description = embed.description + `\n\Success:\n${success.join('\n')}`
         if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
         global.channels?.log?.send({ embeds: [embed] })
 

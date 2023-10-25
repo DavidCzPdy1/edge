@@ -65,8 +65,8 @@ module.exports = {
         if (user.name !== jmeno) embed.title = custom ? `Změnil/a jsi jméno ${member.user.username} z \`${user.name}\` na \`${jmeno}\`` : `Změnil/a sis jméno z \`${user.name}\` na \`${jmeno}\``;
         else embed.title = custom ? `${member.user.username} zůstalo jméno \`${jmeno}\`!` : `Zůstalo ti jméno \`${jmeno}\``;
 
-        if (user.team == tym) embed.description = custom ? `${member.user} je nadále členem <@&${tym}>` : `Nadále jsi členem <@&${tym}>`
-        else if (user.team === tym && tym == 'ne');
+        if (user.team === tym && tym == 'ne');
+        else if (user.team == tym) embed.description = custom ? `${member.user} je nadále členem <@&${tym}>` : `Nadále jsi členem <@&${tym}>`
         else if (user.team !== tym || user.team == 'ne') user.requested = tym
 
         user.name = jmeno
@@ -157,7 +157,7 @@ module.exports = {
         let focused = interaction.options.getFocused()
   
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()))
-        return interaction.respond(z.length ? z : [{ value: 'ne', name: 'Nechci žádnou týmovou roli'}])
+        return interaction.respond(z.length ? z.slice(0, 24) : [{ value: 'ne', name: 'Nechci žádnou týmovou roli'}])
       } else if (current == 'custom') {
         if (!edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}], interaction)) return interaction.respond([{ value: 'perms', name: 'Nemáš práva na custom verify!'}])
 
@@ -165,7 +165,7 @@ module.exports = {
 
         let focused = interaction.options.getFocused()
         let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()) || n.value.toLowerCase().includes(focused.toLowerCase()) || n.fullName.toLowerCase().includes(focused.toLowerCase()))
-        return interaction.respond(z?.length ? z : [{ value: 'ne', name: 'Nenašel jsem uživatele!'}])
+        return interaction.respond(z?.length ? z.slice(0, 24) : [{ value: 'ne', name: 'Nenašel jsem uživatele!'}])
       }
     },
     accept: async (edge, interaction) => {

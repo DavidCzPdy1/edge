@@ -119,6 +119,7 @@ module.exports = {
 
       let answered = []
       data.answers.split('|').forEach(n => {data[n].forEach(a => answered.push(a?.id || a))})
+      if (data.filterIgnore) data.filterIgnore.forEach(a => answered.push(a?.id || a))
 
       let guild = interaction.guild
       if (!guild) return console.error('EVENTS interaction - Nenašel jsem guildu')
@@ -139,6 +140,7 @@ module.exports = {
         }
       }
       let embed = {title: `Notify ${data.name || data._id} eventu! - command interaction`, description: `Sent to ${success.length}/${success.length+errors.length} members!`}
+      if (success.length) embed.description = embed.description + `\n\Success:\n${success.join('\n')}`
       if (errors.length) embed.description = embed.description + `\n\nErrors:\n${errors.join('\n')}`
       global.channels?.log?.send({ embeds: [embed] })
       interaction.followUp({ ephemeral: edge.isEphemeral(interaction), embeds: [embed]})
