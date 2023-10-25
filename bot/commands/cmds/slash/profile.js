@@ -62,6 +62,7 @@ module.exports = {
           })
         } else {
           data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a?.id || a))})
+          if (data.filterIgnore) data.filterIgnore.forEach(a => reacted.push(a?.id || a))
         }
         if (mode == 'user') {
           notReacted = trenerRole.members.filter(n => n._roles.includes(edge.config.discord.roles.position_trener) && !reacted.includes(n.id)).map(n => n.id)
@@ -106,6 +107,7 @@ module.exports = {
 
           let reacted = []
           data.answers.split('|').forEach(n => {data[n].forEach(a => reacted.push(a?.id || a))})
+          if (data.filterIgnore) data.filterIgnore.forEach(a => reacted.push(a?.id || a))
           if (mode == 'user' && !reacted.includes(user)) notReacted.push(data)
           else if (mode == 'team' && !reacted.includes(club)) notReacted.push(data)
         }
