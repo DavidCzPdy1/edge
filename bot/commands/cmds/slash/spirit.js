@@ -68,7 +68,7 @@ module.exports = {
       }
 
 
-      if (spirit.errors.length) embed.description = embed.description + `\n\nNezapočítané tabulky:\n${errors.join('\n')}`
+      if (spirit.errors.length) embed.description = embed.description + `\n\nNezapočítané tabulky:\n${spirit.errors.join('\n')}`
       interaction.editReply({ embeds: [embed] })
 
       return
@@ -122,7 +122,7 @@ async function calculateTourney(google, ids, eventId, eventName) {
       let tableName = await google.getTable(sheetId).then(n => n.find(a => a.properties.sheetId == eventId || a.properties.title == eventName)?.properties.title)
 
       if (!tableName) {
-        errors.push(`\`${sheetId}\` - nemá tabulku`)
+        spirit.errors.push(`\`${sheetId}\` - nemá tabulku`)
         continue;
       }
 
@@ -138,7 +138,7 @@ async function calculateTourney(google, ids, eventId, eventName) {
         if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7])})
         if (a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7])})
       })
-    } catch (e) {errors.push(sheetId)}
+    } catch (e) {spirit.errors.push(sheetId)}
   }
 
 
