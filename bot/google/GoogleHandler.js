@@ -26,6 +26,7 @@ class GoogleHandler {
     this.calendar = google.calendar({version: 'v3', auth: this.client});
 
     this.edgeCal = await this.edge.get('login', 'google', {_id: 'edgeCal'}).then(n => n[0].value)
+    this.spiritIds = await this.edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].value)
   }
 
 
@@ -163,6 +164,43 @@ class GoogleHandler {
     if (!sheet) sheet = await this.createSheet(event)
     await this.clearSheet(sheet)
     await this.postSheet(sheet, nahrat)
+  }
+
+  async getTable(tableId) {
+    let result = await this.sheets.spreadsheets.get({
+      auth: this.auth,
+      spreadsheetId: tableId,
+    });
+    return result.data.sheets//.find(n => n.properties.title == name.replaceAll(':', '|').replaceAll('!', '|'))?.properties
+  }
+
+  async getTableData(tableId, range) {
+    let result = await this.sheets.spreadsheets.values.get({
+      auth: this.auth,
+      spreadsheetId: tableId,
+      range: range
+    })
+    return result.data.values
+  }
+
+  async duplicateTable(tableId, data) {
+    let result = await this.sheets.spreadsheets.batchUpdate({
+      auth: this.auth,
+      spreadsheetId: tableId,
+      resource: {
+        requests: [
+          {
+            duplicateSheet: {
+              insertSheetIndex: data.index,
+              newSheetId: data.id,
+              newSheetName: data.name,
+              sourceSheetId: data.source
+            }
+          }
+        ]
+      }
+    })
+    return result.data.replies[0].duplicateSheet.properties
   }
 
   async getCalendar(id, max = 2) {
