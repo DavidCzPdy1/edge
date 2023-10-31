@@ -1,4 +1,7 @@
 
+const getSpiritData = (arr) => arr.slice(2, 8).map(a => Number(a) || 0)
+const countSpirit = (arr, add) => arr.map((a, i) => a+(add[i]))
+
 module.exports = {
   name: 'spirit',
   description: 'Spirit command!',
@@ -54,7 +57,7 @@ module.exports = {
       return interaction.editReply({ embeds: [{ title: `Created new spirit table!`, description: `**Name:** ${eventName}\n**Id:**${eventId}\n**Rate:** ${res.success}/${res.success + res.errors.length}\n\n${res.errors.length ? ('**Errors:**\n' + res.errors.join(', ')) : ''}` }] })
     }
 
-    let table = await edge.google.getTable(edge.google.spiritIds[0]).then(n => n.find(a => a.properties.sheetId == id || a.properties.title == id)?.properties || n[3]?.properties)
+    let table = await edge.google.getTable(edge.google.spiritIds[0]).then(n => n.sheets.find(a => a.properties.sheetId == id || a.properties.title == id)?.properties || n.sheets[3]?.properties)
     if (!table) return interaction.editReply({ embeds: [{ title: 'ERROR v najití default jména a ID tabulky', color: 15548997 }]})
 
     let eventId = table.sheetId
@@ -87,10 +90,16 @@ module.exports = {
       let teamsFormatted = Object.keys(spirit.total).filter(n => n.toLowerCase().includes(team.toLowerCase()) || team.toLocaleLowerCase().split(' ').some(a => n.toLocaleLowerCase().includes(a)))
       if (!teamsFormatted.length) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nedokázal jsem si propojit discord roli s týmem ve spirit tabulce!', color: 15548997 }]}) 
 
+      let recieved = Object.values(spirit.total).filter(a => teamsFormatted.includes(a.name)).map((n, i) => `${n.name} - ${n.raw.map(a => f(a/n.games, 3)).join(' | ')} `).join('\n') || 'Žádné spirit data :/'
+      let given = []
+      teamsFormatted.forEach(teamFormatted => {
+        given.push(teamFormatted + ' - ' + [0, 0, 0, 0, 0, 0].map((m, i) => f(spirit.teams.filter(a => teamFormatted.includes(a.by)).map(n => n.rawData[i]).reduce((a, b) => a+b, 0)/(spirit.teams.filter(a => teamFormatted.includes(a.by)).length||1), 3)).join(' | '))
+      })
+      
       let embed = {
         title: `Spirit skóre s názvem "${eventName}" týmu ${team}`,
         color: interaction.guild.roles.cache.get(id)?.color || 4164908,
-        description: Object.values(spirit.total).filter(a => teamsFormatted.includes(a.name)).sort((a, b) => b.avg - a.avg).map((n, i) => `${n.name} - \`${f(n.avg, 3)} points\``).join('\n') || 'Žádné spirit data :/'
+        description: `**Obdržené body:**\n${recieved}\n\n**Udělené body:**\n${given.join('\n')}`
       }
 
       interaction.editReply({ embeds: [embed] })
@@ -103,7 +112,7 @@ module.exports = {
   autocomplete: async (edge, interaction) => {
     let focused = interaction.options.getFocused()
 
-    let show = await edge.google.getTable(edge.google.spiritIds[0]).then(n => n.map(a => ( { name: a.properties.title, value:String(a.properties.sheetId)||a.properties.title } )))
+    let show = await edge.google.getTable(edge.google.spiritIds[0]).then(n => n.sheets.map(a => ( { name: a.properties.title, value:String(a.properties.sheetId)||a.properties.title } )))
     show.shift()
     show.shift()
     show.shift()
@@ -122,7 +131,7 @@ async function createTourney(google, ids, eventId, eventName) {
   for (let sheetId of ids) {
 
     try {
-      let template = await google.getTable(sheetId).then(a => a.find(n => n.properties.title == 'TEMPLATE')?.properties)
+      let template = await google.getTable(sheetId).then(a => a.sheets.find(n => n.properties.title == 'TEMPLATE')?.properties)
       let data = {
         index: template.index+1,
         id: eventId,
@@ -142,10 +151,13 @@ async function calculateTourney(google, ids, eventId, eventName) {
   let spirit = { total: {}, teams: [], errors: []}
   for (let sheetId of ids) {
     try {
-      let tableName = await google.getTable(sheetId).then(n => n.find(a => a.properties.sheetId == eventId || a.properties.title == eventName)?.properties.title)
+      let table = await google.getTable(sheetId)
+      let tym = table.properties.title
+      if (!tym) tym = sheetId
+      let tableName = table.sheets.find(a => a.properties.sheetId == eventId || a.properties.title == eventName)?.properties.title
 
       if (!tableName) {
-        spirit.errors.push(`\`${sheetId}\` - nemá tabulku`)
+        spirit.errors.push(`\`${tym||sheetId}\` - nemá tabulku se jménem`)
         continue;
       }
 
@@ -158,23 +170,22 @@ async function calculateTourney(google, ids, eventId, eventName) {
       results.forEach(e => {
         a1 = e.slice(0, 8)
         a2 = e.slice(8, 16)
-        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7])})
-        if (a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7])})
+        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7]), by: tym, rawData: getSpiritData(a1)})
+        if (a2.length > 6 && a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7]), by: tym, rawData: getSpiritData(a2)})
       })
     } catch (e) {spirit.errors.push(sheetId)}
   }
 
 
   for (let hodnoceni of spirit.teams) {
-    let tym = spirit.total[hodnoceni.name] || {name: hodnoceni.name, points: 0, games: 0, avg: 0}
+    let tym = spirit.total[hodnoceni.name] || {name: hodnoceni.name, points: 0, games: 0, avg: 0, raw: [0, 0, 0, 0, 0, 0]}
 
     tym.points = tym.points + hodnoceni.total
     tym.games ++
     tym.avg = tym.points/tym.games
+    tym.raw = countSpirit(tym.raw, hodnoceni.rawData)
 
     spirit.total[hodnoceni.name] = tym
   }
-
-
   return spirit
 }

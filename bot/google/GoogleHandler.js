@@ -171,7 +171,7 @@ class GoogleHandler {
       auth: this.auth,
       spreadsheetId: tableId,
     });
-    return result.data.sheets//.find(n => n.properties.title == name.replaceAll(':', '|').replaceAll('!', '|'))?.properties
+    return result.data//.find(n => n.properties.title == name.replaceAll(':', '|').replaceAll('!', '|'))?.properties
   }
 
   async getTableData(tableId, range) {
