@@ -86,7 +86,7 @@ module.exports = {
       if (!id) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nemáš roli žádného týmu!', color: 15548997 }]}) 
       let team = interaction.guild.roles.cache.get(id)?.name
       if (!team) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem danou týmovou roli!', color: 15548997 }]}) 
-      
+
       let teamsFormatted = Object.keys(spirit.total).filter(n => n.toLowerCase().includes(team.toLowerCase()) || team.toLocaleLowerCase().split(' ').some(a => n.toLocaleLowerCase().includes(a)))
       if (!teamsFormatted.length) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nedokázal jsem si propojit discord roli s týmem ve spirit tabulce!', color: 15548997 }]}) 
 
@@ -130,6 +130,7 @@ async function createTourney(google, ids, eventId, eventName) {
   let errors = [];
   for (let sheetId of ids) {
 
+    /*
     try {
       let template = await google.getTable(sheetId).then(a => a.sheets.find(n => n.properties.title == 'TEMPLATE')?.properties)
       let data = {
@@ -142,6 +143,20 @@ async function createTourney(google, ids, eventId, eventName) {
 
       success ++
     } catch (e) {errors.push(sheetId) }
+    */
+
+    try {
+      let data = {
+        index: 3,
+        id: eventId,
+        name: eventName,
+      }
+      await google.copyTo(google.spiritMaster, 322683186, sheetId, data)
+      
+      success ++
+    } catch (e) {
+      errors.push(sheetId)
+    }
   }
   return {success: success, errors: errors}
 

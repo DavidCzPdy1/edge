@@ -27,6 +27,7 @@ class GoogleHandler {
 
     this.edgeCal = await this.edge.get('login', 'google', {_id: 'edgeCal'}).then(n => n[0].value)
     this.spiritIds = await this.edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].value)
+    this.spiritMaster = await this.edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].master)
   }
 
 
@@ -197,6 +198,40 @@ class GoogleHandler {
               sourceSheetId: data.source
             }
           }
+        ]
+      }
+    })
+    return result.data.replies[0].duplicateSheet.properties
+  }
+
+  async copyTo(copyFrom, sheetId, copyTo, data) {
+    let sheet = await this.sheets.spreadsheets.sheets.copyTo({
+      auth: this.auth,
+      spreadsheetId: copyFrom,
+      sheetId: sheetId,
+      destinationSpreadsheetId: copyTo
+    }).then(n => n.data)
+    
+    // DUPLICATE AND DELETE HERE
+
+     let result = await this.sheets.spreadsheets.batchUpdate({
+      auth: this.auth,
+      spreadsheetId: copyTo,
+      resource: {
+        requests: [
+          {
+            duplicateSheet: {
+              insertSheetIndex: data.index,
+              newSheetId: data.id,
+              newSheetName: data.name,
+              sourceSheetId: sheet.sheetId
+            }
+          },
+          {
+            deleteSheet: {
+              sheetId: sheet.sheetId
+            }
+        }
         ]
       }
     })
