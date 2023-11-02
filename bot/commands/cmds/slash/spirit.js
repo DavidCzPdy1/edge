@@ -41,7 +41,7 @@ module.exports = {
     let action = interaction.options.getString('action')
 
     let perms = edge.handlePerms([{ id: '378928808989949964', type: 'USER', permission: true}, { id: '1105555145456107581', type: 'ROLE', permission: true}, { id: '533684732970532876', type: 'USER', permission: true}], interaction)
-    if (action !== 'teaminfo' && !perms) return interaction.editReply({ embeds: [{ title: 'ERROR!', description: 'Nemáš potřebné oprávnění!', color: 15548997 }]})
+    if (!(action === 'teaminfo' || action === 'results') && !perms) return interaction.editReply({ embeds: [{ title: 'ERROR!', description: 'Nemáš potřebné oprávnění!', color: 15548997 }]})
 
     if (action == 'refreshIds') {
       let spiritIds = await edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].value)
