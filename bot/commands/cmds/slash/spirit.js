@@ -7,7 +7,6 @@ const path = require('node:path');
 const getSpiritData = (arr) => arr.slice(2, 8).map(a => Number(a) || 0)
 const countSpirit = (arr, add) => arr.map((a, i) => a+(add[i]))
 
-
 module.exports = {
   name: 'spirit',
   description: 'Spirit command!',
@@ -109,8 +108,7 @@ module.exports = {
       let embed = {
         title: `Spirit skóre s názvem "${eventName}"`,
         color: 4164908,
-        description: Object.values(spirit.total).sort((a, b) => b.avg - a.avg).map((n, i) => `\`#${i+1}\` ${n.name} \`${f(n.avg, 3)} points\``).join('\n'),
-        footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
+        description: Object.values(spirit.total).sort((a, b) => b.avg - a.avg).map((n, i) => `\`#${i+1}\` ${n.name} \`${f(n.avg, 3)} points\``).join('\n')
       }
 
 
@@ -141,7 +139,7 @@ module.exports = {
         title: `Spirit skóre s názvem "${eventName}" týmu ${team}`,
         color: interaction.guild.roles.cache.get(id)?.color || 4164908,
         description: `**Obdržené body:**\n${recieved}\n\n**Udělené body:**\n${given.join('\n')}`,
-        footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
+        footer: { text: 'PRAVIDLA | FAULY | FÉROVOST | PŘÍSTUP | KOMUNIKACE | CELKEM'}
       }
 
       let components = teamsFormatted.map(n => new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`spirit_cmd_getTeamData_${eventName}_${n}`).setStyle(2).setLabel(n)))
@@ -173,14 +171,18 @@ module.exports = {
     let spirit = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../spirit.json'), 'utf8'))[eventName]
     if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
 
-    let recieved = spirit.teams.filter(n => n.name == teamName).sort((a, b) => b.sort - a.sort).map(n => `${n.by} - ${n.rawData.join(' | ')}`)
-    let given = spirit.teams.filter(n => n.by == teamName).sort((a, b) => b.sort - a.sort).map(n => `${n.name} - ${n.rawData.join(' | ')}`)
+    let recieved = spirit.teams.filter(n => n.name == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.by}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
+    let given = spirit.teams.filter(n => n.by == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.name}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
     
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
       color: interaction.message.embeds[0]?.color || 4164908,
-      description: `**Obdržené body:** *(${recieved.length})*\n${recieved.join('\n')}\n\n**Udělené body:** *(${given.length})*\n${given.join('\n')}`,
-      footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
+     // description: `**Obdržené body:** *(${recieved.length})*\n${recieved.join('\n')}\n\n**Udělené body:** *(${given.length})*\n${given.join('\n')}`,
+      fields: [
+        {name: `**Obdržené body:** *(${recieved.length})*`, value: recieved.join('\n'), inline: true},
+        {name: `**Udělené body:** *(${given.length})*`, value: given.join('\n'), inline: true}
+      ],
+      footer: { text: 'PRAVIDLA | FAULY | FÉROVOST | PŘÍSTUP | KOMUNIKACE | CELKEM'}
     }
 
     interaction.editReply({ embeds: [embed] })
@@ -290,3 +292,5 @@ async function calculateTourney(google, ids, eventId, eventName) {
 
   return spirit
 }
+
+// special char 'ㅤ'
