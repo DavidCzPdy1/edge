@@ -21,6 +21,7 @@ module.exports = {
       choices: [
         { value: 'teaminfo', name: 'Jak si vede můj tým? (team)' },
         { value: 'results', name: 'Zobrazit existující turnaj (EDGE)' },
+        { value: 'verify', name: 'Ověřit spirit data (EDGE)' },
         { value: 'create', name: 'Vytvořit nový turnaj - usage "name:id" (EDGE)' },
         { value: 'refreshIds', name: 'Aktualizovat IDS (dev)' },
       ]
@@ -70,6 +71,40 @@ module.exports = {
     let eventName = table.title
 
     let spirit = await calculateTourney(edge.google, ids, eventId, eventName)
+
+    if (action == 'verify') {
+
+      let teams = Object.keys(spirit.total)
+      let errors = []
+
+      for (let team of teams) {
+        let given = spirit.teams.filter(n => n.by == team)
+        for (let skore of given) {
+          for (let i = 0; i < 6; i++) {
+            let soucet = skore.rawData.reduce((a, b) => a + b, 0) - skore.rawData[5]
+            if ((skore.rawData[i] < 0 || skore.rawData[i] > 4) && i < 5 || i == 5 && skore.rawData[5] !== soucet) {
+              errors.push(`${team} ➜ ${skore.name} ➜ ${skore.rawData.join(' | ')}`)
+              continue
+            }
+          }
+        }
+
+        let recieved = spirit.teams.filter(n => n.name == team)
+        if (recieved.length !== given.length) errors.push(`${team}: uděleno ${given.length}x, získáno ${recieved.length}x`)
+      }
+
+      let description = errors.length ? `**Chyby:**\n${errors.join('\n')}` : 'BEZ CHYBY :D'
+      console.log(description)
+
+      let embed = {
+        title: `Validace spirit skóre s názvem "${eventName}"`,
+        color: errors.length ? 15548997 : 4164908,
+        description: description.slice(0, 4095)
+      }
+
+
+      return interaction.editReply({ embeds: [embed]})
+    }
 
     if (action == 'results') {
       let embed = {
@@ -138,11 +173,12 @@ module.exports = {
     if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
 
     let recieved = spirit.teams.filter(n => n.name == teamName).map(n => `${n.by} - ${n.rawData.join(' | ')}`)
+    let given = spirit.teams.filter(n => n.by == teamName).map(n => `${n.name} - ${n.rawData.join(' | ')}`)
     
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
       color: interaction.message.embeds[0]?.color || 4164908,
-      description: `**Obdržené body:**\n${recieved.join('\n')}`
+      description: `**Obdržené body:** *(${recieved.length})*\n${recieved.join('\n')}\n\n**Udělené body:** *(${given.length})*\n${given.join('\n')}`
     }
 
     interaction.editReply({ embeds: [embed] })
