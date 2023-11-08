@@ -20,7 +20,7 @@ module.exports = {
       required: true,
       choices: [
         { value: 'teaminfo', name: 'Jak si vede můj tým? (team)' },
-        { value: 'results', name: 'Zobrazit existující turnaj (EDGE)' },
+        { value: 'results', name: 'Zobrazit existující turnaj (team)' },
         { value: 'verify', name: 'Ověřit spirit data (EDGE)' },
         { value: 'create', name: 'Vytvořit nový turnaj - usage "name:id" (EDGE)' },
         { value: 'refreshIds', name: 'Aktualizovat IDS (dev)' },
@@ -94,7 +94,6 @@ module.exports = {
       }
 
       let description = errors.length ? `**Chyby:**\n${errors.join('\n')}` : 'BEZ CHYBY :D'
-      console.log(description)
 
       let embed = {
         title: `Validace spirit skóre s názvem "${eventName}"`,
@@ -172,8 +171,8 @@ module.exports = {
     let spirit = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../spirit.json'), 'utf8'))[eventName]
     if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
 
-    let recieved = spirit.teams.filter(n => n.name == teamName).map(n => `${n.by} - ${n.rawData.join(' | ')}`)
-    let given = spirit.teams.filter(n => n.by == teamName).map(n => `${n.name} - ${n.rawData.join(' | ')}`)
+    let recieved = spirit.teams.filter(n => n.name == teamName).sort((a, b) => b.sort - a.sort).map(n => `${n.by} - ${n.rawData.join(' | ')}`)
+    let given = spirit.teams.filter(n => n.by == teamName).sort((a, b) => b.sort - a.sort).map(n => `${n.name} - ${n.rawData.join(' | ')}`)
     
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
@@ -258,11 +257,11 @@ async function calculateTourney(google, ids, eventId, eventName) {
       results.shift()
       results.shift()
   
-      results.forEach(e => {
+      results.forEach((e, i) => {
         a1 = e.slice(0, 8)
         a2 = e.slice(8, 16)
-        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7]), by: tym, rawData: getSpiritData(a1)})
-        if (a2.length > 6 && a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7]), by: tym, rawData: getSpiritData(a2)})
+        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7]), by: tym, rawData: getSpiritData(a1), sort: i})
+        if (a2.length > 6 && a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7]), by: tym, rawData: getSpiritData(a2), sort: i+20})
       })
     } catch (e) {spirit.errors.push(sheetId)}
   }
