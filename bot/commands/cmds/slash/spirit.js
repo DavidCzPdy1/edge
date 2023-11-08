@@ -109,7 +109,8 @@ module.exports = {
       let embed = {
         title: `Spirit skóre s názvem "${eventName}"`,
         color: 4164908,
-        description: Object.values(spirit.total).sort((a, b) => b.avg - a.avg).map((n, i) => `\`#${i+1}\` ${n.name} \`${f(n.avg, 3)} points\``).join('\n')
+        description: Object.values(spirit.total).sort((a, b) => b.avg - a.avg).map((n, i) => `\`#${i+1}\` ${n.name} \`${f(n.avg, 3)} points\``).join('\n'),
+        footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
       }
 
 
@@ -139,7 +140,8 @@ module.exports = {
       let embed = {
         title: `Spirit skóre s názvem "${eventName}" týmu ${team}`,
         color: interaction.guild.roles.cache.get(id)?.color || 4164908,
-        description: `**Obdržené body:**\n${recieved}\n\n**Udělené body:**\n${given.join('\n')}`
+        description: `**Obdržené body:**\n${recieved}\n\n**Udělené body:**\n${given.join('\n')}`,
+        footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
       }
 
       let components = teamsFormatted.map(n => new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`spirit_cmd_getTeamData_${eventName}_${n}`).setStyle(2).setLabel(n)))
@@ -177,7 +179,8 @@ module.exports = {
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
       color: interaction.message.embeds[0]?.color || 4164908,
-      description: `**Obdržené body:** *(${recieved.length})*\n${recieved.join('\n')}\n\n**Udělené body:** *(${given.length})*\n${given.join('\n')}`
+      description: `**Obdržené body:** *(${recieved.length})*\n${recieved.join('\n')}\n\n**Udělené body:** *(${given.length})*\n${given.join('\n')}`,
+      footer: { text: 'PRA | FAUL | FER | POZ | KOM | CEL'}
     }
 
     interaction.editReply({ embeds: [embed] })
