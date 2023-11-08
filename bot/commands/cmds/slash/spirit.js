@@ -1,6 +1,12 @@
 
+const { ActionRowBuilder, ButtonBuilder } = require('discord.js')
+const fs = require('fs');
+const path = require('node:path');
+
+
 const getSpiritData = (arr) => arr.slice(2, 8).map(a => Number(a) || 0)
 const countSpirit = (arr, add) => arr.map((a, i) => a+(add[i]))
+
 
 module.exports = {
   name: 'spirit',
@@ -13,7 +19,7 @@ module.exports = {
       type: 3,
       required: true,
       choices: [
-        { value: 'teaminfo', name: 'Jak si vede tvůj tým? (team)' },
+        { value: 'teaminfo', name: 'Jak si vede můj tým? (team)' },
         { value: 'results', name: 'Zobrazit existující turnaj (EDGE)' },
         { value: 'create', name: 'Vytvořit nový turnaj - usage "name:id" (EDGE)' },
         { value: 'refreshIds', name: 'Aktualizovat IDS (dev)' },
@@ -102,7 +108,8 @@ module.exports = {
         description: `**Obdržené body:**\n${recieved}\n\n**Udělené body:**\n${given.join('\n')}`
       }
 
-      interaction.editReply({ embeds: [embed] })
+      let components = teamsFormatted.map(n => new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId(`spirit_cmd_getTeamData_${eventName}_${n}`).setStyle(2).setLabel(n)))
+      interaction.editReply({ embeds: [embed], components: components })
       return
     }
 
@@ -119,6 +126,27 @@ module.exports = {
     
     let z = show.filter(n => n.name.toLowerCase().includes(focused.toLowerCase()) || String(n.value).includes(focused)).slice(0, 25)
     return interaction.respond(z.length ? z : [{ value: (focused.trim()?.length > 2 ? focused.trim() : 'Chybné užití'), name: 'Nový turnaj: ' + focused.trim()}])
+  },
+  getTeamData: async (edge, interaction) => {
+    let args = interaction.customId.split('_')
+    let eventName = args[3]
+    let teamName = args[4]
+
+    await interaction.deferReply({ ephemeral: edge.isEphemeral(interaction) })
+
+    let spirit = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../spirit.json'), 'utf8'))[eventName]
+    if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
+
+    let recieved = spirit.teams.filter(n => n.name == teamName).map(n => `${n.by} - ${n.rawData.join(' | ')}`)
+    
+    let embed = {
+      title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
+      color: interaction.message.embeds[0]?.color || 4164908,
+      description: `**Obdržené body:**\n${recieved.join('\n')}`
+    }
+
+    interaction.editReply({ embeds: [embed] })
+
   }
 }
 
@@ -164,6 +192,18 @@ async function createTourney(google, ids, eventId, eventName) {
 
 async function calculateTourney(google, ids, eventId, eventName) {
   let spirit = { total: {}, teams: [], errors: []}
+
+  let getFromCache = ['10.6.2023', '21-22.10.2023']
+
+  if (getFromCache.includes(eventName)) {
+    let file = fs.readdirSync(path.join(__dirname, '../../')).filter(n => n == 'spirit.json').length
+    if (file) {
+      file = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../spirit.json'), 'utf8'))
+      if (file[eventName]) return file[eventName]
+    }
+  }
+
+
   for (let sheetId of ids) {
     try {
       let table = await google.getTable(sheetId)
@@ -202,5 +242,13 @@ async function calculateTourney(google, ids, eventId, eventName) {
 
     spirit.total[hodnoceni.name] = tym
   }
+
+  let file = fs.readdirSync(path.join(__dirname, '../../')).filter(n => n == 'spirit.json').length
+  if (!file) { fs.writeFile(path.join(__dirname, '../../spirit.json'),  JSON.stringify({}, null, 4), 'utf-8', data => {}); await delay(800) }
+  file = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../spirit.json'), 'utf8'))
+
+  file[eventName] = spirit
+  fs.writeFile(path.resolve(__dirname, '../../spirit.json'), JSON.stringify(file, null, 4), 'utf8', data =>{})
+
   return spirit
 }
