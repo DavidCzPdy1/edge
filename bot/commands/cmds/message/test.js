@@ -258,7 +258,36 @@ module.exports = {
             await message.delete()
         } else channel.send({ embeds: [infoEmbed], components: [] })
 
-    } 
+    } else if (args[0] == 'turnaj') {
+        return 'potrebuje edit'
+        let event = await edge.get('teams', 'rakety', {_id: '1699623945154'})
+        if (!event.length) return 'nenasel jsem event'
+        event = event[0]
+
+        let channel = message.guild.channels.cache.get('1122999430103171176')
+
+        let odpovedi = new ActionRowBuilder();
+        let odpovedi2 = new ActionRowBuilder();
+        let moznosti = event.answers.split('|')
+        
+        let d = 0;
+        for (let answer of moznosti) {
+          let styl = 2
+          d++
+          if (d<= 5)odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_rakety_1699623945154_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+          else odpovedi2.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_rakety_1699623945154_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+        }
+
+        let msg = await channel.messages.fetch(event.message)
+        let components = [odpovedi, odpovedi2]
+        let newmsg = await msg.edit({ components: components})
+
+        let newchannel = message.guild.channels.cache.get(event.channel)
+        newchannel.send({ embeds: newmsg.embeds, content: newmsg.content, components: newmsg.components  })
+
+        return 'ok'
+
+    }
 
 
     }
