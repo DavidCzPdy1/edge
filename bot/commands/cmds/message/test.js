@@ -326,7 +326,7 @@ module.exports = {
         let channel = message.guild.channels.cache.get(event.channel)
 
         let odpovedi = new ActionRowBuilder();
-        
+
         let i = 0;
         for (let answer of event.answers.split('|')) {
             let styl = 2
@@ -336,7 +336,7 @@ module.exports = {
         let msg = await channel.messages.fetch(event.message)
         let components = [odpovedi]
         let embed = getEmbed(event)
-        console.log(embed, {guild: message.guild})
+    
         await msg.edit({ components: components, embeds: [embed]})
 
         return 'ok'
