@@ -115,7 +115,7 @@ module.exports = {
         _id: String(new Date().getTime()),
         name: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description'),
-        answers: interaction.options.getString('answers').replaceAll('.', '/'),
+        answers: interaction.options.getString('answers').replaceAll('.', '/').replaceAll('-', '➜'),
         time: interaction.options.getString('time') || null,
         mode: interaction.options.getString('mode') || 'team',
         settings: interaction.options.getString('settings') || 'show',

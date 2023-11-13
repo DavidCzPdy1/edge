@@ -1,6 +1,36 @@
 const { ActionRowBuilder, ButtonBuilder } = require("discord.js");
 const fs = require('fs');
 
+const getEmbed = (data, options = {}) => {
+    let embed =  {
+        title: data.title || data.name || data.question || data._id,
+        description: data.description,
+        fields: data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `\u200B`, inline: true} }) || [],
+        color: data.color|| 14666022,
+    }
+  
+    if (data.settings == 'duplicate') embed.description = embed.description + `\n*Hlasuje se neomezeně*`
+    if (data.settings == 'hide') embed.description = embed.description + `\n*Hlasuje se skrytě*`
+  
+    if (options.guild) {
+      embed.fields = embed.fields.map(n => {
+        let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).length}`
+        let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
+          let id = a.id || a
+          if (data.format == 'mention') return `<@${id}>`
+          let mention =  options.verify?.find(c => c._id == id) || options.guild.members.cache.get(id) || {nickname: id}
+          return mention?.name || mention?.nickname || mention?.user?.username
+        }).join('\n')
+        if (!value.length) value = '\u200B'
+        return {name: name, value: value, inline: true}
+      })
+    }
+  
+   // if (data.settings == 'hide' && !options.show && !options.showId) embed.fields = data.answers?.split('|').map(n => { return {name: `${n.trim()} - 0`, value: `||skryté||`, inline: true} }) || []
+  
+    return embed
+  }
+
 let respawn;
 
 module.exports = {
@@ -287,6 +317,29 @@ module.exports = {
 
         return 'ok'
 
+    } else if (args[0] == 'repare') {
+        if (args.length < 3) return 'potrebuju 3 argumenty - \`"repare" db _id\`'
+        let event = await edge.get('teams', args[1], {_id: args[2]})
+        if (!event.length) return 'nenasel jsem event'
+        event = event[0]
+
+        let channel = message.guild.channels.cache.get(event.channel)
+
+        let odpovedi = new ActionRowBuilder();
+        
+        let i = 0;
+        for (let answer of event.answers.split('|')) {
+            let styl = 2
+            odpovedi.addComponents(new ButtonBuilder().setCustomId(`team-anketa_cmd_select_${args[1]}_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+        }
+
+        let msg = await channel.messages.fetch(event.message)
+        let components = [odpovedi]
+        let embed = getEmbed(event)
+        console.log(embed, {guild: message.guild})
+        await msg.edit({ components: components, embeds: [embed]})
+
+        return 'ok'
     }
 
 

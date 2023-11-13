@@ -93,7 +93,7 @@ module.exports = {
         _id: String(new Date().getTime()),
         question: interaction.options.getString('question').replaceAll('_', ' '),
         description: interaction.options.getString('description')?.split(';').join('\n'),
-        answers: interaction.options.getString('answers').replaceAll('.', '/'),
+        answers: interaction.options.getString('answers').replaceAll('.', '/').replaceAll('-', '➜'),
         time: null,
         mode: 'user',
         type: 'hlasovani',
