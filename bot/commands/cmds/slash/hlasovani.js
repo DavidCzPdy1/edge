@@ -254,7 +254,10 @@ module.exports = {
         let styl = 2
         if (event.type == 'form' && answer == 'Accept') styl = 3
         else if (event.type == 'form' && answer == 'Deny') styl = 4
-        odpovedi.addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_${answer}`).setStyle(styl).setLabel(answer).setDisabled(false))
+
+        let label = event.type == 'form' ? answer.replace('Accept', 'PŘIHLAŠUJI').replace('Deny', 'ODMÍTÁM') : answer
+
+        odpovedi.addComponents(new ButtonBuilder().setCustomId(`${event.type || 'hlasovani'}_cmd_select_${event._id}_${answer}`).setStyle(styl).setLabel(label).setDisabled(false))
       }
       if (event.type == 'form') odpovedi.addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${event._id}`).setStyle(2).setLabel('EDIT'))
 

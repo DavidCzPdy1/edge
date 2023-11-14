@@ -302,5 +302,6 @@ module.exports = {
       await edge.post('teams', db, data)
       await interaction.editReply({ embeds: [getEmbed(data, {guild: interaction.roles?.first()?.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined})]})
       await interaction.followUp({ embeds: [{title: `Úprava tréninku, který už skončil!`, description: `**Zpráva:** [${data.name}](${interaction.message.url})\n\n` + edited.join('\n'), color: 14666022}], ephemeral: edge.isEphemeral(interaction) })
-    }
+    },
+    getEmbed: getEmbed
 }
