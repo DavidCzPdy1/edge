@@ -61,12 +61,13 @@ module.exports = {
         modal.addComponents(textBox({ id: 'description', text: 'Popisek', example: 'Embed Description', value: data.description, required: true, style: 2}))
       
         if (data.type == 'hlasovani') modal.addComponents(textBox({ id: 'answers', text: 'Možnosti', example: 'Ano|Ne|Nevím', required: true, value: data.answers, style: 2}))
-        if (interaction.guild.id == '1105413744902811688') modal.addComponents(textBox({ id: 'time', text: 'Čas', example: '21. 11. 2023', value: new Date(data.time).toLocaleString('cs-CZ'), required: true}))
+        if (interaction.guild.id == '1105413744902811688' && data.time) modal.addComponents(textBox({ id: 'time', text: 'Čas', example: '21. 11. 2023', value: new Date(data.time).toLocaleString('cs-CZ'), required: true}))
         //.addComponents(textBox({ id: '5', text: 'SOON', example: undefined, value: undefined, required: false}))
       
         return await interaction.showModal(modal)
 
       } else if (mode == 'results') {
+        if (data.type == 'form') return interaction.reply({ ephemeral: true, content: 'Odpovědi formuláře se upravují v results příkazu!'})
         let answers = data.answers.split('|')
         for (let i = 0; i < answers.length; i++) {
           if (i > 4) break;
@@ -78,7 +79,7 @@ module.exports = {
 
 
       } else if (mode == 'form') {
-        if (!data.type !== 'form' || !data.questions) return interaction.reply({ ephemeral:true, content: `**${data.name || data.question}** nemá žádé form data na úpravu!`})
+        if (data.type !== 'form' || !data.questions) return interaction.reply({ ephemeral:true, content: `**${data.name || data.question}** nemá žádé form data na úpravu!`})
 
         for (let i = 0; i < 5; i++) {
           let question = data.questions[i]
@@ -101,22 +102,58 @@ module.exports = {
       return interaction.respond(z?.length ? z.slice(0,20) : [{ value: 'ne', name: 'Nenašel jsem žádný event!'}])
 
     },
-    msgEdit: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
-
+    sendModal: async (edge, interaction) => {
       let _id = interaction.customId.split('_')[3]
       let mode = interaction.customId.split('_')[4]
 
+      let data = await edge.get(dbs[interaction.guild.id].db, dbs[interaction.guild.id].name, {_id: _id}).then(n => n[0])
+      if (!data) return interaction.reply({ ephemeral: edge.isEphemeral(interaction), content: 'ERROR! Data nebyla nalezena! Kontaktuj prosím developera!'})
+
+      const modal = new ModalBuilder().setCustomId('edit_cmd_results_' + data._id + '_' + mode).setTitle(`Edit ${data.name||data.question || data._id}! - ${mode}`.slice(0, 45))
+
+      if (mode == 'basic') {
+        modal.addComponents(textBox({ id: 'title', text: 'Název', example: 'Embed Title', value: data.name||data.question, required: true, max: 45}))
+        modal.addComponents(textBox({ id: 'description', text: 'Popisek', example: 'Embed Description', value: data.description, required: true, style: 2}))
       
+        if (data.type == 'hlasovani') modal.addComponents(textBox({ id: 'answers', text: 'Možnosti', example: 'Ano|Ne|Nevím', required: true, value: data.answers, style: 2}))
+        if (interaction.guild.id == '1105413744902811688' && data.time) modal.addComponents(textBox({ id: 'time', text: 'Čas', example: '21. 11. 2023', value: new Date(data.time).toLocaleString('cs-CZ'), required: true}))
+        return await interaction.showModal(modal)
+
+      } else if (mode == 'results') {
+        if (data.type == 'form') return interaction.reply({ ephemeral: true, content: 'Odpovědi formuláře se upravují v results příkazu!'})
+        let answers = data.answers.split('|')
+        for (let i = 0; i < answers.length; i++) {
+          if (i > 4) break;
+          let answer = data.answers.split('|')[i]
+          if (!data[answer]) data[answer] = []
+          modal.addComponents(textBox({ id: answer, text: answer, example: 'id, id, id', value: data[answer].join(', '), required: false, style: 2}))
+        }
+        return await interaction.showModal(modal)
+
+
+      } else if (mode == 'form') {
+        if (data.type !== 'form' || !data.questions) return interaction.reply({ ephemeral:true, content: `**${data.name || data.question}** nemá žádé form data na úpravu!`})
+
+        for (let i = 0; i < 5; i++) {
+          let question = data.questions[i]
+          modal.addComponents(textBox({ id: String(i+1), text: `Otázka ${i+1}`, example: question || 'Nějaká otázka', value: question, required: false, max: 45}))
+        }
+        return await interaction.showModal(modal)
+
+
+      } else interaction.reply({ content: 'Další módy momentálně nejsou naprogramovány!', ephemeral: true })
+
     },
     results: async (edge, interaction) => {
-      await interaction.deferReply({ ephemeral: true })
+      await interaction.update({ type:6 })
 
       let _id = interaction.customId.split('_')[3]
       let mode = interaction.customId.split('_')[4]
 
       let data = await edge.get(dbs[interaction.guild.id].db, dbs[interaction.guild.id].name, {_id: _id}).then(n => n[0])
-      if (!data) return interaction.editReply({ content: 'ERROR! Nenašel jsem data, konaktuj prosím developera!', ephemeral: true })
+      if (!data) return interaction.followUp({ content: 'ERROR! Nenašel jsem data, konaktuj prosím developera!', ephemeral: true })
+
+      let disabled = data.message ? false : true
 
       let res = interaction.fields.fields
 
@@ -151,7 +188,7 @@ module.exports = {
       } else if (mode == 'form') {
         data.questions = interaction.fields.fields.map(n => n.value?.trim() ).filter(n => n.length)
 
-      } else return interaction.editReply({ content: 'ERROR, neznámý mód, konaktuj prosím developera!', ephemeral: true })
+      } else return interaction.followUp({ content: 'ERROR, neznámý mód, konaktuj prosím developera!', ephemeral: true })
 
 
       let channel = interaction.guild.channels.cache.get(data.channel)
@@ -163,23 +200,22 @@ module.exports = {
       for (let i = 0; i < data.answers.split('|').length; i++) {
         if (!components[c]) components.push(new ActionRowBuilder())
 
+        let answer = data.answers.split('|')[i]
+
         let styl = 2
         if (data.type == 'form' && answer == 'Accept') styl = 3
         else if (data.type == 'form' && answer == 'Deny') styl = 4
 
-        let answer = data.answers.split('|')[i]
-
         let prefix = interaction.guild.id == '1105413744902811688' ? (data.type || 'hlasovani') : 'team-anketa'
         let sufix = interaction.guild.id == '1105413744902811688' ? '' : `_${dbs[interaction.guild.id].name}`
 
-        let label = mode == 'form' ? answer.replace('Accept', 'PŘIHLAŠUJI').replace('Deny', 'ODMÍTÁM') : answer
+        let label = data.type == 'form' ? answer.replace('Accept', 'PŘIHLAŠUJI').replace('Deny', 'ODMÍTÁM') : answer
 
-        components[c].addComponents(new ButtonBuilder().setCustomId(`${prefix}_cmd_select${sufix}_${data._id}_${answer}`).setStyle(styl).setLabel(label).setDisabled(false))
+        components[c].addComponents(new ButtonBuilder().setCustomId(`${prefix}_cmd_select${sufix}_${data._id}_${answer}`).setStyle(styl).setLabel(label).setDisabled(disabled))
 
         if (i !== 0 && i % 5 == 0) c++
       }
-      if (mode == 'form') components[0].addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${data._id}`).setStyle(2).setLabel('EDIT'))
-
+      if (data.type == 'form') components[0].addComponents(new ButtonBuilder().setCustomId(`form_cmd_editHandler_${data._id}`).setStyle(2).setLabel('EDIT').setDisabled(disabled))
 
       await edge.post(dbs[interaction.guild.id].db, dbs[interaction.guild.id].name, data)
 
@@ -187,10 +223,10 @@ module.exports = {
         let msg = await channel.messages.fetch(data.message)
         if (msg) msg.edit({ embeds: [embed], components: components})
 
-        interaction.editReply({ ephemeral: true, content: 'Changed!'})
+        interaction.followUp({ ephemeral: true, content: 'Changed!'})
       } else if (interaction.message.components.length) {
-        interaction.message.edit({ embeds: [embed], components: components})
+        components.push(interaction.message.components[interaction.message.components.length-1])
+        interaction.followUp({ embeds: [embed], components: components, ephemeral: true})
       }
-      
     }
 }

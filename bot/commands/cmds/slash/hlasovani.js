@@ -168,6 +168,8 @@ module.exports = {
       let accept = new ActionRowBuilder()
         .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_accept_${data._id}`).setStyle(3).setLabel('POSLAT'))
         .addComponents(new ButtonBuilder().setCustomId(`hlasovani_cmd_deny_${data._id}`).setStyle(4).setLabel('NEPOSLAT'))
+        .addComponents(new ButtonBuilder().setCustomId(`edit_cmd_sendModal_${data._id}_basic`).setStyle(2).setLabel('Základní EDIT'))
+        .addComponents(new ButtonBuilder().setCustomId(`edit_cmd_sendModal_${data._id}_results`).setStyle(2).setLabel('EDIT Odpovědí'))
         
 
       await edge.post('general', 'events', data)
