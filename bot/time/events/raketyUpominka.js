@@ -7,7 +7,7 @@ module.exports = {
   name: eventName,
   description: "Remindes raketky on trainings",
   emoji: '🦖',
-  time: '0 0 12 * * 0', //'*/10 * * * * *'
+  time: '0 0 16 * * 0', //'*/10 * * * * *'
   ignore: '* * * * * *', //'sec min hour den(mesic) mesic den(tyden)'
   onstart: false,
   run: async (edge, options) => {
