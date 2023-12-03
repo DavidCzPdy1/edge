@@ -2,6 +2,16 @@
 const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, MentionableSelectMenuBuilder } = require('discord.js')
 const eventName = module.filename.includes('/') ? module.filename.split('/').filter(n => n.endsWith('.js'))[0].split('.')[0] : module.filename.split('\\').filter(n => n.endsWith('.js'))[0].split('.')[0]
 
+const getDaysDiff = (tm1, tm2) => {
+  let msPerDay = 24 * 60 * 60 * 1000;
+  let date1 = new Date(tm1 * 1000);
+  let date2 = new Date(tm2 * 1000);
+  date1.setUTCHours(0, 0, 0, 0);
+  date2.setUTCHours(0, 0, 0, 0);
+  let daysDifference = Math.round((date2 - date1) / msPerDay);
+
+  return daysDifference;
+}
 
 module.exports = {
   name: eventName,
@@ -79,7 +89,16 @@ module.exports = {
 
 
           let anTime = type == 'trenink' ? (1000*60*60*24*3 + 1000*60*60*2) : 2629800000 * 12 /*12 mesicu */
-          if (!db.message && new Date(db.start).getTime() < (new Date().getTime() + anTime)) {
+          let postTrenink = false
+          if (team.treninkTime && type == 'trenink') {
+            let den = new Date()
+
+            let diff = getDaysDiff(den.getTime(), db.start)
+            if (diff == (Number(team.treninkTime.split('-')[0]) || 3) && den.getHours() >= (Number(team.treninkTime.split('-')[1]) || 12)) postTrenink = true;
+            else if (diff < (Number(team.treninkTime.split('-')[0]) || 3)) postTrenink = true;
+          }
+
+          if (!db.message && (!team.treninkTime && new Date(db.start).getTime() < (new Date().getTime() + anTime) || postTrenink)) {
   
             let buttons = new ActionRowBuilder()
             for (let answer of db.answers.split('|')) {
@@ -110,7 +129,7 @@ module.exports = {
             db.role = role.id
           }
 
-          await edge.post('teams', team.server.database, db)
+          if (db.messsage) await edge.post('teams', team.server.database, db)
         }
 
 
