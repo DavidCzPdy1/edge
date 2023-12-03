@@ -3,7 +3,7 @@ const { ActionRowBuilder, ButtonBuilder, PermissionsBitField, MentionableSelectM
 const eventName = module.filename.includes('/') ? module.filename.split('/').filter(n => n.endsWith('.js'))[0].split('.')[0] : module.filename.split('\\').filter(n => n.endsWith('.js'))[0].split('.')[0]
 
 const getDaysDiff = (tm1, tm2) => {
-  let msPerDay = 24 * 60 * 60 * 1000;
+  let msPerDay = 24 * 60 * 60 * 1000 * 1000;
   let date1 = new Date(tm1 * 1000);
   let date2 = new Date(tm2 * 1000);
   date1.setUTCHours(0, 0, 0, 0);
@@ -90,15 +90,15 @@ module.exports = {
 
           let anTime = type == 'trenink' ? (1000*60*60*24*3 + 1000*60*60*2) : 2629800000 * 12 /*12 mesicu */
           let postTrenink = false
-          if (team.treninkTime && type == 'trenink') {
-            let den = new Date()
 
-            let diff = getDaysDiff(den.getTime(), db.start)
-            if (diff == (Number(team.treninkTime.split('-')[0]) || 3) && den.getHours() >= (Number(team.treninkTime.split('-')[1]) || 12)) postTrenink = true;
-            else if (diff < (Number(team.treninkTime.split('-')[0]) || 3)) postTrenink = true;
+          if (team.server.treninkTime && type == 'trenink') {
+            let den = new Date()
+            let diff = getDaysDiff(den.getTime(), new Date(db.start).getTime())
+            if (diff == (Number(team.server.treninkTime.split('-')[0]) || 3) && den.getHours() >= (Number(team.server.treninkTime.split('-')[1]) || 12)) postTrenink = true;
+            else if (diff < (Number(team.server.treninkTime.split('-')[0]) || 3)) postTrenink = true;
           }
 
-          if (!db.message && (!team.treninkTime && new Date(db.start).getTime() < (new Date().getTime() + anTime) || postTrenink)) {
+          if (!db.message && (!team.server.treninkTime && new Date(db.start).getTime() < (new Date().getTime() + anTime) || postTrenink)) {
   
             let buttons = new ActionRowBuilder()
             for (let answer of db.answers.split('|')) {
@@ -129,7 +129,8 @@ module.exports = {
             db.role = role.id
           }
 
-          if (db.messsage) await edge.post('teams', team.server.database, db)
+          if (db.message) await edge.post('teams', team.server.database, db)
+          
         }
 
 
