@@ -77,7 +77,7 @@ module.exports = {
       let errors = []
 
       for (let team of teams) {
-        let given = spirit.teams.filter(n => n.by == team)
+        let given = spirit.teams.filter(n => n.by.replace('MAJÁK ALFA', 'MAJÁK A') == team)
         for (let skore of given) {
           for (let i = 0; i < 6; i++) {
             let soucet = skore.rawData.reduce((a, b) => a + b, 0) - skore.rawData[5]
