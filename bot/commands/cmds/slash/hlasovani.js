@@ -24,8 +24,8 @@ const getEmbed = (data, options = {}) => {
     embed.fields = embed.fields.map(n => {
       let name = n.name.split(' - ')[0] + ` - ${data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).length}`
       let value = data[n.name.split(' - ')[0]].filter(a => options.showId ? (a?.id || a) == options.showId : true).map(a => {
-        
-        if (a.answers && a.answers['Název týmu']) return a.answers['Název týmu']
+
+        if (a?.answers && a.answers['Název týmu']) return a.answers['Název týmu']
         let id = a.id || a
         if (data.format == 'mention') return (data.mode == 'team' ?  `<@&${id}>` :  `<@${id}>`)
         let mention = data.mode == 'team' ? options.guild.roles.cache.get(id) : options.guild.members.cache.get(id) || {nickname: id}
