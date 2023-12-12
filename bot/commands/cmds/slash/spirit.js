@@ -233,7 +233,7 @@ async function createTourney(google, ids, eventId, eventName) {
 async function calculateTourney(google, ids, eventId, eventName) {
   let spirit = { total: {}, teams: [], errors: []}
 
-  let getFromCache = ['10.6.2023', '21-22.10.2023']
+  let getFromCache = ['10.6.2023', '21-22.10.2023', '9. 12. 2023']
 
   if (getFromCache.includes(eventName)) {
     let file = fs.readdirSync(path.join(__dirname, '../../')).filter(n => n == 'spirit.json').length

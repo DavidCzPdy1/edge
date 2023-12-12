@@ -8,7 +8,6 @@ class Config {
     this.config_start = true
     this.readConfig()
     fs.watchFile(path.resolve(__dirname, '../../config.json'), () => this.readConfig());
-
   }
 
   readConfig() {
@@ -34,6 +33,10 @@ class Config {
     }
     global.config = config
     this.config = config
+
+    if (!process.env.token) process.env.token = this.config.token
+    if (!process.env.db) process.env.db = this.config.db
+    if (!process.env.namesApi) process.env.namesApi = this.config.namesApi
   }
 
   async editConfig(cesty, value) {
