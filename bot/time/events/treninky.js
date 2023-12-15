@@ -24,7 +24,7 @@ module.exports = {
 
     let teams = await edge.get('general', 'clubs', {}).then(n => n.filter(a => a.server))
 
-    let raketyU15 = { color: 15844367, id: '1108825318069903443', name: 'Rakety Žižkoff U15', server: { guild: '1122995611621392424', database: 'raketyU15', ping: { annoucment: '1142174015734173816', trenink: '1142174015734173816' }, calendar: teams.find(a => a._id == 6).server.calendarU15, channels: { trenink: '1145714511165272165', archive: '1145714726588924066', annoucment: '1145714104783356047', turnaj: '1145715066008776755' }, roles: { trener: '1142176186349387877', member: '1142174015734173816' }, config: { treninky: true } } }
+    let raketyU15 = { color: 15844367, id: '1108825318069903443', name: 'Rakety Žižkoff U15', server: { guild: '1122995611621392424', database: 'raketyU15', ping: { annoucment: '1142174015734173816', trenink: '1142174015734173816' }, calendar: teams.find(a => a._id == 6).server.calendarU15, channels: { trenink: '1145714511165272165', archive: '1145714726588924066', annoucment: '1145714104783356047', turnaj: '1145715066008776755' }, roles: { trener: '1142176186349387877', member: '1142174015734173816' }, config: { treninky: true }, treninkTime: '7-19' } }
     teams.push(raketyU15)
 
     let google = edge.google
