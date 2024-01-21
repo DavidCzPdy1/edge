@@ -145,7 +145,8 @@ module.exports = {
 
     },
     results: async (edge, interaction) => {
-      await interaction.update({ type:6 })
+      console.log(interaction)
+      try { await interaction.update({ type:6 }) } catch (e) {interaction.reply({ content: 'Snad jen dočastna zprava... (vše by snad mělo fungovat)', ephemeral: true })}
 
       let _id = interaction.customId.split('_')[3]
       let mode = interaction.customId.split('_')[4]
