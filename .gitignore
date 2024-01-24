@@ -3,6 +3,7 @@
 *.DS_Store
 .vscode/
 yarn.lock
+.npm
 
 .replit
 replit.nix
