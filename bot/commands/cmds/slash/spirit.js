@@ -77,7 +77,7 @@ module.exports = {
       let errors = []
 
       for (let team of teams) {
-        let given = spirit.teams.filter(n => n.by.replace('MAJÁK ALFA', 'MAJÁK A').replace('MAJÁK OMEGA', 'MAJÁK B') == team)
+        let given = spirit.teams.filter(n => n.by == team)
         for (let skore of given) {
           for (let i = 0; i < 6; i++) {
             let soucet = skore.rawData.reduce((a, b) => a + b, 0) - skore.rawData[5]
@@ -172,7 +172,7 @@ module.exports = {
     if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
 
     let recieved = spirit.teams.filter(n => n.name == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.by}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
-    let given = spirit.teams.filter(n => n.by.replace('MAJÁK ALFA', 'MAJÁK A').replace('MAJÁK OMEGA', 'MAJÁK B') == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.name}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
+    let given = spirit.teams.filter(n => n.by == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.name}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
     
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
@@ -247,7 +247,7 @@ async function calculateTourney(google, ids, eventId, eventName) {
   for (let sheetId of ids) {
     try {
       let table = await google.getTable(sheetId)
-      let tym = table.properties.title
+      let tym = table.properties.title.replace('MAJÁK ALFA', 'MAJÁK A').replace('MAJÁK OMEGA', 'MAJÁK B')
       if (!tym) tym = sheetId
       let tableName = table.sheets.find(a => a.properties.sheetId == eventId || a.properties.title == eventName)?.properties.title
 
