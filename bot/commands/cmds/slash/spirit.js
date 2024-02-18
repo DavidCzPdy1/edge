@@ -172,7 +172,7 @@ module.exports = {
     if (!spirit) return interaction.editReply({ embeds: [{ title: 'ERROR', description: 'Nenašel jsem uloženou tabulku!', color: 15548997 }]}) 
 
     let recieved = spirit.teams.filter(n => n.name == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.by}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
-    let given = spirit.teams.filter(n => n.by == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.name}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
+    let given = spirit.teams.filter(n => n.byn.by.replace('MAJÁK ALFA', 'MAJÁK A').replace('MAJÁK OMEGA', 'MAJÁK B') == teamName).sort((a, b) => a.sort - b.sort).map(n => `- **${n.name}**\n\u009B ${n.rawData.slice(0, 5).join(' | ')} | **${n.total}**`)
     
     let embed = {
       title: `Spirit skóre s názvem "${eventName}" týmu ${teamName}`,
