@@ -77,7 +77,7 @@ module.exports = {
       let errors = []
 
       for (let team of teams) {
-        let given = spirit.teams.filter(n => n.by.replace('MAJÁK ALFA', 'MAJÁK A') == team)
+        let given = spirit.teams.filter(n => n.by.replace('MAJÁK ALFA', 'MAJÁK A').replace('MAJÁK OMEGA', 'MAJÁK B') == team)
         for (let skore of given) {
           for (let i = 0; i < 6; i++) {
             let soucet = skore.rawData.reduce((a, b) => a + b, 0) - skore.rawData[5]
@@ -233,7 +233,7 @@ async function createTourney(google, ids, eventId, eventName) {
 async function calculateTourney(google, ids, eventId, eventName) {
   let spirit = { total: {}, teams: [], errors: []}
 
-  let getFromCache = ['10.6.2023', '21-22.10.2023', '9. 12. 2023']
+  let getFromCache = ['10.6.2023', '21-22.10.2023', '9. 12. 2023', '17. 2. 2024']
 
   if (getFromCache.includes(eventName)) {
     let file = fs.readdirSync(path.join(__dirname, '../../')).filter(n => n == 'spirit.json').length
