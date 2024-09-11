@@ -17,3 +17,4 @@ config.json
 spirit.json
 
 public/
+bot/google/keys.json

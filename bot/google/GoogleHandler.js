@@ -28,6 +28,44 @@ class GoogleHandler {
     this.edgeCal = await this.edge.get('login', 'google', {_id: 'edgeCal'}).then(n => n[0].value)
     this.spiritIds = await this.edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].value)
     this.spiritMaster = await this.edge.get('login', 'google', {_id: 'spiritIds'}).then(n => n[0].master)
+
+
+    let oddily_credits = await this.edge.get('login', 'google', {_id: 'login_oddily'}).then(n => n[0])
+
+    //this.oddily_auth = new google.auth.OAuth2(
+    //  oddily_credits.new_id,
+    //  oddily_credits.new_secret,
+    //  'YOUR_REDIRECT_URL'
+    //);
+ 
+/*
+    this.oddily_auth = new google.auth.GoogleAuth({
+      scopes: ['https://mail.google.com/'],
+      credentials: oddily_credits
+      
+    })
+    this.oddily_token = await this.oddily_auth.getAccessToken();
+
+    this.client_oddily = await this.oddily_auth.getClient()
+
+    this.gmail = google.gmail({version: 'v1', auth: this.client_oddily});
+    */
+/*
+    const JWT = google.auth.JWT;
+      const authClient = new JWT({
+        credentials: oddily_credits,
+        keyFile: path.join(__dirname, './keys.json'),
+        scopes: ['https://mail.google.com/'],
+        subject: 'poletime.bot@gmail.com'
+      });
+
+     await authClient.authorize(); // once authorized, can do whatever you want
+
+      this.gmail = google.gmail({
+        auth: authClient,
+        version: 'v1'
+      });
+*/
   }
 
 
@@ -254,6 +292,20 @@ class GoogleHandler {
       calendarId: calendar,
       eventId: event
     })
+    return res.data;
+  }
+
+  async getEmails() {
+    const res = await this.gmail.users.messages.list({
+      userId: "me",
+      //maxResults: 10,
+      //token: this.oddily_token,
+      //q: "is:unread" // to:oddily@frisbee.cz  to:oddily@czechultimate.cz
+    });
+ 
+    const messages = res.data.messages;
+
+    console.log(messages)
     return res.data;
   }
     
