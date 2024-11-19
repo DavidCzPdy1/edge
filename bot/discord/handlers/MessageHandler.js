@@ -7,7 +7,7 @@ class MessageHandler {
   }
 
   async onMessage(message) {
-    if (message.channel.id == '1105918656203980870' && (message.type === 0 /*|| message.type === 19*/)) await dc_client.channels.cache.get('1105917930610368614')?.send({ content: message.content, embeds: message.embeds, allowedMentions: { parse: []}, files: message.attachments.map(n => n.attachment) })
+    //if (message.channel.id == '1105918656203980870' && (message.type === 0 /*|| message.type === 19*/)) await dc_client.channels.cache.get('1105917930610368614')?.send({ content: message.content, embeds: message.embeds, allowedMentions: { parse: []}, files: message.attachments.map(n => n.attachment) })
 
     if (message.author.id == global.config.discord.clientID) return
     if (message.channel.type === 1) {
