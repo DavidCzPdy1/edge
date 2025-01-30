@@ -233,7 +233,7 @@ async function createTourney(google, ids, eventId, eventName) {
 async function calculateTourney(google, ids, eventId, eventName) {
   let spirit = { total: {}, teams: [], errors: []}
 
-  let getFromCache = ['10.6.2023', '21-22.10.2023', '9. 12. 2023', '17. 2. 2024', '15. 6. 2024']
+  let getFromCache = ['10.6.2023', '21-22.10.2023', '9. 12. 2023', '17. 2. 2024', '15. 6. 2024', '12.-13. 10. 2024', '30. 11. 2024', '18. 1. 2025']
 
   if (getFromCache.includes(eventName)) {
     let file = fs.readdirSync(path.join(__dirname, '../../')).filter(n => n == 'spirit.json').length
@@ -265,8 +265,8 @@ async function calculateTourney(google, ids, eventId, eventName) {
       results.forEach((e, i) => {
         a1 = e.slice(0, 8)
         a2 = e.slice(8, 16)
-        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1], total: Number(a1[7]), by: tym, rawData: getSpiritData(a1), sort: i})
-        if (a2.length > 6 && a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1], total: Number(a2[7]), by: tym, rawData: getSpiritData(a2), sort: i+20})
+        if (a1[1] !== '-----' && Number(a1[7])) spirit.teams.push({name: a1[1].replace('POLETÍME KRÁSKY', 'POLETÍME A').replace('POLETÍME ZVÍŘATA', 'POLETÍME B'), total: Number(a1[7]), by: tym, rawData: getSpiritData(a1), sort: i})
+        if (a2.length > 6 && a2[1] !== '-----' && Number(a2[7])) spirit.teams.push({name: a2[1].replace('POLETÍME KRÁSKY', 'POLETÍME A').replace('POLETÍME ZVÍŘATA', 'POLETÍME B'), total: Number(a2[7]), by: tym, rawData: getSpiritData(a2), sort: i+20})
       })
     } catch (e) {spirit.errors.push(sheetId)}
   }

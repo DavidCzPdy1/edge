@@ -74,7 +74,8 @@ module.exports = {
         answers: 'Accept|Deny',
         numberAnswers: 2,
         Accept: [],
-        Deny: []
+        Deny: [],
+        filterIgnore: ["1108825076083720263", "1108833486321758291", "1108825782001860730"]
       }
 
       let events = await edge.get('general', 'events', {}).then(n => n.filter(a => a._id.toLowerCase() == data._id.toLowerCase()))

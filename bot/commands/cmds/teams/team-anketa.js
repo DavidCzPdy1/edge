@@ -262,6 +262,11 @@ module.exports = {
 
       let embed = getEmbed(data, { guild: interaction.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined })
       await interaction.message.edit({ embeds: [embed]})
+
+      if (Number(new Date(data.start) - Number(new Date())) < 18000000) {
+        if (!data.channel?.archive) return;
+        await dc_client.channels.cache.get(team.server.channels?.archive)?.send({content: `Změna hlasu!\nKdo:<@${id}>\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\``})
+      }
     },
     treninkEdit: async (edge, interaction) => {
       await interaction.update({ type:6 })

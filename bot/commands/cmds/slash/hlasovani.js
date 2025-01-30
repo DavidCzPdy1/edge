@@ -127,7 +127,8 @@ module.exports = {
         pings: interaction.options.getInteger('pings') || 0,
         pingsData: [],
         created: new Date().getTime(),
-        format: 'text' || 'mention'
+        format: 'text' || 'mention',
+        filterIgnore: ["1108825076083720263", "1108833486321758291", "1108825782001860730"]
       }
 
       data.answers = data.answers.replaceAll('-', '➜').split('|').filter((item, pos) => data.answers.split('|').indexOf(item) == pos).join('|')

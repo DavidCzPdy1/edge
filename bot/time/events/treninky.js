@@ -154,6 +154,7 @@ function refreshDb(data, event, team) {
   data.location = event.location ? `[${event.location.split(',')[0]}](https://www.google.com/maps/search/?api=1&query=${event.location.replaceAll(' ', '%20')})` : undefined
 
   data.channel = team.server.channels.trenink
+  data.archive = team.server.channels?.archive
   data.title = type == 'trenink' ? `Docházka na ${event.summary}` : `Přihláška na ${event.summary}`
   data.description = `**Datum:** <t:${time}:f>\n${type == 'trenink' ? `**Od** <t:${time}:t> **do** <t:${timeEnd}:t>\nZačátek <t:${time}:R>`:`**Počet dní:** ${Math.ceil((Number(new Date(data.end)) - Number(new Date(data.start))) / 1000/60/60/24 )}`}\n`
   data.color = team.color
