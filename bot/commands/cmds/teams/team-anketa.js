@@ -263,9 +263,12 @@ module.exports = {
       let embed = getEmbed(data, { guild: interaction.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined })
       await interaction.message.edit({ embeds: [embed]})
 
-      if (Number(new Date(data.start) - Number(new Date())) < 18000000) {
-        if (!data.channel?.archive) return;
-        await dc_client.channels.cache.get(team.server.channels?.archive)?.send({content: `Změna hlasu!\nKdo:<@${id}>\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\``})
+      if (Number(new Date(data.start) - Number(new Date())) < 1000*60*60*8) { // 8 hodin
+        if (!data?.archive) return;
+        
+        await dc_client.channels.cache.get(data?.archive)?.send({content: `[Změna hlasu!](${interaction.message.url})\nKdo:<@${id}>\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\``})
+        await interaction.user.send({content: `[Změna hlasu!](${interaction.message.url})\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\`\n\n# PŘÍŠTĚ PROSÍM HLASUJ DŘÍV`})
+        
       }
     },
     treninkEdit: async (edge, interaction) => {
