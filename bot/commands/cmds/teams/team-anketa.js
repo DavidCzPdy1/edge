@@ -263,7 +263,7 @@ module.exports = {
       let embed = getEmbed(data, { guild: interaction.guild, verify: data.format == 'text' ? await edge.get('general', 'users', {}) : undefined })
       await interaction.message.edit({ embeds: [embed]})
 
-      if (Number(new Date(data.start) - Number(new Date())) < 1000*60*60*8) { // 8 hodin
+      if (Number(new Date(data.start) - Number(new Date())) < 1000*60*60*7) { // 7 hodin
         if (!data?.archive) return;
         
         await dc_client.channels.cache.get(data?.archive)?.send({content: `[Změna hlasu!](${interaction.message.url})\nKdo:<@${id}>\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\``})

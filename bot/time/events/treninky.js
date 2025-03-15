@@ -83,7 +83,14 @@ module.exports = {
           try {
             if (db.message) {
               let message = await dc_client.channels.cache.get(db.channel)?.messages.fetch(db.message).catch(e => {})
-              await message?.edit({ embeds: [getEmbed(db, {guild: guild, verify: db.format == 'text' ? await edge.get('general', 'users', {}) : undefined})] })
+              
+              /* Vypnout hlasování u RAKET při podmínce startu "< 7hod" */
+              let editedComponents = message?.components || []
+              if (type == 'trenink' && team.name == 'Rakety Žižkoff' && (Number(new Date(db.start) - Number(new Date())) < 1000*60*60*7 && editedComponents.length)) {
+                editedComponents[0]?.components?.forEach(n => n.data.disabled = true)
+              }
+
+              await message?.edit({ embeds: [getEmbed(db, {guild: guild, verify: db.format == 'text' ? await edge.get('general', 'users', {}) : undefined})], components: editedComponents })
             }
           } catch (e) {console.error(e)}
 
