@@ -266,8 +266,8 @@ module.exports = {
       if (Number(new Date(data.start) - Number(new Date())) < 1000*60*60*7) { // 7 hodin
         if (!data?.archive) return;
         
-        await dc_client.channels.cache.get(data?.archive)?.send({content: `[Změna hlasu!](${interaction.message.url})\nKdo:<@${id}>\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\``})
-        await interaction.user.send({content: `[Změna hlasu!](${interaction.message.url})\nPůvodní odpověď:\`${answered.name}\`\nAktuální odpověď: \`${answer}\`\n\n# PŘÍŠTĚ PROSÍM HLASUJ DŘÍV`})
+        await dc_client.channels.cache.get(data?.archive)?.send({content: `[Změna hlasu!](${interaction.message.url})\nKdo:<@${id}>\nPůvodní odpověď:\`${answered?.name || 'nic'}\`\nAktuální odpověď: \`${answer}\``})
+        await interaction.user.send({content: `[Změna hlasu!](${interaction.message.url})\nPůvodní odpověď:\`${answered?.name || 'nic'}\`\nAktuální odpověď: \`${answer}\`\n\n# PŘÍŠTĚ PROSÍM HLASUJ DŘÍV`})
         
       }
     },
