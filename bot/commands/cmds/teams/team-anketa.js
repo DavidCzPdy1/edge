@@ -238,6 +238,7 @@ module.exports = {
         data[answer] = data[answer].filter(n => n !== id)
         let embed = { title: 'Odstranení hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
         interaction.followUp({ embeds: [embed], ephemeral: true })
+        answer = "odstraněno"
       } else if (!answered) {
         data[answer].push(id)
         let embed = { title: 'Přidání hlasu!', description: `Reakce: \`${answer}\`\nReacted as <@${id}>`, color: 15548997 }
