@@ -85,7 +85,7 @@ module.exports = {
 
       if (data.time) {
         let time = data.time.split('.').map(n => n.trim())
-        let cas = [time[2], time[1].length == 1 ? `0${time[1]}` : time[1], time[0].length == 1 ? `0${time[0]}`: time[0] ]
+        let cas = [time[2], time[1]?.length == 1 ? `0${time[1]}` : time[1], time[0]?.length == 1 ? `0${time[0]}`: time[0] ]
         data.time = Date.parse(`${cas[0]}-${cas[1]}-${cas[2]} 23:59`)
 
         if (data.time < new Date().getTime()) return interaction.reply({ embeds: [updateDesc(errorEmbed, `Zadaný čas už byl!`)], ephemeral: edge.isEphemeral(interaction)})
