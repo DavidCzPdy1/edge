@@ -9,7 +9,7 @@ class Mongo extends Config {
 
     async createMongo() {
         let options = {}
-        let mongo = await mongodb.MongoClient.connect(process.env.db, options)
+        let mongo = await mongodb.MongoClient.connect(process.env.db_edge, options)
         this.mongo = mongo
 
         console.mongo('Database connections opened successfully');

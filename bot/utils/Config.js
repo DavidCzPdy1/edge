@@ -34,8 +34,8 @@ class Config {
     global.config = config
     this.config = config
 
-    if (!process.env.token) process.env.token = this.config.token
-    if (!process.env.db) process.env.db = this.config.db
+    if (!process.env.token_edge) process.env.token_edge = this.config.token
+    if (!process.env.db_edge) process.env.db_edge = this.config.db
     if (!process.env.namesApi) process.env.namesApi = this.config.namesApi
   }
 

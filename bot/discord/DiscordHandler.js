@@ -27,7 +27,7 @@ class DiscordHandler {
 
     this.client.on('messageCreate', message => this.messageHandler.onMessage(message))
     
-    this.client.login(this.edge.config.dev ? process.env.token : process.env.token ).catch(e => {console.error(e)})
+    this.client.login(this.edge.config.dev ? process.env.token_edge : process.env.token_edge ).catch(e => {console.error(e)})
 
     const events = fs.readdirSync(path.join(__dirname, './events')).filter((file) => file.endsWith(".js"));
     let eventsCount = events.length
