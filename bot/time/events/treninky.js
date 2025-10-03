@@ -47,11 +47,10 @@ module.exports = {
         let data = await edge.get('teams', team.server.database, {}).then(n => n.filter(a => !a.ended && a.type == type))
         
         /* END */
-        let end = data.filter(n => !calendar.map(a => a.id.replaceAll('_', '-')).includes(n._id) && !n.ended)
+        let end = data.filter(n => !calendar.map(a => a.id.replaceAll('_', '-').split("-")[0]).includes(n._id?.split("-")[0]) && !n.ended) // pozdeji se muze split v includes odstranit - jen prechodovy dej
 
         for (let ended of end) {
-          let cal = await google.fetchCalendar(team.server.calendar, ended._id.replaceAll('-', '_'))
-
+          let cal = await google.fetchCalendar(team.server.calendar, ended.calendarId || ended._id.replaceAll('-', '_'))
           let message = ended.message ? await dc_client.channels.cache.get(ended.channel)?.messages.fetch(ended.message).catch(e => {}) : null
 
           if (type == 'turnaj' && ended.role) {
@@ -77,7 +76,7 @@ module.exports = {
 
         /* HANDLE OLD & NEW */
         for (let event of calendar) {
-          let id =  event.id.replaceAll('_', '-')
+          let id =  event.id.replaceAll('_', '-').split('-')[0]
           let db = refreshDb(data.find(n => n._id == id) || {type: type}, event, team)
 
           try {
@@ -139,8 +138,6 @@ module.exports = {
           if (db.message) await edge.post('teams', team.server.database, db)
           
         }
-
-
       }
     }
     
@@ -154,7 +151,8 @@ function refreshDb(data, event, team) {
   let time = Math.floor(new Date(event.start.date || event.start.dateTime).getTime()/1000)
   let timeEnd = Math.floor(new Date(event.end.date || event.end.dateTime).getTime()/1000)
 
-  if (!data._id) data._id = event.id.replaceAll('_', '-'),
+  if (!data._id) data._id = event.id.replaceAll('_', '-').split('-')[0],
+  data.calendarId = event.id
   data.name = event.summary
   data.start = event.start.date || event.start.dateTime
   data.end = event.end.date || event.end.dateTime
